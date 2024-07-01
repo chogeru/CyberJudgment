@@ -1,0 +1,95 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &343330352080964638
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -1719624786405727700, guid: 312be44e020dcb740a9a70b6cf0cf20e, type: 3}
+      propertyPath: newMaterial
+      value: 
+      objectReference: {fileID: 2100000, guid: d59fe0e78ce9c4c4ebce2b1968cde53e, type: 2}
+    - target: {fileID: -1719624786405727700, guid: 312be44e020dcb740a9a70b6cf0cf20e, type: 3}
+      propertyPath: materialIndex
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3038251996456172538, guid: 312be44e020dcb740a9a70b6cf0cf20e, type: 3}
+      propertyPath: m_Name
+      value: NeonAds_UltraWIde19 Variant
+      objectReference: {fileID: 0}
+    - target: {fileID: 3038251996456172539, guid: 312be44e020dcb740a9a70b6cf0cf20e, type: 3}
+      propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3038251996456172539, guid: 312be44e020dcb740a9a70b6cf0cf20e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3038251996456172539, guid: 312be44e020dcb740a9a70b6cf0cf20e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3038251996456172539, guid: 312be44e020dcb740a9a70b6cf0cf20e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3038251996456172539, guid: 312be44e020dcb740a9a70b6cf0cf20e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3038251996456172539, guid: 312be44e020dcb740a9a70b6cf0cf20e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3038251996456172539, guid: 312be44e020dcb740a9a70b6cf0cf20e, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3038251996456172539, guid: 312be44e020dcb740a9a70b6cf0cf20e, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3038251996456172539, guid: 312be44e020dcb740a9a70b6cf0cf20e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3038251996456172539, guid: 312be44e020dcb740a9a70b6cf0cf20e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3038251996456172539, guid: 312be44e020dcb740a9a70b6cf0cf20e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4461835461023406583, guid: 312be44e020dcb740a9a70b6cf0cf20e, type: 3}
+      propertyPath: m_Materials.Array.data[2]
+      value: 
+      objectReference: {fileID: 2100000, guid: d59fe0e78ce9c4c4ebce2b1968cde53e, type: 2}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 312be44e020dcb740a9a70b6cf0cf20e, type: 3}
+--- !u!1 &3380456424726427620 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3038251996456172538, guid: 312be44e020dcb740a9a70b6cf0cf20e, type: 3}
+  m_PrefabInstance: {fileID: 343330352080964638}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2256362247136310537
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3380456424726427620}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f3e82df14c3ab3429d770d85610171b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  textures:
+  - {fileID: 2800000, guid: e902034a6184a6b4591374a55e81dec1, type: 3}
+  - {fileID: 2800000, guid: f826f023ba0dcd742acdf848961adb94, type: 3}
+  frameRate: 1
+  loopForever: 1
+  customFrameDurations: []
+  materialIndex: 0
