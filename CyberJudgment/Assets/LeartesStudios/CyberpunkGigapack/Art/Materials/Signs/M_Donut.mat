@@ -1,0 +1,279 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-8575371132513871374
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 5
+--- !u!114 &-7077581878094927714
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 639247ca83abc874e893eb93af2b5e44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 0
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_Donut
+  m_Shader: {fileID: -6465566751694194690, guid: 505adcfe225c9474e8589edf73a5cc3f,
+    type: 3}
+  m_ValidKeywords:
+  - _ALPHATEST_ON
+  - _DISABLE_SSR_TRANSPARENT
+  - _ENABLE_FOG_ON_TRANSPARENT
+  - _SURFACE_TYPE_TRANSPARENT
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: 3000
+  stringTagMap:
+    MotionVector: User
+    RenderType: Transparent
+  disabledShaderPasses:
+  - TransparentDepthPrepass
+  - TransparentDepthPostpass
+  - TransparentBackface
+  - RayTracingPrepass
+  - MOTIONVECTORS
+  - DepthOnly
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _Anim1:
+        m_Texture: {fileID: 2800000, guid: 795bc05408f23ee479e68802c0b3d3c7, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _AnimationTexture:
+        m_Texture: {fileID: 2800000, guid: d1dc13ad4dd94e4448336b72c24c4a97, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Base_Map:
+        m_Texture: {fileID: 2800000, guid: e7392544e1dae234b9d98320e0fb2722, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Emissive:
+        m_Texture: {fileID: 2800000, guid: e7392544e1dae234b9d98320e0fb2722, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissiveTexture:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Normal_Map:
+        m_Texture: {fileID: 2800000, guid: 6b376162de99d0b499a8a816431f97bd, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Opacity:
+        m_Texture: {fileID: 2800000, guid: 1ad04bd26539ddf48b8b1c5fbd42e4b6, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Opacity_Mask_2:
+        m_Texture: {fileID: 2800000, guid: 1ad04bd26539ddf48b8b1c5fbd42e4b6, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SampleTexture2D_6b409bd81e7340a5a2eab83f905bae9f_Texture_1:
+        m_Texture: {fileID: 2800000, guid: 3546a6688fd9b1940a697ad941fe05cd, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SampleTexture2D_95eb91478d884bb18f2460af1994d5cc_Texture_1:
+        m_Texture: {fileID: 2800000, guid: dc21a92156c21b64eb80be1c8bee7919, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SecondaryEmissive:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AddPrecomputedVelocity: 0
+    - _AlphaClip: 1
+    - _AlphaCutoffEnable: 0
+    - _AlphaDstBlend: 10
+    - _AlphaSrcBlend: 1
+    - _AlphaToMask: 0
+    - _AlphaToMaskInspectorValue: 0
+    - _AnimationRotation: 0
+    - _BUILTIN_AlphaClip: 1
+    - _BUILTIN_Blend: 0
+    - _BUILTIN_CullMode: 2
+    - _BUILTIN_DstBlend: 0
+    - _BUILTIN_QueueControl: -1
+    - _BUILTIN_QueueOffset: 0
+    - _BUILTIN_SrcBlend: 1
+    - _BUILTIN_Surface: 1
+    - _BUILTIN_ZTest: 4
+    - _BUILTIN_ZWrite: 0
+    - _BUILTIN_ZWriteControl: 0
+    - _Background_Opacity: 0
+    - _BaseColor_Map: 0
+    - _BaseColor_Map_Tint_Intensity: 1
+    - _BaseMap_Tint_Intensity: 1
+    - _Blend: 0
+    - _BlendMode: 0
+    - _CastShadows: 1
+    - _ConservativeDepthOffsetEnable: 0
+    - _Contrast: 0
+    - _Cull: 2
+    - _CullMode: 2
+    - _CullModeForward: 2
+    - _DepthOffsetEnable: 0
+    - _Dots_U_Tiling: 1
+    - _Dots_V_Tiling: 1
+    - _DoubleSidedEnable: 0
+    - _DoubleSidedGIMode: 0
+    - _DoubleSidedNormalMode: 2
+    - _DstBlend: 10
+    - _EmissiveFlickering: 0
+    - _Emissive_Int: 15
+    - _Emissive_Intensity: 1
+    - _EnableBlendModePreserveSpecularLighting: 0
+    - _EnableFogOnTransparent: 1
+    - _FreshLineStrength: 1
+    - _FreshLine_Amount: 1
+    - _FreshLine_Mask: 0.2
+    - _FreshLine_Speed: 1
+    - _Fresnel_Base_Reflection_Fraction_In: 0.04
+    - _Fresnel_Exponent_In: 0
+    - _Fresnel_Int: 6
+    - _Fresnel_Intensity: 1
+    - _Fresnel_Power: 1
+    - _Hologram_Speed: 1
+    - _Hologram_Texture_Tiling: 1500
+    - _InnerEmissiveStrenght: 0
+    - _Minimum_Opacity: 0
+    - _MovingDots: 0
+    - _MovingStripes: 0
+    - _Normal_Intensity: 1
+    - _Opacity_Mask: 0
+    - _Opacity_Time: 1
+    - _Opacity_time: 1
+    - _OpaqueCullMode: 2
+    - _OuterEmissiveStrenght: 0
+    - _Panning_Speed_X: 50
+    - _Panning_Speed_Y: 50
+    - _Power: 1
+    - _QueueControl: 1
+    - _QueueOffset: 0
+    - _RayTracing: 0
+    - _ReceiveShadows: 1
+    - _ReceivesSSR: 1
+    - _ReceivesSSRTransparent: 0
+    - _RefractionModel: 0
+    - _RenderQueueType: 4
+    - _RequireSplitLighting: 0
+    - _Rotation: 0
+    - _RotationAnim: 90
+    - _SecondaryEmissiveTiling: 0
+    - _SecondaryEmissive_1: 0
+    - _Speed: 0.8
+    - _SrcBlend: 5
+    - _StencilRef: 0
+    - _StencilRefDepth: 0
+    - _StencilRefDistortionVec: 4
+    - _StencilRefGBuffer: 2
+    - _StencilRefMV: 32
+    - _StencilWriteMask: 6
+    - _StencilWriteMaskDepth: 8
+    - _StencilWriteMaskDistortionVec: 4
+    - _StencilWriteMaskGBuffer: 14
+    - _StencilWriteMaskMV: 40
+    - _StripesRotation: 0
+    - _Stripes_Number: 4
+    - _Stripes_U_Tiling: 1
+    - _Stripes_V_Tiling: 1
+    - _Strips_Opacity: 0.8
+    - _Strips_Panning_Speed: 1
+    - _Strips_Width: 2
+    - _SupportDecals: 1
+    - _Surface: 1
+    - _SurfaceType: 1
+    - _Tiling: 1
+    - _TimeInt: 0.1
+    - _TransparentBackfaceEnable: 0
+    - _TransparentCullMode: 2
+    - _TransparentDepthPostpassEnable: 0
+    - _TransparentDepthPrepassEnable: 0
+    - _TransparentSortPriority: 0
+    - _TransparentWritingMotionVec: 0
+    - _TransparentZWrite: 0
+    - _U_Location: 0
+    - _U_Scale: 0.15
+    - _UseShadowThreshold: 0
+    - _Use_Dots: 0
+    - _Use_Emissive_Texture: 0
+    - _Use_Normal_Map: 0
+    - _Use_Panning_Texture: 1
+    - _Use_Stripes_1: 0
+    - _V_Location: 0.5
+    - _V_Scale: 0.28
+    - _WavesHeight: 0.1
+    - _WavesScale: 0.2
+    - _WorkflowMode: 1
+    - _ZTest: 4
+    - _ZTestDepthEqualForOpaque: 4
+    - _ZTestGBuffer: 4
+    - _ZTestTransparent: 4
+    - _ZWrite: 0
+    - _ZWriteControl: 0
+    m_Colors:
+    - _BaseColor_Map_Tint: {r: 1, g: 1, b: 1, a: 0}
+    - _BaseMap_Tint: {r: 1, g: 1, b: 1, a: 0}
+    - _Base_Color: {r: 1, g: 0.72827417, b: 0.3915094, a: 0}
+    - _DotsSpeed: {r: 0, g: 0.1, b: 0, a: 1}
+    - _DoubleSidedConstants: {r: 1, g: 1, b: -1, a: 0}
+    - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissiveColor: {r: 0, g: 0, b: 0, a: 1}
+    - _EmissiveColorStripes: {r: 0.22745097, g: 0.5490196, b: 0.95686275, a: 1}
+    - _FreshLineTint: {r: 0.92549026, g: 0.82745105, b: 0.62352943, a: 1}
+    - _Fresnel_Color: {r: 0.99607843, g: 0.32327962, b: 0, a: 0}
+    - _Opacity_Tiling: {r: 1, g: 1, b: 0, a: 0}
+    - _Stripes_Speed: {r: 0, g: 0.1, b: 0, a: 1}
+  m_BuildTextureStacks: []
+--- !u!114 &5436273240138415651
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da692e001514ec24dbc4cca1949ff7e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 12
+  hdPluginSubTargetMaterialVersions:
+    m_Keys: []
+    m_Values: 
