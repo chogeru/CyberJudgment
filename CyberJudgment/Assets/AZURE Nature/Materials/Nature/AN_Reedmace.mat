@@ -101,8 +101,21 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AlphaCutoff: 0.5
     - _BlendNormals: 0
     - _BumpScale: 1
     - _COVERAGE: 0
@@ -131,6 +144,8 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
+    - _QueueControl: 0
+    - _QueueOffset: 0
     - _SNOW: 0
     - _Smoothness: 0.15
     - _SmoothnessTextureChannel: 0
@@ -141,7 +156,7 @@ Material:
     - _SnowOverlayType: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _SurfaceSmoothness: 0.15
+    - _SurfaceSmoothness: 0.2
     - _TransAmbient: 0.2
     - _TransDirect: 1
     - _TransNormalDistortion: 0.1
