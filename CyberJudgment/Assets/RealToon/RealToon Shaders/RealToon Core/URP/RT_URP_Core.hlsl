@@ -4,7 +4,6 @@
 //=========================
 
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
-#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
 #include "Assets/RealToon/RealToon Shaders/RealToon Core/URP/RT_URP_PROP.hlsl"
 
 half RTD_LVLC_F(float3 Light_Color_f3)
@@ -33,6 +32,14 @@ half3 AL_GI(float3 N)
 {
 
 	return SampleSH(N);
+
+}
+
+float3 Ref(half3 VR, half Mip)
+{
+
+	float4 skyData = SAMPLE_TEXTURECUBE_LOD(unity_SpecCube0, samplerunity_SpecCube0, VR, Mip);
+	return DecodeHDREnvironment(skyData, unity_SpecCube0_HDR);
 
 }
 
@@ -80,10 +87,10 @@ float EdgDet(float2 uv)
     float2 bottomRightUV = uv + float2(_ScreenSize.x * halfScaleCeil, -_ScreenSize.y * halfScaleFloor);
     float2 topLeftUV = uv + float2(-_ScreenSize.x * halfScaleFloor, _ScreenSize.y * halfScaleCeil);
 
-	float depth0 = SampleSceneDepth(bottomLeftUV);
-    float depth1 = SampleSceneDepth(topRightUV);
-    float depth2 = SampleSceneDepth(bottomRightUV);
-    float depth3 = SampleSceneDepth(topLeftUV);
+    float depth0 = SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, bottomLeftUV).r;
+    float depth1 = SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, topRightUV).r;
+    float depth2 = SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, bottomRightUV).r;
+    float depth3 = SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, topLeftUV).r;
 
     float depthDerivative0 = depth1 - depth0;
     float depthDerivative1 = depth3 - depth2;
@@ -102,7 +109,7 @@ float EdgDet(float2 uv)
 }
 
 //DOTS_LinBlenSki
-uniform StructuredBuffer<float3x4> _SkinMatrices; 
+uniform StructuredBuffer<float3x4> _SkinMatrices;
 
 void DOTS_LiBleSki(uint4 indices, float4 weights, float3 positionIn, float3 normalIn, float3 tangentIn, out float3 positionOut, out float3 normalOut, out float3 tangentOut)
 {
@@ -164,18 +171,7 @@ half3 RT_MCAP(float2 uv, float3 normalDirection)
 		half2 MUV = (mul(UNITY_MATRIX_V, float4(normalDirection, 0.0)).xyz.rgb.rg * 0.5 + 0.5);
 		half4 _MatCap_var = SAMPLE_TEXTURE2D(_MCap, sampler_MCap, TRANSFORM_TEX(MUV, _MCap));
 		half4 _MCapMask_var = SAMPLE_TEXTURE2D(_MCapMask, sampler_MCapMask, TRANSFORM_TEX(uv, _MCapMask));
-
-		half3 RT_SPECMO_OO;
-		if (!_SPECMODE)
-		{
-			RT_SPECMO_OO = (float3)1.0;
-		}
-		else
-		{
-			RT_SPECMO_OO = (float3)0.0;
-		}
-
-		float3 MCapOutP = lerp(RT_SPECMO_OO, lerp(RT_SPECMO_OO, _MatCap_var.rgb, _MCapIntensity), _MCapMask_var.rgb);
+		float3 MCapOutP = lerp(lerp((float3)1.0, (float3)0.0, _SPECMODE), lerp(lerp((float3)1.0, (float3)0.0, _SPECMODE), _MatCap_var.rgb, _MCapIntensity), _MCapMask_var.rgb);
 
 		return MCapOutP;
 
@@ -192,36 +188,7 @@ half3 RT_MCAP_SUB1(half3 MCapOutP, half4 _MainTex_var, half3 _RTD_MVCOL, out hal
 {
 	#if N_F_MC_ON 
 
-		half3 RT_SPECMO_OO;
-		if (!_SPECMODE)
-		{
-			RT_SPECMO_OO = (_MainColor.rgb * _MaiColPo) * MCapOutP;
-		}
-		else
-		{
-			RT_SPECMO_OO = (_MainColor.rgb * _MaiColPo) + (MCapOutP * _SPECIN);
-		}
-
-		half3 RT_SPECMO_OO_2;
-		if (!_SPECMODE)
-		{
-			RT_SPECMO_OO_2 = MCapOutP;
-		}
-		else
-		{
-			RT_SPECMO_OO_2 = MCapOutP * _SPECIN;
-		}
-
-		half3 SPECMode_Sel;
-		if (!_MCIALO)
-		{
-			SPECMode_Sel = RT_SPECMO_OO;
-		}
-		else
-		{
-			SPECMode_Sel = RT_SPECMO_OO_2;
-		}
-
+		half3 SPECMode_Sel = lerp(lerp(((_MainColor.rgb * _MaiColPo) * MCapOutP), ((_MainColor.rgb * _MaiColPo) + (MCapOutP * _SPECIN)), _SPECMODE), lerp((MCapOutP), ((MCapOutP * _SPECIN)), _SPECMODE), _MCIALO);
 		RTD_TEX_COL = _MainTex_var.rgb * SPECMode_Sel * _RTD_MVCOL;
 
 		half3 RTD_MCIALO_IL = RTD_TEX_COL;
@@ -231,16 +198,7 @@ half3 RT_MCAP_SUB1(half3 MCapOutP, half4 _MainTex_var, half3 _RTD_MVCOL, out hal
 	#else
 
 		RTD_TEX_COL = _MainTex_var.rgb * (_MainColor.rgb * _MaiColPo) * MCapOutP * _RTD_MVCOL;
-
-		half3 RTD_MCIALO_IL;
-		if (!_MCIALO)
-		{
-			RTD_MCIALO_IL = RTD_TEX_COL;
-		}
-		else
-		{
-			RTD_MCIALO_IL = _MainTex_var.rgb * MCapOutP * _RTD_MVCOL;
-		}
+		half3 RTD_MCIALO_IL = lerp(RTD_TEX_COL, _MainTex_var.rgb * MCapOutP * _RTD_MVCOL, _MCIALO);
 
 		return RTD_MCIALO_IL;
 
@@ -253,35 +211,13 @@ void RT_TRANS_CO( float2 uv , half4 _MainTex_var , out half RTD_TRAN_OPA_Sli , h
 {
 
 	RTD_TRAN_OPA_Sli = 1.0;
-	GLO_OUT = (half3)0.0;
 
 	#if N_F_TRANS_ON
 
 		#if N_F_CO_ON
 
 			half4 _SecondaryCutout_var = SAMPLE_TEXTURE2D(_SecondaryCutout, sampler_SecondaryCutout ,TRANSFORM_TEX(uv,_SecondaryCutout));
-
-			half RT_USSECCUT_OO;
-			if (!_UseSecondaryCutout)
-			{
-				RT_USSECCUT_OO = _MainTex_var.r * _SecondaryCutout_var.r;
-			}
-			else
-			{
-				RT_USSECCUT_OO = _SecondaryCutout_var.r;
-			}
-
-			half RT_USSECCUT_OO_2;
-			if (!_UseSecondaryCutout)
-			{
-				RT_USSECCUT_OO_2 = _MainTex_var.a * _SecondaryCutout_var.r;
-			}
-			else
-			{
-				RT_USSECCUT_OO_2 = _SecondaryCutout_var.a;
-			}
-
-			half RTD_CO_ON = (half)lerp((RT_USSECCUT_OO + lerp(0.5, (-1.0), _Cutout)), saturate(((1.0 - _Cutout) > 0.5 ? (1.0 - (1.0 - 2.0 * ((1.0 - _Cutout) - 0.5)) * ( 1.0 - RT_USSECCUT_OO_2)) : (2.0 * (1.0 - _Cutout) * RT_USSECCUT_OO_2))), _AlphaBaseCutout);
+			half RTD_CO_ON = (half)lerp((lerp((_MainTex_var.r * _SecondaryCutout_var.r), _SecondaryCutout_var.r, _UseSecondaryCutout) + lerp(0.5, (-1.0), _Cutout)), saturate(((1.0 - _Cutout) > 0.5 ? (1.0 - (1.0 - 2.0 * ((1.0 - _Cutout) - 0.5)) * (1.0 - lerp((_MainTex_var.a * _SecondaryCutout_var.r), _SecondaryCutout_var.a, _UseSecondaryCutout))) : (2.0 * (1.0 - _Cutout) * lerp((_MainTex_var.a * _SecondaryCutout_var.r), _SecondaryCutout_var.a, _UseSecondaryCutout)))), _AlphaBaseCutout);
 			RTD_CO = RTD_CO_ON;
 
 			//GLOW
@@ -325,28 +261,7 @@ void RT_CO(float2 uv, half4 _MainTex_var)
 		#if N_F_CO_ON
 
 			half4 _SecondaryCutout_var = SAMPLE_TEXTURE2D(_SecondaryCutout, sampler_SecondaryCutout, TRANSFORM_TEX(uv, _SecondaryCutout));
-
-			half RT_USSECCUT_OO;
-			if (!_UseSecondaryCutout)
-			{
-				RT_USSECCUT_OO = _MainTex_var.r * _SecondaryCutout_var.r;
-			}
-			else
-			{
-				RT_USSECCUT_OO = _SecondaryCutout_var.r;
-			}
-
-			half RT_USSECCUT_OO_2;
-			if (!_UseSecondaryCutout)
-			{
-				RT_USSECCUT_OO_2 = _MainTex_var.a * _SecondaryCutout_var.r;
-			}
-			else
-			{
-				RT_USSECCUT_OO_2 = _SecondaryCutout_var.a;
-			}
-
-			half RTD_CO_ON = (half)lerp(( RT_USSECCUT_OO + lerp(0.5, (-1.0), _Cutout)), saturate(((1.0 - _Cutout) > 0.5 ? (1.0 - (1.0 - 2.0 * ((1.0 - _Cutout) - 0.5)) * (1.0 - RT_USSECCUT_OO_2 )) : (2.0 * (1.0 - _Cutout) * RT_USSECCUT_OO_2 ))), _AlphaBaseCutout);
+			half RTD_CO_ON = (half)lerp((lerp((_MainTex_var.r * _SecondaryCutout_var.r), _SecondaryCutout_var.r, _UseSecondaryCutout) + lerp(0.5, (-1.0), _Cutout)), saturate(((1.0 - _Cutout) > 0.5 ? (1.0 - (1.0 - 2.0 * ((1.0 - _Cutout) - 0.5)) * (1.0 - lerp((_MainTex_var.a * _SecondaryCutout_var.r), _SecondaryCutout_var.a, _UseSecondaryCutout))) : (2.0 * (1.0 - _Cutout) * lerp((_MainTex_var.a * _SecondaryCutout_var.r), _SecondaryCutout_var.a, _UseSecondaryCutout)))), _AlphaBaseCutout);
 
 			clip(RTD_CO_ON - 0.5);
 
@@ -363,28 +278,11 @@ float3 RT_SON(float4 vertexColor, float3 calNorm, float3 normalDirection, out fl
 
 #if N_F_SON_ON
 
-	float RTD_SON_VCBCSON_OO;
-	if (!_VertexColorRedControlSmoothObjectNormal)
-	{
-		RTD_SON_VCBCSON_OO = _SmoothObjectNormal;
-	}
-	else
-	{
-		RTD_SON_VCBCSON_OO = _SmoothObjectNormal * (1.0 - vertexColor.r);
-	}
+	float RTD_SON_VCBCSON_OO = lerp(_SmoothObjectNormal, (_SmoothObjectNormal * (1.0 - vertexColor.r)), _VertexColorRedControlSmoothObjectNormal);
 
 	float3 RTD_SON_ON_OTHERS = lerp(normalDirection, TransformObjectToWorldNormal(-calNorm), RTD_SON_VCBCSON_OO);
 
-	float3 RTD_SNorm_OO;
-	if (!_ShowNormal)
-	{
-		RTD_SNorm_OO = (float3)1.0;
-	}
-	else
-	{
-		RTD_SNorm_OO = smoothstep(0.0, 0.01, RTD_SON_ON_OTHERS);
-	}
-
+	float3 RTD_SNorm_OO = lerp(1, smoothstep(0.0, 0.01, RTD_SON_ON_OTHERS), _ShowNormal);
 	RTD_SON_CHE_1 = RTD_SNorm_OO;
 
 	float3 RTD_SON = RTD_SON_ON_OTHERS;
@@ -409,18 +307,7 @@ float3 RT_RELGI( float3 RTD_SON )
 	#if N_F_RELGI_ON
 
 		half3 RTD_GI_ST_Sli = (RTD_SON*_GIShadeThreshold);
-
-		half3 RTD_GI_FS_OO;
-		if (!_GIFlatShade)
-		{
-			RTD_GI_FS_OO = RTD_GI_ST_Sli;
-		}
-		else
-		{
-	        RTD_GI_FS_OO = half3(smoothstep(0.0, 0.01, RTD_SON.r * _GIShadeThreshold), 0.0, smoothstep(0.0, 0.01, RTD_SON.b * _GIShadeThreshold));
-			//RTD_GI_FS_OO = half3(smoothstep(float2(0.0, 0.0), float2(0.01, 0.01), (RTD_SON.rb * _GIShadeThreshold)), 0.0); //old
-		}
-
+		half3 RTD_GI_FS_OO = lerp( RTD_GI_ST_Sli, half3(smoothstep( float2(0.0,0.0), float2(0.01,0.01), (RTD_SON.rb*_GIShadeThreshold) ),0.0), _GIFlatShade );
 
 		return RTD_GI_FS_OO;
 
@@ -445,17 +332,7 @@ half3 RT_SCT( float2 uv , half3 RTD_MCIALO_IL )
 			half4 _ShadowColorTexture_var = SAMPLE_TEXTURE2D(_ShadowColorTexture, sampler_ShadowColorTexture ,TRANSFORM_TEX(uv,_ShadowColorTexture)); 
 			half3 RTD_SCT_ON = lerp(_ShadowColorTexture_var.rgb,(_ShadowColorTexture_var.rgb*_ShadowColorTexture_var.rgb),_ShadowColorTexturePower);
 
-			half3 RT_MCIALO_OO;
-			if (!_MCIALO)
-			{
-				RT_MCIALO_OO = (_MainColor.rgb * _MaiColPo);
-			}
-			else
-			{
-				RT_MCIALO_OO = (half3)1.0;
-			}
-
-			half3 RTD_SCT = RTD_SCT_ON * RT_MCIALO_OO;
+			half3 RTD_SCT = RTD_SCT_ON * lerp((_MainColor.rgb * _MaiColPo),1.0,_MCIALO);
 
 			return RTD_SCT;
             
@@ -522,16 +399,7 @@ float3 RT_CLD( float3 lightDirection )
 
 		#if N_F_CLD_ON
 
-			float3 RTD_CLD_CLDFOR_OO;
-			if (!_CustomLightDirectionFollowObjectRotation)
-			{
-				RTD_CLD_CLDFOR_OO = _CustomLightDirection.xyz;
-			}
-			else
-			{
-				RTD_CLD_CLDFOR_OO = mul(unity_ObjectToWorld, float4(_CustomLightDirection.xyz, 0.0)).xyz;
-			}
-			
+			float3 RTD_CLD_CLDFOR_OO = lerp(_CustomLightDirection.rgb, mul(unity_ObjectToWorld, float4(_CustomLightDirection.rgb, 0.0)).xyz, _CustomLightDirectionFollowObjectRotation);
 			float3 RTD_CLD_CLDI_Sli = lerp(lightDirection,RTD_CLD_CLDFOR_OO,_CustomLightDirectionIntensity); 
 			float3 RTD_CLD = RTD_CLD_CLDI_Sli;
 
@@ -574,28 +442,10 @@ void RT_GLO( float2 uv , float2 RTD_VD_Cal , float3 halfDirection , float3 norma
 					float2 _5992_piv = float2(0.5,0.5);
 				//#endif
 
-					half3 RTD_GT_FL_Sli;
-					if (!_GlossTextureFollowLight)
-					{
-						RTD_GT_FL_Sli = viewDirection;
-					}
-					else
-					{
-						RTD_GT_FL_Sli = halfDirection;
-					}
-
+					half3 RTD_GT_FL_Sli = lerp(viewDirection,halfDirection,_GlossTextureFollowLight);
 					half3 RefGlo = reflect(RTD_GT_FL_Sli,normalDirection);
 
-					half3 RTD_GT_FOR_OO;
-					if (!_GlossTextureFollowObjectRotation)
-					{
-						RTD_GT_FOR_OO = RefGlo;
-					}
-					else
-					{
-						RTD_GT_FOR_OO = mul(unity_WorldToObject, float4(RefGlo, 0.0)).xyz;
-					}
-
+					half3 RTD_GT_FOR_OO = lerp(RefGlo, mul( unity_WorldToObject, float4(RefGlo,0.0) ).xyz, _GlossTextureFollowObjectRotation );
 
 				//#ifndef SHADER_API_MOBILE
 					half2 glot_rot_cal = (mul(float2((-1* RTD_GT_FOR_OO.r), RTD_GT_FOR_OO.g)-_5992_piv,float2x2( _5992_cos, -_5992_sin, _5992_sin, _5992_cos))+_5992_piv);
@@ -605,17 +455,7 @@ void RT_GLO( float2 uv , float2 RTD_VD_Cal , float3 halfDirection , float3 norma
 				//#ifdef SHADER_API_MOBILE
 					//half4 _GlossTexture_var = SAMPLE_TEXTURE2D_LOD(_GlossTexture, sampler_GlossTexture, TRANSFORM_TEX(lerp((float2((-1 * RefGlo.r), RefGlo.g) * 0.5 + 0.5), RTD_VD_Cal, _PSGLOTEX), _GlossTexture), _GlossTextureSoftness);
 				//#else
-					half2 PSGLOTEX_Sel;
-					if (!_PSGLOTEX)
-					{
-						PSGLOTEX_Sel = glot_rot_out;
-					}
-					else
-					{
-						PSGLOTEX_Sel = RTD_VD_Cal;
-					}
-
-					half4 _GlossTexture_var = SAMPLE_TEXTURE2D_LOD(_GlossTexture, sampler_GlossTexture, TRANSFORM_TEX(PSGLOTEX_Sel, _GlossTexture), _GlossTextureSoftness);
+					half4 _GlossTexture_var = SAMPLE_TEXTURE2D_LOD(_GlossTexture, sampler_GlossTexture, TRANSFORM_TEX(lerp(glot_rot_out, RTD_VD_Cal, _PSGLOTEX), _GlossTexture), _GlossTextureSoftness);
 				//#endif
 
 				half RTD_GT_ON = _GlossTexture_var.r;
@@ -677,17 +517,7 @@ half RT_RL(float3 viewDirection , float3 normalDirection , half3 lightColor , ou
 			_RimLightColor = float4(LinearToGamma22(_RimLightColor.rgb), _RimLightColor.a);
 		#endif
 
-		half3 RT_LARLC_OO;
-		if (!_LightAffectRimLightColor)
-		{
-			RT_LARLC_OO = _RimLightColor.rgb;
-		}
-		else
-		{
-			RT_LARLC_OO = lerp(half3(0.0, 0.0, 0.0), _RimLightColor.rgb, lightColor);
-		}
-
-		RTD_RL_LARL_OO = RT_LARLC_OO * _RimLightColorPower;
+		RTD_RL_LARL_OO = lerp( _RimLightColor.rgb, lerp(half3(0.0,0.0,0.0),_RimLightColor.rgb,lightColor), _LightAffectRimLightColor ) * _RimLightColorPower;
 		//
 
 
@@ -713,7 +543,7 @@ half RT_RL(float3 viewDirection , float3 normalDirection , half3 lightColor , ou
 }
 
 //RT_ST
-half RT_ST ( float2 uv , half RTD_NDOTL, half attenuation , half RTD_LVLC , half3 RTD_PT_COL , half3 lightColint , half3 RTD_SCT , half3 RTD_OSC , half RTD_PT , out half3 RTD_SHAT_COL , out half RTD_STIAL , out half RTD_ST_IS , out half3 RTD_ST_LAF)
+half RT_ST ( float2 uv , float3 RTD_NDOTL, half attenuation , half RTD_LVLC , half3 RTD_PT_COL , half3 lightColint , half3 RTD_SCT , half3 RTD_OSC , half RTD_PT , out half3 RTD_SHAT_COL , out half RTD_STIAL , out half RTD_ST_IS , out half3 RTD_ST_LAF)
 {
 
 	#ifndef N_F_OFLMB_ON
@@ -731,14 +561,7 @@ half RT_ST ( float2 uv , half RTD_NDOTL, half attenuation , half RTD_LVLC , half
 			RTD_SHAT_COL = lerp( RTD_PT_COL, (_ShadowTColor.rgb*_ShadowTColorPower) * RTD_SCT * RTD_OSC, RTD_PT);
 			//
 
-			if (!_LightAffectShadow)
-			{
-				RTD_ST_LAF = RTD_SHAT_COL * RTD_LVLC;
-			}
-			else
-			{
-				RTD_ST_LAF = RTD_SHAT_COL * lightColint;
-			}
+			RTD_ST_LAF = lerp( RTD_SHAT_COL * RTD_LVLC, (RTD_SHAT_COL * lightColint) , _LightAffectShadow );
 
 			half RTD_ST_H_Sli = lerp(0.0,0.22,_ShadowTHardness);
 
@@ -767,26 +590,7 @@ half RT_ST ( float2 uv , half RTD_NDOTL, half attenuation , half RTD_LVLC , half
             
 			#endif
 
-			half RT_LFOAST_OO;
-			if (!_TexturePatternStyle)
-			{
-				RT_LFOAST_OO = RTD_NDOTL;
-			}
-			else
-			{
-				RT_LFOAST_OO = attenuation * RTD_NDOTL;
-			}
-
-			half RTD_ST_LFAST_OO;
-			if (!_STIL)
-			{
-				RTD_ST_LFAST_OO = RT_LFOAST_OO;
-			}
-			else
-			{
-				RTD_ST_LFAST_OO = 1.0;
-			}
-
+			half RTD_ST_LFAST_OO = (half)lerp(lerp( RTD_NDOTL, (attenuation*RTD_NDOTL), _LightFalloffAffectShadowT ) , 1.0 , _STIL );
 			half RTD_ST_In_Sli = lerp( 1.0 ,smoothstep( RTD_ST_H_Sli, 0.22, ((_ShadowT_var.r*(1.0 - _ShadowTShadowThreshold))*(RTD_ST_LFAST_OO *_ShadowTLightThreshold*0.01)) ),_ShadowTIntensity);
 			half RTD_ST_ON = RTD_ST_In_Sli;
 
@@ -831,15 +635,7 @@ half RT_SS( float4 vertexColor , float3 RTD_NDOTL , half attenuation , float dim
 			half RTD_SS_SSH_Sil = lerp(0.3,1.0,_SelfShadowHardness);
 			half RTD_SS_SSTH_Sli = lerp(-1.0, 1.0, _SelfShadowThreshold);
 
-			half RTD_SS_VCGCSSS_OO;
-			if (!_VertexColorGreenControlSelfShadowThreshold)
-			{
-				RTD_SS_VCGCSSS_OO = RTD_SS_SSTH_Sli;
-			}
-			else
-			{
-				RTD_SS_VCGCSSS_OO = RTD_SS_SSTH_Sli * (1.0 - vertexColor.g);
-			}
+			half RTD_SS_VCGCSSS_OO = lerp( RTD_SS_SSTH_Sli, (RTD_SS_SSTH_Sli*(1.0 - vertexColor.g)), _VertexColorGreenControlSelfShadowThreshold);
 
 			half RTD_SS_SST = smoothstep( RTD_SS_SSH_Sil, 1.0, ((float)RTD_NDOTL * lerp(7.0, RTD_SS_VCGCSSS_OO ,RTD_SS_SSTH_Sli)) );
 			half RTD_SS_SSABLSS_OO = lerp( RTD_SS_SST, lerp(RTD_SS_SST,1.0, (1.0 - dim_val)  ), _SelfShadowAffectedByLightShadowStrength );
@@ -913,12 +709,12 @@ half3 RT_RELGI_SUB1(float2 uv, half3 RTD_GI_FS_OO , half3 RTD_SHAT_COL , half3 R
 }
 //
 
-half3 RT_R( float2 uv , float3 viewReflectDirection , float3 viewDirection , float3 normalDirection , half3 RTD_TEX_COL , half3 RTD_R_OFF_OTHERS, float3 positionWS)
+half3 RT_R( float2 uv , float3 viewReflectDirection , float3 viewDirection , float3 normalDirection , half3 RTD_TEX_COL , half3 RTD_R_OFF_OTHERS )
 {
 
 	#if N_F_R_ON
 
-	half3 RTD_FR_OFF_OTHERS = GlossyEnvironmentReflection(viewReflectDirection, positionWS, _ReflectionRoughtness, 1.0);
+		half3 RTD_FR_OFF_OTHERS = Ref(viewReflectDirection, _ReflectionRoughtness);
 
 		#if N_F_FR_ON
             
@@ -961,16 +757,7 @@ half3 RT_SL( float2 uv , half3 RTD_SL_OFF_OTHERS , half3 RTD_TEX_COL , half3 RTD
 
 	#if N_F_SL_ON
 
-		half3 RTD_SL_HC_OO;
-		if (!_SelfLitHighContrast)
-		{
-			RTD_SL_HC_OO = (half3)1.0;
-		}
-		else
-		{
-			RTD_SL_HC_OO = RTD_TEX_COL;
-		}
-
+        half3 RTD_SL_HC_OO = lerp( (half3)1.0, RTD_TEX_COL, _SelfLitHighContrast );
 		float4 _MaskSelfLit_var = SAMPLE_TEXTURE2D(_MaskSelfLit, sampler_MaskSelfLit ,TRANSFORM_TEX(uv, _MaskSelfLit)); 
 
 
@@ -1011,18 +798,7 @@ half3 RT_RL_SUB1(half3 RTD_SL_CHE_1 , half3 RTD_RL_LARL_OO , half3 RTD_RL_MAIN)
 	#if N_F_RL_ON
 
 		#ifndef N_F_OFLMB_ON
-			half3 RT_RLIL_OO;
-			if (!_RimLightInLight)
-			{
-				RT_RLIL_OO = lerp(RTD_SL_CHE_1, RTD_RL_LARL_OO, RTD_RL_MAIN);
-			}
-			else
-			{
-				RT_RLIL_OO = RTD_SL_CHE_1;
-			}
-
-			half3 RTD_RL_ON = lerp(RTD_SL_CHE_1, RT_RLIL_OO, _RimLigInt);
-
+			half3 RTD_RL_ON = lerp(RTD_SL_CHE_1 ,lerp( (lerp(RTD_SL_CHE_1, RTD_RL_LARL_OO, RTD_RL_MAIN) ), RTD_SL_CHE_1, _RimLightInLight) , _RimLigInt);
 		#else
 			half3 RTD_RL_ON = lerp(RTD_SL_CHE_1, lerp(RTD_SL_CHE_1, RTD_RL_LARL_OO, RTD_RL_MAIN), _RimLigInt);
 		#endif
@@ -1064,17 +840,6 @@ half3 RT_CA( half3 color )
 }
 //
 
-//RT_DC
-void RT_DC(float4 positionCS, inout half4 _MainTex_var, inout half3 normalWS)
-{
-	half3 specular = 0;
-	half metallic = 0;
-	half occlusion = 0;
-	half smoothness = 0;
-	ApplyDecal(positionCS, _MainTex_var.rgb, specular, normalWS, metallic, occlusion, smoothness);
-}
-//
-
 //RT_SSAO
 half3 RT_SSAO(float4 positionCS)
 {
@@ -1091,27 +856,44 @@ half3 RT_SSAO(float4 positionCS)
 	#else
 		return 1.0;
 	#endif
-
 }
 //
 
 //RT_NFD
 void RT_NFD(float4 positionCS)
 {
-#if UNITY_UV_STARTS_AT_TOP
-	float2 PixelPositions = float2(positionCS.x, (_ProjectionParams.x < 0) ? (_ScaledScreenParams.y - positionCS.y) : positionCS.y);
-#else
-	float2 PixelPositions = float2(positionCS.x, (_ProjectionParams.x > 0) ? (_ScaledScreenParams.y - positionCS.y) : positionCS.y);
-#endif
+	#if UNITY_UV_STARTS_AT_TOP
+		float2 PixelPositions = float2(positionCS.x, (_ProjectionParams.x < 0) ? (_ScaledScreenParams.y - positionCS.y) : positionCS.y);
+	#else
+		float2 PixelPositions = float2(positionCS.x, (_ProjectionParams.x > 0) ? (_ScaledScreenParams.y - positionCS.y) : positionCS.y);
+	#endif
 
 	float2 NDCPositions;
 	NDCPositions = PixelPositions.xy / _ScaledScreenParams.xy;
 	NDCPositions.y = 1.0f - NDCPositions.y;
-
+        
 	float dither_out;
 	Dither_Float(1.3, float4(NDCPositions.xy, 0, 0), dither_out);
 	float dit;
-	Remap_Float(distance(_WorldSpaceCameraPos, UNITY_MATRIX_M._m03_m13_m23), float2(_MinFadDistance, _MaxFadDistance), float2 (0, 1), dit);
+	Remap_Float( distance(_WorldSpaceCameraPos, UNITY_MATRIX_M._m03_m13_m23) , float2(_MinFadDistance, _MaxFadDistance), float2 (0, 1), dit );
 	clip(-(dither_out - dit));
 }
 //
+
+half RT_DIT(float4 positionCS)
+{
+	#if UNITY_UV_STARTS_AT_TOP
+		float2 PixelPositions = float2(positionCS.x, (_ProjectionParams.x < 0) ? (_ScaledScreenParams.y - positionCS.y) : positionCS.y);
+	#else
+		float2 PixelPositions = float2(positionCS.x, (_ProjectionParams.x > 0) ? (_ScaledScreenParams.y - positionCS.y) : positionCS.y);
+	#endif
+
+	float2 NDCPositions;
+	NDCPositions = PixelPositions.xy / _ScaledScreenParams.xy;
+	NDCPositions.y = 1.0f - NDCPositions.y;
+        
+	float dither_out;
+	Dither_Float(1.3, float4(NDCPositions.xy, 0, 0), dither_out);
+
+	return dither_out;
+}
