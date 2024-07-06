@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: SuperSimpleSkybox
+  m_Name: SuperSimpleSkybox 1
   m_Shader: {fileID: -6465566751694194690, guid: 99260826d72a8d543981d52b92aa0b53,
     type: 3}
   m_ValidKeywords: []
@@ -55,7 +55,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _CloudTexture:
-        m_Texture: {fileID: 2800000, guid: ae31cadacee8cb94b933df7e3b17cbc8, type: 3}
+        m_Texture: {fileID: 2800000, guid: 8acc449dfb500904eaa05c75ff220196, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DetailAlbedoMap:
@@ -182,10 +182,10 @@ Material:
     - _BumpScale: 1
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
-    - _CloudFalloff: 0.313
+    - _CloudFalloff: 0.4
     - _CloudOpacity: 1
-    - _CloudSharpness: 0.8
-    - _Cloudiness: 0.282
+    - _CloudSharpness: 1
+    - _Cloudiness: 0.4
     - _Clouds_Enabled: 1
     - _ColorBlend: 0.5
     - _Constant_Color_Mode: 0
@@ -198,11 +198,11 @@ Material:
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
-    - _GroundEnabled: 1
+    - _GroundEnabled: 0
     - _GroundFadeAmount: 0.02
     - _Ground_Fade: -0.01
-    - _Ground_Height: -1
-    - _HorizonSaturationAmount: 0.894
+    - _Ground_Height: -0.02
+    - _HorizonSaturationAmount: 0.781
     - _HorizonSaturationFalloff: 4.45
     - _Metallic: 0
     - _MoonAngularDiameter: 2
@@ -215,8 +215,8 @@ Material:
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _SSS_CLOUD_OPACITY: 0.8
-    - _Shading_Intensity: 0.8
-    - _SkyColorBlend: 0.572
+    - _Shading_Intensity: 1
+    - _SkyColorBlend: 1.5
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
@@ -278,17 +278,17 @@ Material:
     - Vector2_0b65553d60624b139dec448bc178e727: {r: -1, g: -0.2, b: 0, a: 0}
     - Vector2_e2851918c56a42e886f043f816a05d48: {r: 3, g: 2, b: 0, a: 0}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _CloudColorDay: {r: 0.8415806, g: 0.8674226, b: 0.9056604, a: 1}
+    - _CloudColorDay: {r: 1, g: 1, b: 1, a: 1}
     - _CloudColorNight: {r: 0.49056602, g: 0.38180846, b: 0.43443307, a: 1}
     - _CloudScale: {r: 2, g: 1, b: 0, a: 0}
     - _CloudWindSpeed: {r: -0.2, g: 0.3, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _GroundColor: {r: 0.028301895, g: 0.028301895, b: 0.026566401, a: 0}
-    - _HorizonColorDay: {r: 0.26637593, g: 0.5447223, b: 0.7735849, a: 1}
+    - _GroundColor: {r: 0, g: 0, b: 0, a: 0}
+    - _HorizonColorDay: {r: 0, g: 0.3573805, b: 0.6509434, a: 1}
     - _HorizonColorNight: {r: 0.025605002, g: 0.021300001, b: 0.05, a: 0}
     - _MoonColor: {r: 0.67058825, g: 0.7254902, b: 0.7490196, a: 0}
-    - _SkyColorDay: {r: 0.03244037, g: 0.07068158, b: 0.254717, a: 0}
+    - _SkyColorDay: {r: 0.06749133, g: 0.16494055, b: 0.6132076, a: 0}
     - _SkyColorNight: {r: 0.01, g: 0.002216981, b: 0.01, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _Star_Texture_Tint: {r: 1, g: 1, b: 1, a: 0}
