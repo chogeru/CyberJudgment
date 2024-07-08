@@ -2,7 +2,6 @@ using Cysharp.Threading.Tasks;
 using R3;
 using R3.Triggers;
 using UnityEngine;
-using UnityEngine.UIElements;
 using UnityEngine.InputSystem;
 using VInspector;
 
@@ -87,7 +86,7 @@ public class PlayerController : MonoBehaviour
         InitializeMovement().Forget();
         //アニメーションのバインド
         BindAnimations();
-
+        Cursor.visible = false;
     }
 
     // プレイヤーの動きを非同期的に初期化(現在メニュー画面と同期)
