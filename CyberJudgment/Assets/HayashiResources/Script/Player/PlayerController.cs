@@ -86,7 +86,7 @@ public class PlayerController : MonoBehaviour
         InitializeMovement().Forget();
         //アニメーションのバインド
         BindAnimations();
-        Cursor.visible = false;
+
     }
 
     // プレイヤーの動きを非同期的に初期化(現在メニュー画面と同期)
@@ -121,6 +121,7 @@ public class PlayerController : MonoBehaviour
     }
     void Update()
     {
+        Cursor.visible = false;
         //重力の適応
         UseGravity();
         // 段差登りを試みる

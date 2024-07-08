@@ -13,10 +13,8 @@ Material:
   - N_F_CA_ON
   - N_F_CO_ON
   - N_F_EAL_ON
-  - N_F_FR_ON
-  - N_F_HDLS_ON
+  - N_F_ESSAO_ON
   - N_F_MC_ON
-  - N_F_NLASOBF_ON
   - N_F_NM_ON
   - N_F_O_ON
   - N_F_RELGI_ON
@@ -25,25 +23,14 @@ Material:
   - N_F_SS_ON
   - N_F_TRANSAFFSHA_ON
   - N_F_TRANS_ON
-  - _ALPHATEST_ON
-  - _NORMALMAP
-  m_InvalidKeywords:
-  - L_F_O_ON
-  - L_F_RELGI_ON
-  - L_F_SS_ON
-  - MTOON_OUTLINE_COLOR_FIXED
-  - MTOON_OUTLINE_WIDTH_WORLD
-  - N_F_DCS_ON
-  - N_F_TRANSAFFSHA
-  - _N_F_NLASOBF
+  m_InvalidKeywords: []
   m_LightmapFlags: 0
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: 2450
   stringTagMap:
     RenderType: TransparentCutout
-  disabledShaderPasses:
-  - SHADOWCASTER
+  disabledShaderPasses: []
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -493,7 +480,7 @@ Material:
     - _EmissionParallaxDepth: 0
     - _EmissionUseGrad: 0
     - _EnableTextureTransparent: 0
-    - _EnvironmentalLightingIntensity: 1
+    - _EnvironmentalLightingIntensity: 1.5
     - _FReflectionIntensity: 0
     - _FReflectionRoughtness: 0
     - _FarDistanceMaxWidth: 10
@@ -653,19 +640,19 @@ Material:
     - _N_F_CLD: 0
     - _N_F_CO: 1
     - _N_F_COEDGL: 0
-    - _N_F_DCS: 1
+    - _N_F_DCS: 0
     - _N_F_DDMD: 0
     - _N_F_EAL: 1
-    - _N_F_ESSAO: 0
-    - _N_F_FR: 1
+    - _N_F_ESSAO: 1
+    - _N_F_FR: 0
     - _N_F_GLO: 0
     - _N_F_GLOT: 0
-    - _N_F_HDLS: 1
+    - _N_F_HDLS: 0
     - _N_F_HPSS: 0
     - _N_F_MC: 1
     - _N_F_MSSOLTFO: 0
     - _N_F_NFD: 0
-    - _N_F_NLASOBF: 1
+    - _N_F_NLASOBF: 0
     - _N_F_NM: 1
     - _N_F_O: 1
     - _N_F_OFLMB: 0
@@ -743,7 +730,7 @@ Material:
     - _RELG: 1
     - _ReceiveShadowRate: 1
     - _ReduceShadowPointLight: 0
-    - _ReduceShadowSpotDirectionalLight: 10
+    - _ReduceShadowSpotDirectionalLight: 0
     - _RefMetallic: 0
     - _RefVal: 0
     - _Reflectance: 0.04
@@ -769,7 +756,7 @@ Material:
     - _RimLift: 0.1
     - _RimLigInt: 0.1
     - _RimLightColorPower: 10
-    - _RimLightInLight: 1
+    - _RimLightInLight: 0
     - _RimLightSoftness: 1
     - _RimLightUnfill: 10
     - _RimLightingMix: 0
@@ -784,7 +771,7 @@ Material:
     - _SPECIN: 1
     - _SPECMODE: 0
     - _STIL: 0
-    - _Saturation: 1
+    - _Saturation: 1.5
     - _SelfLitHighContrast: 1
     - _SelfLitIntensity: 0
     - _SelfLitPower: 2
@@ -792,7 +779,7 @@ Material:
     - _SelfShadowColorPower: 1
     - _SelfShadowHardness: 0
     - _SelfShadowRealTimeShadowColorPower: 1
-    - _SelfShadowRealtimeShadowIntensity: 1
+    - _SelfShadowRealtimeShadowIntensity: 0.55
     - _SelfShadowShadowTAtViewDirection: 0
     - _SelfShadowThreshold: 0.8
     - _ShadeShift: 0
@@ -816,7 +803,7 @@ Material:
     - _ShadowEnvStrength: 0
     - _ShadowFlatBlur: 1
     - _ShadowFlatBorder: 1
-    - _ShadowHardness: 0
+    - _ShadowHardness: 1
     - _ShadowMainStrength: 0
     - _ShadowMaskType: 0
     - _ShadowNormalStrength: 1
@@ -999,7 +986,7 @@ Material:
     - _RimIndirColor: {r: 1, g: 1, b: 1, a: 1}
     - _RimLightColor: {r: 0.23584908, g: 0.23584908, b: 0.23584908, a: 1}
     - _RimShadeColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-    - _SSAOColor: {r: 0, g: 0, b: 0, a: 0}
+    - _SSAOColor: {r: 0.3962264, g: 0.3962264, b: 0.3962264, a: 0}
     - _SelfLitColor: {r: 1, g: 1, b: 1, a: 1}
     - _SelfShadowColor: {r: 1, g: 1, b: 1, a: 1}
     - _SelfShadowRealTimeShadowColor: {r: 1, g: 1, b: 1, a: 1}
