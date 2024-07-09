@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using SQLite4Unity3d;
 using UnityEngine.SceneManagement;
+using AbubuResouse.Log;
 
 public class BGMManager : MonoBehaviour
 {

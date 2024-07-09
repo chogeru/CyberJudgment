@@ -3,6 +3,7 @@ using UnityEngine.SceneManagement;
 using SQLite4Unity3d;
 using Cysharp.Threading.Tasks;
 using System;
+using AbubuResouse.Log;
 
 public class SEManager : MonoBehaviour
 {

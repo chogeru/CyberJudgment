@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using R3;
 using TMPro;
 using System.IO;
+using AbubuResouse.Log;
 
 public class AudioVolumeSetting : MonoBehaviour
 {
@@ -58,13 +59,13 @@ public class AudioVolumeSetting : MonoBehaviour
         if (volume <= 0)
         {
             m_AudioMixer.SetFloat(parameterName, -80f);
-            Debug.Log($"{parameterName}: -80dB (Minimum)");
+            DebugUtility.Log($"{parameterName}: -80dB (Minimum)");
         }
         else
         {
             float dB = Mathf.Log10(volume) * 20;
             m_AudioMixer.SetFloat(parameterName, dB);
-            Debug.Log($"{parameterName}: {dB}dB");
+            DebugUtility.Log($"{parameterName}: {dB}dB");
         }
     }
     private void LoadAudioSettings()
