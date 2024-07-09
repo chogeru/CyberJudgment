@@ -5,7 +5,7 @@ using Cysharp.Threading.Tasks;
 using System;
 using AbubuResouse.Log;
 
-public class SEManager : MonoBehaviour
+public class SEManager : SingletonMonoBehaviour<SEManager>
 {
     public static SEManager instance;
     private AudioSource audioSource;
@@ -13,17 +13,9 @@ public class SEManager : MonoBehaviour
     public SQLiteConnection connection;
 
     // シングルトンパターン
-    void Awake()
+    protected override void Awake()
     {
-        if (instance == null)
-        {
-            instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+        base.Awake();
 
         audioSource = GetComponent<AudioSource>();
         var databasePath = System.IO.Path.Combine(Application.streamingAssetsPath, "se_data.db").Replace("\\", "/");
@@ -40,7 +32,7 @@ public class SEManager : MonoBehaviour
         }
     }
 
-    public void PlaySound(string clipName)
+    public void PlaySound(string clipName,float volume)
     {
         try
         {
@@ -58,6 +50,7 @@ public class SEManager : MonoBehaviour
                 {
                     // サウンドを再生
                     audioSource.PlayOneShot(clip);
+                    audioSource.volume = volume;
                 }
                 else
                 {

@@ -14,31 +14,30 @@ public class SetBGM : MonoBehaviour
     private bool isRondomBGM;
     private void Start()
     {
-        if (BGMManager.instance != null)
+        if (BGMManager.Instance != null)
         {
-            BGMManager.instance.GetComponent<AudioSource>().clip = null;
-            if (m_BGMName != null)
+            BGMManager.Instance.GetComponent<AudioSource>().clip = null;
+            if (!string.IsNullOrEmpty(m_BGMName))
             {
-                BGMManager.instance.PlayBGM(m_BGMName, m_Volume);
+                BGMManager.Instance.PlayBGM(m_BGMName, m_Volume);
             }
         }
     }
 
     private void Update()
     {
-        if (BGMManager.instance != null)
+        if (BGMManager.Instance != null)
         {
             if (isRondomBGM)
             {
-                AudioSource audioSouce = BGMManager.instance.GetComponent<AudioSource>();
-                audioSouce.loop = false;
-                if (!audioSouce.isPlaying)
+                AudioSource audioSource = BGMManager.Instance.GetComponent<AudioSource>();
+                audioSource.loop = false;
+                if (!audioSource.isPlaying)
                 {
                     var index = Random.Range(0, m_RandomBGMNames.Length);
-                    BGMManager.instance.PlayBGM(m_RandomBGMNames[index], m_Volume);
+                    BGMManager.Instance.PlayBGM(m_RandomBGMNames[index], m_Volume);
                 }
             }
         }
-      
     }
 }

@@ -7,7 +7,7 @@ using SQLite4Unity3d;
 using UnityEngine.SceneManagement;
 using AbubuResouse.Log;
 
-public class BGMManager : MonoBehaviour
+public class BGMManager : SingletonMonoBehaviour<BGMManager>
 {
     public static BGMManager instance;
 
@@ -15,17 +15,9 @@ public class BGMManager : MonoBehaviour
     [SerializeField]
     public SQLiteConnection m_Connection;
     //シングルトンパターン
-    void Awake()
+    protected override void Awake()
     {
-        if (instance == null)
-        {
-            instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+        base.Awake();
 
         m_AudioSource = GetComponent<AudioSource>();
         //データベースのパスを設定
