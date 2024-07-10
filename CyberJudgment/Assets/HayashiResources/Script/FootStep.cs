@@ -5,16 +5,11 @@ using UnityEngine;
 
 public class FootStep : MonoBehaviour
 {
-    private EffectFootStepObjctPool m_EffectFootObjPool;
-
     [SerializeField, Header("足音の間隔")]
     private float m_FootStepTIme=0.05f;
     //経過時間
     private float m_ElapsedTime;
-    private void Start()
-    {
-        m_EffectFootObjPool = EffectFootStepObjctPool.Instance;
-    }
+
     private void Update()
     {
         m_ElapsedTime += Time.deltaTime;
@@ -31,7 +26,8 @@ public class FootStep : MonoBehaviour
 
     void GenerateFootstep()
     {
-        GameObject hitEffect = m_EffectFootObjPool.GetPooledObject();
+        SEManager.Instance.PlaySound("FootStep",0.3f);
+        GameObject hitEffect = EffectFootStepObjctPool.Instance.GetPooledObject();
         hitEffect.transform.position = transform.position;
         hitEffect.transform.rotation = Quaternion.identity;
         hitEffect.SetActive(true);

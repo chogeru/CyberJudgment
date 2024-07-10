@@ -43,6 +43,8 @@ public class PlayerController : MonoBehaviour
     public float m_JumpForce = 300f;
     [SerializeField, Header("重力係数")]
     private float m_GravityMultiplier = 9.81f;
+    [SerializeField, Header("最大落下速度")]
+    private float m_MaxFallSpeed = 50.0f;
     [EndTab]
     #endregion
 
@@ -69,6 +71,7 @@ public class PlayerController : MonoBehaviour
     [EndTab]
     #endregion
 
+    private bool isGrounded;
     //プレイヤーの行動状態を表すReactiveProperty
     private ReactiveProperty<bool> isIdle = new ReactiveProperty<bool>(true);
     private ReactiveProperty<bool> isWalk = new ReactiveProperty<bool>(false);
@@ -131,13 +134,22 @@ public class PlayerController : MonoBehaviour
     {
         // 重力の追加
         m_Rigidbody.AddForce(Physics.gravity * m_Rigidbody.mass * m_GravityMultiplier);
+
+        // 落下速度に最大値を設定
+        if (m_Rigidbody.velocity.y < -m_MaxFallSpeed)
+        {
+            m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, -m_MaxFallSpeed, m_Rigidbody.velocity.z);
+        }
+
+        // 地面に触れているかどうかを更新
+        isGrounded = IsGrounded();
     }
     void TryStepUp()
     {
         if (m_Rigidbody.velocity.magnitude < 0.1f)
             return;
         //プレイヤーの前方0.3の位置から、レイキャストを設定
-        Vector3 forward = transform.forward * 0.3f;
+        Vector3 forward = transform.forward * 0.35f;
         //レイキャスト開始点はカプセルの中心点より
         Vector3 rayStart = transform.position + forward + Vector3.up * m_CapsuleCollider.height * 0.5f;
         //カプセルコライダーの底まで
@@ -188,40 +200,60 @@ public class PlayerController : MonoBehaviour
             }).AddTo(this);
     }
     // プレイヤーを指定の速度で移動
+    // プレイヤーを指定の速度で移動
     public void Move(Vector3 movement, float speed)
     {
-
-        // カメラの前方方向を取得し、それを地面の平面にフラットにする
-        Vector3 forward = m_CameraTransform.forward;
-        forward.y = 0;
-        forward.Normalize();
-
-        // カメラの前方方向に基づいて右方向を計算する
-        Vector3 right = Vector3.Cross(Vector3.up, forward);
-
-        // カメラの水平回転に基づく相対的な移動方向を計算する
-        Vector3 relativeMovement = movement.z * forward + movement.x * right;
-
-
-        //移動している場合
-        if (movement != Vector3.zero)
+        // 地面に触れているときのみ移動
+        if (isGrounded)
         {
-            //ターゲットの回転を計算
-            Quaternion targetRotation = Quaternion.LookRotation(relativeMovement, Vector3.up);
-            //プレイヤーの現在の回転とターゲットの回転を補完
-            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * 10);
-            // 移動時の状態
-            UpdateState(false, !isRun.Value, isRun.Value);
-        }
-        else
-        {
-            //Idle状態に更新
-            UpdateState(true, false, false);
-        }
+            // カメラの前方方向を取得し、それを地面の平面にフラットにする
+            Vector3 forward = m_CameraTransform.forward;
+            forward.y = 0;
+            forward.Normalize();
 
-        //指定の方向に移動
-        m_Rigidbody.velocity = relativeMovement * speed;
+            // カメラの前方方向に基づいて右方向を計算する
+            Vector3 right = Vector3.Cross(Vector3.up, forward);
+
+            // カメラの水平回転に基づく相対的な移動方向を計算する
+            Vector3 relativeMovement = movement.z * forward + movement.x * right;
+
+            //移動している場合
+            if (movement != Vector3.zero)
+            {
+                //ターゲットの回転を計算
+                Quaternion targetRotation = Quaternion.LookRotation(relativeMovement, Vector3.up);
+                //プレイヤーの現在の回転とターゲットの回転を補完
+                transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * 10);
+                // 移動時の状態
+                UpdateState(false, !isRun.Value, isRun.Value);
+            }
+            else
+            {
+                //Idle状態に更新
+                UpdateState(true, false, false);
+            }
+
+            // 斜面や階段を登るための処理を追加
+            Vector3 velocity = relativeMovement * speed;
+            Vector3 start = transform.position + Vector3.up * 0.1f;
+            Vector3 end = start + relativeMovement.normalized * 0.5f;
+
+            if (Physics.Raycast(start, relativeMovement, out RaycastHit hit, 0.5f, m_LayerMask))
+            {
+                // ヒットした場合、斜面の角度を計算
+                float slopeAngle = Vector3.Angle(Vector3.up, hit.normal);
+                if (slopeAngle <= m_MaxStepHeight)
+                {
+                    // 斜面の角度が最大値以下なら、その方向に沿って上に移動
+                    velocity.y = Mathf.Tan(slopeAngle * Mathf.Deg2Rad) * speed;
+                }
+            }
+
+            //指定の方向に移動
+            m_Rigidbody.velocity = velocity;
+        }
     }
+
 
     // プレイヤーの状態を更新するメソッド
     private void UpdateState(bool idle, bool walk, bool run)
@@ -237,7 +269,7 @@ public class PlayerController : MonoBehaviour
         //レイキャストの開始地点をプレイヤーの少し上に設定
         Vector3 start = transform.position + Vector3.up * 0.1f;
         //終了地点を開始地点から下に0.5fの位置に
-        Vector3 end = start - Vector3.up * 0.5f;
+        Vector3 end = start - Vector3.up * 0.2f;
         //地面との衝突を確認
         bool isGrounded = Physics.Raycast(start, -Vector3.up, out RaycastHit hit, 0.5f);
 #if UNITY_EDITOR

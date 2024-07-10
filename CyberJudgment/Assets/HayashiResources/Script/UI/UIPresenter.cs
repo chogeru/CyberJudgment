@@ -2,7 +2,7 @@ using R3;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using AbubuResouse.UI;
-
+using AbubuResouse.Log;
 /// <summary>
 /// UIのプレゼンタークラス。UIの初期化と更新を管理するシングルトン
 /// </summary>
@@ -23,8 +23,11 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
         _model = new UIModel();
         _view = GetComponent<UIView>();
 
+        if (_view == null)
+        {
+            DebugUtility.LogError("UIView が見つからない");
+        }
         InitializeUI();
-        SetupSubscriptions();
     }
 
     /// <summary>
@@ -33,6 +36,7 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     /// </summary>
     private void Start()
     {
+        SetupSubscriptions();
         Observable.EveryUpdate()
             .Where(_ => Input.GetKeyDown(KeyCode.Escape))
             .Subscribe(_ => ToggleMenuUI())
@@ -70,6 +74,12 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     /// </summary>
     private void OpenMenuUI()
     {
+
+        if (SEManager.Instance == null || _view == null)
+        {
+            DebugUtility.LogError("SEManagerか_viewがnull");
+            return;
+        }
         SEManager.Instance.PlaySound("MenuOpenSE", 1.0f);
         _view.SetCursorVisibility(true);
         _view.SetMenuVisibility(false);
@@ -81,6 +91,11 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     /// </summary>
     private void CloseMenuUI()
     {
+        if (SEManager.Instance == null || _view == null)
+        {
+            DebugUtility.LogError("SEManagerか_viewがnull");
+            return;
+        }
         SEManager.Instance.PlaySound("MenuCloseSE", 1.0f);
         _view.SetCursorVisibility(false);
         _view.SetMenuVisibility(true);

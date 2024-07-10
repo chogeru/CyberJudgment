@@ -2,9 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EffectFootStepObjctPool : MonoBehaviour
+public class EffectFootStepObjctPool : SingletonMonoBehaviour<EffectFootStepObjctPool>
 {
-    public static EffectFootStepObjctPool Instance; // シングルトンインスタンス
 
     public GameObject effectPrefab; // エフェクトのPrefab
 
@@ -12,13 +11,9 @@ public class EffectFootStepObjctPool : MonoBehaviour
 
     private List<GameObject> pooledObjects = new List<GameObject>();
 
-    private void Awake()
+    protected override void Awake()
     {
-        if (Instance == null)
-            Instance = this;
-        else
-            Destroy(gameObject);
-
+        base.Awake();
         InitializePool();
     }
     private void Start()
