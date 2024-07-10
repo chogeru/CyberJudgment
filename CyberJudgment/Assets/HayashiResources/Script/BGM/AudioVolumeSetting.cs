@@ -96,7 +96,7 @@ public class AudioVolumeSetting : MonoBehaviour
     }
     private void UpdateVolumeText(TextMeshProUGUI text, float volume)
     {
-        text.text = volume.ToString("F2");
+        text.text = volume.ToString("F1");
     }
     [System.Serializable]
     private class AudioSettings
