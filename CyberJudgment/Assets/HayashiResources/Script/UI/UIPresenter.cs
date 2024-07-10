@@ -8,10 +8,11 @@ using AbubuResouse.Log;
 /// </summary>
 public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
 {
-    public static UIPresenter Instance;
-
     private UIModel _model;
     private UIView _view;
+
+    public bool IsMenuOpen => _model.IsMenuOpen.Value;
+    public string CurrentUIObject => _model.CurrentUIObject.Value;
 
     /// <summary>
     /// オブジェクトの初期化時に呼び出される
@@ -27,7 +28,7 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
         {
             DebugUtility.LogError("UIView が見つからない");
         }
-        InitializeUI();
+
     }
 
     /// <summary>
@@ -49,8 +50,15 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     /// </summary>
     private void InitializeUI()
     {
+        _model.IsCursorVisible.Value = false;
+        // メニューを開いた状態に設定
         _view.SetMenuVisibility(true);
         _view.SetSettingVisibility(false);
+        // ゲーム開始時にメニューUIを表示し、その他のUIを非アクティブにする
+        foreach (var linkedUI in _view.LinkedUIObjects)
+        {
+            linkedUI.SetActive(false);
+        }
     }
 
     /// <summary>
@@ -59,14 +67,71 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     private void SetupSubscriptions()
     {
         _model.IsMenuOpen
-            .Where(isOpen => isOpen)
-            .Subscribe(_ => OpenMenuUI())
-            .AddTo(this);
+       .Where(isOpen => isOpen)
+       .Subscribe(_ => OpenMenuUI())
+       .AddTo(this);
 
         _model.IsMenuOpen
             .Where(isOpen => !isOpen)
             .Subscribe(_ => CloseMenuUI())
             .AddTo(this);
+
+        _model.CurrentUIObject
+            .Where(uiObject => uiObject != "")
+            .Subscribe(uiObject => OpenLinkedUI(uiObject))
+            .AddTo(this);
+
+        _model.CurrentUIObject
+            .Where(uiObject => uiObject == "")
+            .Subscribe(_ => CloseLinkedUI())
+            .AddTo(this);
+
+        _model.IsCursorVisible
+            .Subscribe(isVisible => _view.SetCursorVisibility(isVisible))
+            .AddTo(this);
+
+        // UIを初期化
+        InitializeUI();
+    }
+
+    /// <summary>
+    /// 指定されたリンクされたUIオブジェクトを開く
+    /// </summary>
+    private void OpenLinkedUI(string uiObject)
+    {
+        int index = int.Parse(uiObject);
+        _view.SetSettingVisibility(false);
+        _view.SetLinkedUIVisibility(index, true);
+        _model.IsCursorVisible.Value = true;
+
+        // SEを再生
+        SEManager.Instance?.PlaySound("OpenLinkedUISE", 1.0f);
+    }
+
+    /// <summary>
+    /// すべてのリンクされたUIオブジェクトを閉じる
+    /// </summary>
+    private void CloseLinkedUI()
+    {
+        for (int i = 0; i < _view.LinkedUIObjects.Length; i++)
+        {
+            _view.SetLinkedUIVisibility(i, false);
+        }
+        _view.SetSettingVisibility(true);
+        _model.IsCursorVisible.Value = true;
+
+        // SEを再生
+        SEManager.Instance?.PlaySound("CloseLinkedUISE", 1.0f);
+    }
+
+    public void ShowLinkedUI(int index)
+    {
+        _model.CurrentUIObject.Value = index.ToString();
+    }
+
+    public void ShowSettingUI()
+    {
+        _model.CurrentUIObject.Value = "";
     }
 
     /// <summary>
@@ -74,14 +139,13 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     /// </summary>
     private void OpenMenuUI()
     {
-
         if (SEManager.Instance == null || _view == null)
         {
             DebugUtility.LogError("SEManagerか_viewがnull");
             return;
         }
         SEManager.Instance.PlaySound("MenuOpenSE", 1.0f);
-        _view.SetCursorVisibility(true);
+        _model.IsCursorVisible.Value = true;
         _view.SetMenuVisibility(false);
         _view.SetSettingVisibility(true);
     }
@@ -97,7 +161,7 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
             return;
         }
         SEManager.Instance.PlaySound("MenuCloseSE", 1.0f);
-        _view.SetCursorVisibility(false);
+        _model.IsCursorVisible.Value = false;
         _view.SetMenuVisibility(true);
         _view.SetSettingVisibility(false);
     }
@@ -108,5 +172,17 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     public void ToggleMenuUI()
     {
         _model.IsMenuOpen.Value = !_model.IsMenuOpen.Value;
+
+        // ESCキーを押したら基本的にメニュー以外すべてのUIを非表示にする
+        if (!_model.IsMenuOpen.Value)
+        {
+            _model.CurrentUIObject.Value = "";
+            _view.SetSettingVisibility(false);
+            _model.IsCursorVisible.Value = false;
+            for (int i = 0; i < _view.LinkedUIObjects.Length; i++)
+            {
+                _view.SetLinkedUIVisibility(i, false);
+            }
+        }
     }
 }

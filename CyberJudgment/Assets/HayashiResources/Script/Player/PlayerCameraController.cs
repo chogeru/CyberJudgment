@@ -39,6 +39,7 @@ public class PlayerCameraController : MonoBehaviour
     //ズーム動作の速度
     private float m_ZoomVelocity = 0.0f;
 
+    private UIPresenter _uiPresenter;
     void Start()
     {
         m_MainCamera = GetComponent<Camera>();
@@ -46,10 +47,18 @@ public class PlayerCameraController : MonoBehaviour
         m_CurrentDistance = m_Offset.magnitude;
         m_TargetDistance = m_CurrentDistance;
 
-        //UIがひらいていない時カメラの位置を変更する
+        // UIPresenterのインスタンスを取得
+        _uiPresenter = UIPresenter.Instance;
+
+        // UIがひらいていない時カメラの位置を変更する
         Observable.EveryUpdate()
             .Select(_ =>
             {
+                if (_uiPresenter == null || _uiPresenter.IsMenuOpen || !string.IsNullOrEmpty(_uiPresenter.CurrentUIObject))
+                {
+                    return new Tuple<Vector2, float>(Vector2.zero, 0f);
+                }
+
                 Vector2 mouseInput = new Vector2(Input.GetAxis("Mouse X") * m_Sensitivity, Input.GetAxis("Mouse Y") * m_Sensitivity);
                 Vector2 gamepadInput = Gamepad.current?.rightStick.ReadValue() ?? Vector2.zero;
                 float scrollInput = Mouse.current.scroll.y.ReadValue();
@@ -65,9 +74,9 @@ public class PlayerCameraController : MonoBehaviour
                         gamepadZoomInput = -m_GamePadScrollSpeed;
                     }
                 }
-                //ゲームパッド用感度
+                // ゲームパッド用感度
                 Vector2 adjustedGamepadInput = gamepadInput * m_GamepadSensitivity;
-                return new Tuple<Vector2, float>(mouseInput + new Vector2(gamepadInput.x * m_Sensitivity, gamepadInput.y * m_Sensitivity), scrollInput+gamepadZoomInput);
+                return new Tuple<Vector2, float>(mouseInput + new Vector2(gamepadInput.x * m_Sensitivity, gamepadInput.y * m_Sensitivity), scrollInput + gamepadZoomInput);
             })
             .Subscribe(inputs =>
             {

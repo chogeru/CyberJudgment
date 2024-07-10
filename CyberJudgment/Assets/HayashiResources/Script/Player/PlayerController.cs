@@ -124,7 +124,6 @@ public class PlayerController : MonoBehaviour
     }
     void Update()
     {
-        Cursor.visible = false;
         //重力の適応
         UseGravity();
         // 段差登りを試みる
