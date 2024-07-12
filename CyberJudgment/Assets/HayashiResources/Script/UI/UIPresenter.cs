@@ -13,8 +13,15 @@ using System.Linq;
 public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
 {
     private UIModel _model;
-    private UIView _view;
+    private IUIView _view;
     private UIRepository _repository;
+
+    [SerializeField]
+    private GameObject menuUI;
+    [SerializeField]
+    private GameObject settingUI;
+    [SerializeField]
+    private GameObject[] linkedUIObjects;
 
     public bool IsMenuOpen => _model.IsMenuOpen.Value;
     public string CurrentUIObject => _model.CurrentUIObject.Value;
@@ -26,22 +33,17 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     {
         base.Awake();
         _model = new UIModel();
-        _view = FindObjectOfType<UIView>();
-        if (_model == null)
-        {
-            Debug.LogError("UIModelの初期化に失敗しました。");
-            return;
-        }
+        _view = new UIView();
+
         if (_view == null)
         {
-            Debug.LogError("UIViewの取得に失敗しました。");
+            DebugUtility.LogError("UIViewの取得に失敗");
             return;
         }
-        else
-        {
-            Debug.Log("UIViewが正常に取得されました。");
-        }
-        SetupDatabase();
+
+        SetupDatabase().Forget();
+
+        //デバック用
         LogAllButtonLinks();
     }
     private void LogAllButtonLinks()
@@ -49,7 +51,7 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
         var allLinks = _repository.GetAllButtonLinks();
         foreach (var link in allLinks)
         {
-            Debug.Log($"Id: {link.Id}, ButtonName: {link.ButtonName}, LinkedUIObjectName: {link.LinkedUIObjectName}");
+            DebugUtility.Log($"Id: {link.Id}, ButtonName: {link.ButtonName}, LinkedUIObjectName: {link.LinkedUIObjectName}");
         }
     }
 
@@ -74,10 +76,10 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     {
         _model.IsCursorVisible.Value = false;
         // メニューを開いた状態に設定
-        _view.SetMenuVisibility(true);
-        _view.SetSettingVisibility(false);
+        _view.SetMenuVisibility(menuUI, true);
+        _view.SetSettingVisibility(settingUI, false);
         // ゲーム開始時にメニューUIを表示し、その他のUIを非アクティブにする
-        foreach (var linkedUI in _view.LinkedUIObjects)
+        foreach (var linkedUI in linkedUIObjects)
         {
             linkedUI.SetActive(false);
         }
@@ -85,6 +87,14 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
         await UniTask.CompletedTask;
     }
 
+    private void SetupView(IUIView view)
+    {
+        _view = view;
+        if (_view == null)
+        {
+            DebugUtility.LogError("UIViewの取得に失敗");
+        }
+    }
 
     /// <summary>
     /// モデルの状態に基づいてUIの更新を設定する
@@ -125,10 +135,10 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     private void OpenLinkedUI(string uiObject)
     {
         Debug.Log($"OpenLinkedUI called with uiObject: {uiObject}");
-        var linkedObject = _view.LinkedUIObjects.FirstOrDefault(obj => obj.name == uiObject);
+        var linkedObject = linkedUIObjects.FirstOrDefault(obj => obj.name == uiObject);
         if (linkedObject != null)
         {
-            _view.SetSettingVisibility(false);
+            _view.SetSettingVisibility(settingUI, false);
             linkedObject.SetActive(true);
             _model.IsCursorVisible.Value = true;
 
@@ -136,7 +146,7 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
         }
         else
         {
-            Debug.LogError($"Linked UI object not found: {uiObject}");
+            DebugUtility.LogError($"指定されたUIオブジェクト存在しない {uiObject}");
         }
     }
 
@@ -145,14 +155,12 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     /// </summary>
     private void CloseLinkedUI()
     {
-        for (int i = 0; i < _view.LinkedUIObjects.Length; i++)
+        for (int i = 0; i < linkedUIObjects.Length; i++)
         {
-            _view.SetLinkedUIVisibility(i, false);
+            _view.SetLinkedUIVisibility(linkedUIObjects, i, false);
         }
-        _view.SetSettingVisibility(true);
+        _view.SetSettingVisibility(settingUI, true);
         _model.IsCursorVisible.Value = true;
-
-        // SEを再生
         SEManager.Instance?.PlaySound("CloseLinkedUISE", 1.0f);
     }
 
@@ -160,27 +168,18 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     {
         if (_repository == null)
         {
-            Debug.LogError("リポジトリがnullです。SetupDatabase() が呼び出されていることを確認してください。");
+            DebugUtility.LogError("リポジトリがnull");
             return;
         }
 
         var buttonLink = _repository.GetButtonLinkByName(buttonName);
         if (buttonLink != null)
         {
-            Debug.Log($"ButtonLinkが見つかりました: {buttonLink.LinkedUIObjectName}");
             _model.CurrentUIObject.Value = buttonLink.LinkedUIObjectName;
-            if (_model.CurrentUIObject.Value == null)
-            {
-                Debug.LogError("CurrentUIObjectがnullです。");
-            }
-            else
-            {
-                Debug.Log($"CurrentUIObjectが設定されました: {_model.CurrentUIObject.Value}");
-            }
         }
         else
         {
-            Debug.LogError($"指定されたボタンに紐づけられたUIが見つかりません: {buttonName}");
+            DebugUtility.LogError($"指定されたボタンに紐づけられたUI存在しない: {buttonName}");
         }
     }
 
@@ -194,15 +193,10 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     /// </summary>
     private void OpenMenuUI()
     {
-        if (SEManager.Instance == null || _view == null)
-        {
-            DebugUtility.LogError("SEManagerか_viewがnull");
-            return;
-        }
         SEManager.Instance.PlaySound("MenuOpenSE", 1.0f);
         _model.IsCursorVisible.Value = true;
-        _view.SetMenuVisibility(false);
-        _view.SetSettingVisibility(true);
+        _view.SetMenuVisibility(menuUI, false);
+        _view.SetSettingVisibility(settingUI, true);
     }
 
     /// <summary>
@@ -210,15 +204,10 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     /// </summary>
     private void CloseMenuUI()
     {
-        if (SEManager.Instance == null || _view == null)
-        {
-            DebugUtility.LogError("SEManagerか_viewがnull");
-            return;
-        }
         SEManager.Instance.PlaySound("MenuCloseSE", 1.0f);
         _model.IsCursorVisible.Value = false;
-        _view.SetMenuVisibility(true);
-        _view.SetSettingVisibility(false);
+        _view.SetMenuVisibility(menuUI, true);
+        _view.SetSettingVisibility(settingUI, false);
     }
 
     /// <summary>
@@ -228,15 +217,14 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     {
         _model.IsMenuOpen.Value = !_model.IsMenuOpen.Value;
 
-        // ESCキーを押したら基本的にメニュー以外すべてのUIを非表示にする
         if (!_model.IsMenuOpen.Value)
         {
             _model.CurrentUIObject.Value = "";
-            _view.SetSettingVisibility(false);
+            _view.SetSettingVisibility(settingUI, false);
             _model.IsCursorVisible.Value = false;
-            for (int i = 0; i < _view.LinkedUIObjects.Length; i++)
+            foreach (var linkedUI in linkedUIObjects)
             {
-                _view.SetLinkedUIVisibility(i, false);
+                linkedUI?.SetActive(false);
             }
         }
     }
@@ -244,17 +232,10 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     /// <summary>
     /// データベース接続の初期化
     /// </summary>
-    private void SetupDatabase()
+    private async UniTask SetupDatabase()
     {
         var databasePath = $"{Application.persistentDataPath}/ui_database.db";
         _repository = new UIRepository(databasePath);
-        if (_repository == null)
-        {
-            Debug.LogError("UIRepositoryのインスタンス作成に失敗しました。");
-        }
-        else
-        {
-            Debug.Log("UIRepositoryのインスタンス作成に成功しました。");
-        }
+        await UniTask.SwitchToMainThread();
     }
 }

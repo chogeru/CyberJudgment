@@ -4,45 +4,35 @@ using VInspector;
 /// <summary>
 /// UIビュークラス、メニューと設定画面の表示状態を管理する
 /// </summary>
-public class UIView : MonoBehaviour
+public class UIView : IUIView
 {
-    [Tab("オブジェクト")]
-    [SerializeField, Header("メニュー画面")]
-    private GameObject m_MenuUI;
-    [SerializeField, Header("設定画面")]
-    private GameObject m_SettingUI;
-    [SerializeField, Header("紐づけられたUIオブジェクト")]
-    private GameObject[] m_LinkedUIObjects;
-    public GameObject[] LinkedUIObjects => m_LinkedUIObjects;
-    [EndTab]
-
     /// <summary>
     /// メニュー画面の表示/非表示を設定する
     /// </summary>
-   　/// <param name="isVisible">表示する場合はtrue。</param>
-    public void SetMenuVisibility(bool isVisible)
+    　/// <param name="isVisible">表示する場合はtrue。</param>
+    public void SetMenuVisibility(GameObject menuUI, bool isVisible)
     {
-        m_MenuUI.SetActive(isVisible);
+        menuUI.SetActive(isVisible);
     }
 
     /// <summary>
     /// 設定画面の表示/非表示を設定する
     /// </summary>
     /// <param name="isVisible">表示する場合はtrue。</param>
-    public void SetSettingVisibility(bool isVisible)
+    public void SetSettingVisibility(GameObject settingUI, bool isVisible)
     {
-        m_SettingUI.SetActive(isVisible);
+        settingUI.SetActive(isVisible);
     }
 
     /// 指定されたリンクされたUIオブジェクトの表示/非表示を設定する
     /// </summary>
     /// <param name="index">リンクされたUIオブジェクトのインデックス。</param>
     /// <param name="isVisible">表示する場合はtrue。</param>
-    public void SetLinkedUIVisibility(int index, bool isVisible)
+    public void SetLinkedUIVisibility(GameObject[] linkedUIObjects, int index, bool isVisible)
     {
-        if (index >= 0 && index < m_LinkedUIObjects.Length)
+        if (index >= 0 && index < linkedUIObjects.Length)
         {
-            m_LinkedUIObjects[index].SetActive(isVisible);
+            linkedUIObjects[index].SetActive(isVisible);
         }
     }
 
@@ -55,5 +45,4 @@ public class UIView : MonoBehaviour
         Cursor.visible = isVisible;
         Cursor.lockState = isVisible ? CursorLockMode.None : CursorLockMode.Locked;
     }
-
 }

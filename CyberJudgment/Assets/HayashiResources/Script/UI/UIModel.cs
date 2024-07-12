@@ -1,5 +1,4 @@
 using R3;
-using UnityEngine;
 
 /// <summary>
 /// UIモデルクラス。メニューの開閉状態を管理する。
