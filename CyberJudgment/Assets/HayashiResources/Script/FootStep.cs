@@ -26,7 +26,7 @@ public class FootStep : MonoBehaviour
 
     void GenerateFootstep()
     {
-        SEManager.Instance.PlaySound("FootStep",0.3f);
+        SEManager.Instance.PlaySound("FootStep",0.1f);
         GameObject hitEffect = EffectFootStepObjctPool.Instance.GetPooledObject();
         hitEffect.transform.position = transform.position;
         hitEffect.transform.rotation = Quaternion.identity;
