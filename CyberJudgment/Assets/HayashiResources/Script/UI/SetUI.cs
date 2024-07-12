@@ -1,7 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// ボタンがクリックされたときにリンクされたUIを表示するためのクラス
+/// ボタンがクリックされたときに、
+/// ボタンに紐づけられたUIを表示するためのクラス
 /// </summary>
 public class SetUI : MonoBehaviour
 {

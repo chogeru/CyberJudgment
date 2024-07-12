@@ -1,10 +1,7 @@
 using R3;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
-using AbubuResouse.UI;
 using AbubuResouse.Log;
-using SQLite4Unity3d;
-using System.Collections.Generic;
 using System.Linq;
 
 /// <summary>
@@ -17,11 +14,11 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     private UIRepository _repository;
 
     [SerializeField]
-    private GameObject menuUI;
+    private GameObject _menuUI;
     [SerializeField]
-    private GameObject settingUI;
+    private GameObject _settingUI;
     [SerializeField]
-    private GameObject[] linkedUIObjects;
+    private GameObject[] _linkedUIObjects;
 
     public bool IsMenuOpen => _model.IsMenuOpen.Value;
     public string CurrentUIObject => _model.CurrentUIObject.Value;
@@ -37,7 +34,7 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
 
         if (_view == null)
         {
-            DebugUtility.LogError("UIViewの取得に失敗");
+            DebugUtility.LogError("UIViewの取得に失敗！");
             return;
         }
 
@@ -76,24 +73,15 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     {
         _model.IsCursorVisible.Value = false;
         // メニューを開いた状態に設定
-        _view.SetMenuVisibility(menuUI, true);
-        _view.SetSettingVisibility(settingUI, false);
+        _view.SetMenuVisibility(_menuUI, true);
+        _view.SetSettingVisibility(_settingUI, false);
         // ゲーム開始時にメニューUIを表示し、その他のUIを非アクティブにする
-        foreach (var linkedUI in linkedUIObjects)
+        foreach (var linkedUI in _linkedUIObjects)
         {
             linkedUI.SetActive(false);
         }
 
         await UniTask.CompletedTask;
-    }
-
-    private void SetupView(IUIView view)
-    {
-        _view = view;
-        if (_view == null)
-        {
-            DebugUtility.LogError("UIViewの取得に失敗");
-        }
     }
 
     /// <summary>
@@ -134,11 +122,10 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     /// </summary>
     private void OpenLinkedUI(string uiObject)
     {
-        Debug.Log($"OpenLinkedUI called with uiObject: {uiObject}");
-        var linkedObject = linkedUIObjects.FirstOrDefault(obj => obj.name == uiObject);
+        var linkedObject = _linkedUIObjects.FirstOrDefault(obj => obj.name == uiObject);
         if (linkedObject != null)
         {
-            _view.SetSettingVisibility(settingUI, false);
+            _view.SetSettingVisibility(_settingUI, false);
             linkedObject.SetActive(true);
             _model.IsCursorVisible.Value = true;
 
@@ -146,7 +133,7 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
         }
         else
         {
-            DebugUtility.LogError($"指定されたUIオブジェクト存在しない {uiObject}");
+            DebugUtility.LogError($"指定されたUIオブジェクト存在しない!? {uiObject}");
         }
     }
 
@@ -155,11 +142,11 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     /// </summary>
     private void CloseLinkedUI()
     {
-        for (int i = 0; i < linkedUIObjects.Length; i++)
+        for (int i = 0; i < _linkedUIObjects.Length; i++)
         {
-            _view.SetLinkedUIVisibility(linkedUIObjects, i, false);
+            _view.SetLinkedUIVisibility(_linkedUIObjects, i, false);
         }
-        _view.SetSettingVisibility(settingUI, true);
+        _view.SetSettingVisibility(_settingUI, true);
         _model.IsCursorVisible.Value = true;
         SEManager.Instance?.PlaySound("CloseLinkedUISE", 1.0f);
     }
@@ -195,8 +182,8 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     {
         SEManager.Instance.PlaySound("MenuOpenSE", 1.0f);
         _model.IsCursorVisible.Value = true;
-        _view.SetMenuVisibility(menuUI, false);
-        _view.SetSettingVisibility(settingUI, true);
+        _view.SetMenuVisibility(_menuUI, false);
+        _view.SetSettingVisibility(_settingUI, true);
     }
 
     /// <summary>
@@ -206,8 +193,8 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     {
         SEManager.Instance.PlaySound("MenuCloseSE", 1.0f);
         _model.IsCursorVisible.Value = false;
-        _view.SetMenuVisibility(menuUI, true);
-        _view.SetSettingVisibility(settingUI, false);
+        _view.SetMenuVisibility(_menuUI, true);
+        _view.SetSettingVisibility(_settingUI, false);
     }
 
     /// <summary>
@@ -220,9 +207,9 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
         if (!_model.IsMenuOpen.Value)
         {
             _model.CurrentUIObject.Value = "";
-            _view.SetSettingVisibility(settingUI, false);
+            _view.SetSettingVisibility(_settingUI, false);
             _model.IsCursorVisible.Value = false;
-            foreach (var linkedUI in linkedUIObjects)
+            foreach (var linkedUI in _linkedUIObjects)
             {
                 linkedUI?.SetActive(false);
             }

@@ -1,5 +1,4 @@
 using UnityEngine;
-using VInspector;
 
 /// <summary>
 /// UIビュークラス、メニューと設定画面の表示状態を管理する
@@ -9,7 +8,7 @@ public class UIView : IUIView
     /// <summary>
     /// メニュー画面の表示/非表示を設定する
     /// </summary>
-    　/// <param name="isVisible">表示する場合はtrue。</param>
+    　/// <param name="isVisible">表示する場合はtrue </param>
     public void SetMenuVisibility(GameObject menuUI, bool isVisible)
     {
         menuUI.SetActive(isVisible);
@@ -18,7 +17,7 @@ public class UIView : IUIView
     /// <summary>
     /// 設定画面の表示/非表示を設定する
     /// </summary>
-    /// <param name="isVisible">表示する場合はtrue。</param>
+    /// <param name="isVisible">表示する場合はtrue </param>
     public void SetSettingVisibility(GameObject settingUI, bool isVisible)
     {
         settingUI.SetActive(isVisible);
@@ -26,8 +25,8 @@ public class UIView : IUIView
 
     /// 指定されたリンクされたUIオブジェクトの表示/非表示を設定する
     /// </summary>
-    /// <param name="index">リンクされたUIオブジェクトのインデックス。</param>
-    /// <param name="isVisible">表示する場合はtrue。</param>
+    /// <param name="index">リンクされたUIオブジェクトのインデックス</param>
+    /// <param name="isVisible">表示する場合はtrue </param>
     public void SetLinkedUIVisibility(GameObject[] linkedUIObjects, int index, bool isVisible)
     {
         if (index >= 0 && index < linkedUIObjects.Length)
@@ -39,7 +38,7 @@ public class UIView : IUIView
     /// <summary>
     /// カーソルの表示/非表示を設定する
     /// </summary>
-    /// <param name="isVisible">表示する場合はtrue。</param>
+    /// <param name="isVisible">表示する場合はtrue　</param>
     public void SetCursorVisibility(bool isVisible)
     {
         Cursor.visible = isVisible;

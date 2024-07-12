@@ -57,7 +57,7 @@ public abstract class SingletonMonoBehaviour<T> : MonoBehaviour where T : Single
         if (_instance == this)
         {
             _instance = null;
-            DebugUtility.Log($"{typeof(T).Name}のインスタンスが破棄！");
+            DebugUtility.Log($"{typeof(T).Name}のインスタンスを破棄！");
         }
     }
 }

@@ -1,7 +1,7 @@
 using R3;
 
 /// <summary>
-/// UIモデルクラス。メニューの開閉状態を管理する。
+/// UIモデルクラス、メニューの開閉状態を管理する
 /// </summary>
 public class UIModel
 {
