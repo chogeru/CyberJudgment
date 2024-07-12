@@ -5,8 +5,8 @@ using UnityEngine;
 /// </summary>
 public class SetUI : MonoBehaviour
 {
-    public void OnButtonClicked(int index)
+    public void OnButtonClicked(string buttonName)
     {
-        UIPresenter.Instance.ShowLinkedUI(index);
+        UIPresenter.Instance.ShowLinkedUI(buttonName);
     }
 }

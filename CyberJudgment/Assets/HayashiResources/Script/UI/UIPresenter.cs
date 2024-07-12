@@ -3,6 +3,10 @@ using UnityEngine;
 using Cysharp.Threading.Tasks;
 using AbubuResouse.UI;
 using AbubuResouse.Log;
+using Zenject;
+using SQLite4Unity3d;
+using System.Collections.Generic;
+
 /// <summary>
 /// UIのプレゼンタークラス。UIの初期化と更新を管理するシングルトン
 /// </summary>
@@ -10,6 +14,16 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
 {
     private UIModel _model;
     private UIView _view;
+    private UIRepository _repository;
+    private SQLiteConnection _dbConnection;
+
+    [Inject]
+    public void Construct(UIRepository repository, UIView view, UIModel model)
+    {
+        _repository = repository;
+        _view = view;
+        _model = model;
+    }
 
     public bool IsMenuOpen => _model.IsMenuOpen.Value;
     public string CurrentUIObject => _model.CurrentUIObject.Value;
@@ -20,15 +34,8 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     protected override void Awake()
     {
         base.Awake();
-
-        _model = new UIModel();
-        _view = GetComponent<UIView>();
-
-        if (_view == null)
-        {
-            DebugUtility.LogError("UIView が見つからない");
-        }
-
+        SetupDatabase();
+        SetupSubscriptions();
     }
 
     /// <summary>
@@ -48,7 +55,7 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     /// UIを初期化
     /// メニュー画面を表示して、設定画面を非表示にしている
     /// </summary>
-    private void InitializeUI()
+    private async UniTask InitializeUI()
     {
         _model.IsCursorVisible.Value = false;
         // メニューを開いた状態に設定
@@ -59,7 +66,10 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
         {
             linkedUI.SetActive(false);
         }
+
+        await UniTask.CompletedTask;
     }
+
 
     /// <summary>
     /// モデルの状態に基づいてUIの更新を設定する
@@ -91,7 +101,7 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
             .AddTo(this);
 
         // UIを初期化
-        InitializeUI();
+        InitializeUI().Forget();
     }
 
     /// <summary>
@@ -124,9 +134,17 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
         SEManager.Instance?.PlaySound("CloseLinkedUISE", 1.0f);
     }
 
-    public void ShowLinkedUI(int index)
+    public void ShowLinkedUI(string buttonName)
     {
-        _model.CurrentUIObject.Value = index.ToString();
+        var buttonLink = _repository.GetButtonLinkByName(buttonName);
+        if (buttonLink != null)
+        {
+            _model.CurrentUIObject.Value = buttonLink.LinkedUIObjectName;
+        }
+        else
+        {
+            Debug.LogError("No linked UI found for button: " + buttonName);
+        }
     }
 
     public void ShowSettingUI()
@@ -184,5 +202,14 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
                 _view.SetLinkedUIVisibility(i, false);
             }
         }
+    }
+
+    /// <summary>
+    /// データベース接続の初期化
+    /// </summary>
+    private void SetupDatabase()
+    {
+        var databasePath = $"{Application.persistentDataPath}/ui_database.db";
+        _repository = new UIRepository(databasePath);
     }
 }
