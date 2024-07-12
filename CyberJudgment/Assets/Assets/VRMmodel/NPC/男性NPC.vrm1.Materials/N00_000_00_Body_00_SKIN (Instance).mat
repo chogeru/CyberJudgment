@@ -10,6 +10,7 @@ Material:
   m_Name: N00_000_00_Body_00_SKIN (Instance)
   m_Shader: {fileID: 4800000, guid: 6459b2db96a08ca41b0f9b39dc7ad59e, type: 3}
   m_ValidKeywords:
+  - N_F_CO_ON
   - N_F_EAL_ON
   - N_F_O_ON
   - N_F_RELGI_ON
@@ -27,9 +28,9 @@ Material:
   m_LightmapFlags: 0
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 3000
+  m_CustomRenderQueue: 2450
   stringTagMap:
-    RenderType: Transparent
+    RenderType: TransparentCutout
   disabledShaderPasses: []
   m_SavedProperties:
     serializedVersion: 3
@@ -139,7 +140,7 @@ Material:
     - _CustomLightDirectionFollowObjectRotation: 0
     - _CustomLightDirectionIntensity: 0
     - _Cutoff: 0.5
-    - _Cutout: 0
+    - _Cutout: 0.5
     - _DepthThreshold: 900
     - _DirectionalLightIntensity: 0
     - _DoubleSided: 1
@@ -183,7 +184,7 @@ Material:
     - _MixMainTexToOutline: 0
     - _N_F_CA: 0
     - _N_F_CLD: 0
-    - _N_F_CO: 0
+    - _N_F_CO: 1
     - _N_F_COEDGL: 0
     - _N_F_DCS: 0
     - _N_F_DDMD: 0
