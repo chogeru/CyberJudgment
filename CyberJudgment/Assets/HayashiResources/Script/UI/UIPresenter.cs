@@ -5,7 +5,7 @@ using AbubuResouse.Log;
 using System.Linq;
 
 /// <summary>
-/// UIのプレゼンタークラス。UIの初期化と更新を管理するシングルトン
+/// UIのプレゼンタークラス
 /// </summary>
 public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
 {
@@ -48,6 +48,7 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
         var allLinks = _repository.GetAllButtonLinks();
         foreach (var link in allLinks)
         {
+            //色々表示
             DebugUtility.Log($"Id: {link.Id}, ButtonName: {link.ButtonName}, LinkedUIObjectName: {link.LinkedUIObjectName}");
         }
     }
@@ -118,7 +119,7 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     }
 
     /// <summary>
-    /// 指定されたリンクされたUIオブジェクトを開く
+    /// 指定された、ボタンに紐づけられたUIオブジェクトを開く
     /// </summary>
     private void OpenLinkedUI(string uiObject)
     {
@@ -138,7 +139,7 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     }
 
     /// <summary>
-    /// すべてのリンクされたUIオブジェクトを閉じる
+    /// すべてのボタンに紐づけられたUIオブジェクトを閉じる
     /// </summary>
     private void CloseLinkedUI()
     {
