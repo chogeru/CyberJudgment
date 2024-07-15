@@ -1,18 +1,17 @@
 using UnityEngine;
 using UnityEditor;
 
-[CustomEditor(typeof(WeaponData))]
-public class WeaponDataEditor : Editor
+[CustomEditor(typeof(EnemyData))]
+public class EnemyDataEditor : Editor
 {
     private GUIStyle headerStyle;
-    private bool weaponInfoFoldout = true;
-    private bool statusFoldout = true;
-    private bool typeAndAttributeFoldout = true;
-    private bool descriptionFoldout = true;
+    private bool enemyInfoFoldout = true;
+    private bool statsFoldout = true;
+    private bool attributesFoldout = true;
 
     private void OnEnable()
     {
-        // カスタムスタイルを初期化
+        // Initialize custom style
         headerStyle = new GUIStyle
         {
             alignment = TextAnchor.MiddleLeft,
@@ -22,7 +21,7 @@ public class WeaponDataEditor : Editor
             contentOffset = new Vector2(0, 0)
         };
 
-        // グラデーション背景を設定
+        // Set gradient background
         headerStyle.normal.background = MakeTex(1, 20, Color.black, Color.gray);
         headerStyle.normal.textColor = Color.white;
         headerStyle.onNormal.background = MakeTex(1, 20, Color.black, Color.gray);
@@ -31,45 +30,58 @@ public class WeaponDataEditor : Editor
 
     public override void OnInspectorGUI()
     {
-        WeaponData weaponData = (WeaponData)target;
+        EnemyData enemyData = (EnemyData)target;
 
         serializedObject.Update();
 
         EditorGUILayout.BeginVertical("box");
 
-        weaponInfoFoldout = DrawFoldoutHeader(" 武器情報", weaponInfoFoldout);
-        if (weaponInfoFoldout)
+        enemyInfoFoldout = DrawFoldoutHeader("敵の情報", enemyInfoFoldout);
+        if (enemyInfoFoldout)
         {
-            DrawPropertyField("_weaponID", "武器Id", "d_UnityEditor.InspectorWindow");
-            DrawPropertyField("_weaponName", "武器の名前", "d_UnityEditor.ProjectWindow");
+            DrawPropertyField("enemyID", "敵ID", "d_UnityEditor.InspectorWindow");
+            DrawPropertyField("enemyName", "敵の名前", "d_UnityEditor.ProjectWindow");
         }
 
-        statusFoldout = DrawFoldoutHeader(" ステータス", statusFoldout);
-        if (statusFoldout)
+        statsFoldout = DrawFoldoutHeader("ステータス", statsFoldout);
+        if (statsFoldout)
         {
-            DrawPropertyField("_attackPower", "攻撃力", "d_UnityEditor.AnimationWindow");
-            DrawPropertyField("_attackSpeed", "攻撃速度", "d_UnityEditor.ProfilerWindow");
-            DrawPropertyField("_weaponWeight", "武器重量", "d_UnityEditor.GameView");
+            DrawPropertyField("health", "体力", "d_UnityEditor.AnimationWindow");
+            DrawPropertyField("moveSpeed", "移動速度", "d_UnityEditor.ProfilerWindow");
+            DrawPropertyField("detectionRange", "索敵範囲", "d_UnityEditor.GameView");
+            DrawPropertyField("dropItemPrefab", "ドロップアイテムのプレハブ", "d_UnityEditor.SceneView");
+            DrawPropertyField("dropItemCount", "ドロップアイテムの数", "d_UnityEditor.HierarchyWindow");
         }
 
-        typeAndAttributeFoldout = DrawFoldoutHeader(" タイプと属性", typeAndAttributeFoldout);
-        if (typeAndAttributeFoldout)
+        attributesFoldout = DrawFoldoutHeader("属性", attributesFoldout);
+        if (attributesFoldout)
         {
-            DrawPropertyField("_weaponType", "武器のタイプ", "d_UnityEditor.SceneView", true);
-            DrawPropertyField("_weaponAttribute", "武器の属性", "d_UnityEditor.HierarchyWindow", true);
-        }
-
-        descriptionFoldout = DrawFoldoutHeader(" 説明文", descriptionFoldout);
-        if (descriptionFoldout)
-        {
-            DrawPropertyField("_weaponDescription", "武器説明文", "d_UnityEditor.ConsoleWindow", false, true);
+            DrawPropertyField("enemyAttribute", "属性", "d_UnityEditor.ConsoleWindow", true);
+            DrawPropertyField("enemyType", "敵タイプ", "d_UnityEditor.HierarchyWindow", true);
+            DrawPropertyField("weaponType", "戦闘武器種類", "d_UnityEditor.SceneView", true);
+            WeaponType weaponType = (WeaponType)serializedObject.FindProperty("weaponType").enumValueIndex;
+            if (weaponType == WeaponType.Sword || weaponType == WeaponType.Axe || weaponType == WeaponType.Hammer)
+            {
+                DrawPropertyField("meleeAttackPower", "近接攻撃力", "d_UnityEditor.AnimationWindow");
+            }
+            else if (weaponType == WeaponType.Bow || weaponType == WeaponType.Gun)
+            {
+                DrawPropertyField("projectileSpeed", "弾速", "d_UnityEditor.ProjectWindow");
+                DrawPropertyField("projectilePower", "弾の威力", "d_UnityEditor.GameView");
+                DrawPropertyField("projectileCount", "弾数", "d_UnityEditor.HierarchyWindow");
+            }
+            else if (weaponType == WeaponType.Magic)
+            {
+                DrawPropertyField("magicPower", "魔力", "d_UnityEditor.ConsoleWindow");
+                DrawPropertyField("magicAttackInterval", "魔法攻撃間隔", "d_UnityEditor.InspectorWindow");
+            }
         }
 
         EditorGUILayout.EndVertical();
 
         if (GUI.changed)
         {
-            EditorUtility.SetDirty(weaponData);
+            EditorUtility.SetDirty(enemyData);
         }
 
         serializedObject.ApplyModifiedProperties();
