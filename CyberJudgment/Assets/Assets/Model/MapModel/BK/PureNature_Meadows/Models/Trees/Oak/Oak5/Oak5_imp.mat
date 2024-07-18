@@ -8,9 +8,11 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Oak5_imp
-  m_Shader: {fileID: 4800000, guid: 036403ed07a8e3f46a1d1815461e168d, type: 3}
+  m_Shader: {fileID: 4800000, guid: 0f96a2937f6bace459a5fdaac39c0fb3, type: 3}
   m_ValidKeywords:
+  - _BASEWINDCHANNEL_B
   - _HIDESIDES_ON
+  - _MICROWINDCHANNEL_R
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
@@ -56,6 +58,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _AlphaCutoff: 0.5
+    - _BaseWindChannel: 2
     - _ColorVariationPower: 1
     - _Cull: 2
     - _Cutoff: 0.5
@@ -66,11 +69,15 @@ Material:
     - _HidePower: 2.5
     - _HideSides: 1
     - _InvertGradient: 0
+    - _MicroWindChannel: 0
+    - _MicroWindMultiplier: 1
     - _NoiseScale: 0.02
     - _NormalPower: 1
     - _QueueControl: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 1
+    - _Scattering: 1
+    - _SeeVertexColor: 0
     - _SpecularHighlights: 1
     - _TransAmbient: 0.2
     - _TransDirect: 1
@@ -81,6 +88,7 @@ Material:
     - _TransStrength: 1
     - _Translucency: 1
     - _VertexOcclusionPower: 0.4
+    - _WindDebugView: 0
     - _WindMultiplier: 1
     - _WindTrunkContrast: 10
     - _WindTrunkPosition: 0
