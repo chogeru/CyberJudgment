@@ -9,8 +9,6 @@ using AbubuResouse.Log;
 
 public class BGMManager : SingletonMonoBehaviour<BGMManager>
 {
-    public static BGMManager instance;
-
     private AudioSource m_AudioSource;
     [SerializeField]
     public SQLiteConnection m_Connection;

@@ -11,4 +11,5 @@ public class UIModel
     public ReactiveProperty<string> CurrentUIObject { get; } = new ReactiveProperty<string>("");
     // カーソルが表示されているかどうかを表すReactiveProperty、初期値はfalse
     public ReactiveProperty<bool> IsCursorVisible { get; } = new ReactiveProperty<bool>(false);
+
 }

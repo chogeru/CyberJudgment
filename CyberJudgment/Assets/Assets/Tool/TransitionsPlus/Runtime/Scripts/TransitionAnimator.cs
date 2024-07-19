@@ -236,7 +236,7 @@ namespace TransitionsPlus {
                     if (sceneLoadMode == LoadSceneMode.Single) {
                         onTransitionEnd?.Invoke();
                     }
-                    SceneManager.LoadScene(sceneNameToLoad, sceneLoadMode);
+                   // SceneManager.LoadScene(sceneNameToLoad, sceneLoadMode);
                     // trigger events when new scene is loaded
                     if (sceneLoadMode != LoadSceneMode.Single) {
                         onTransitionEnd?.Invoke();
