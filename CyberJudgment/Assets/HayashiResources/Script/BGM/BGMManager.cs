@@ -2,83 +2,100 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Networking;
 using SQLite4Unity3d;
 using UnityEngine.SceneManagement;
 using AbubuResouse.Log;
+using System.Linq;
 
 public class BGMManager : SingletonMonoBehaviour<BGMManager>
 {
     private AudioSource m_AudioSource;
     [SerializeField]
-    public SQLiteConnection m_Connection;
+    private SQLiteConnection m_Connection;
+
     //シングルトンパターン
     protected override void Awake()
     {
         base.Awake();
 
         m_AudioSource = GetComponent<AudioSource>();
-        //データベースのパスを設定
+        InitializeDatabase();
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void InitializeDatabase()
+    {
         var databasePath = System.IO.Path.Combine(Application.streamingAssetsPath, "bgm_data.db").Replace("\\", "/");
 
         try
         {
-            //データベース接続の初期化
             m_Connection = new SQLiteConnection(databasePath, SQLiteOpenFlags.ReadOnly);
-            DebugUtility.Log("データベース接続に成功!パス: " + databasePath); 
+            DebugUtility.Log("データベース接続に成功!パス: " + databasePath);
         }
         catch (Exception ex)
         {
-            DebugUtility.LogError("データベースの接続に失敗!!: " + ex.Message); 
+            DebugUtility.LogError("データベースの接続に失敗!!: " + ex.Message);
         }
     }
 
-    public void PlayBGM(string bgmName ,float volume)
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode) => StopBGM();
+
+    public void StopBGM()
     {
-        //データベースからBGM名に一致するレコードを所得
-        var query = m_Connection.Table<BGM>().Where(x => x.BGMName == bgmName).FirstOrDefault();
-        //クエリ結果がnullでなければ
+        if (m_AudioSource.isPlaying)
+        {
+            m_AudioSource.Stop();
+            m_AudioSource.clip = null;
+            DebugUtility.Log("BGM停止");
+        }
+    }
+
+    public void PlayBGM(string bgmName, float volume)
+    {
+        var query = m_Connection.Table<BGM>().FirstOrDefault(x => x.BGMName == bgmName);
         if (query != null)
         {
-
             DebugUtility.Log("BGMデータが見つかりました: " + query.BGMName);
-            try
-            {
-                //ResourcesフォルダからBGMファイルをロード
-                AudioClip clip = Resources.Load<AudioClip>("BGM/" + query.BGMFileName);
-
-                //クリップがnullでない場合
-                if (clip != null)
-                {
-                    //クリップを設定
-                    m_AudioSource.clip = clip;
-                    //音量も設定
-                    m_AudioSource.volume = volume;
-                    //再生
-                    m_AudioSource.Play();
-                }
-                else
-                {
-                    DebugUtility.Log("BGMファイルが見つからない " + query.BGMFileName);
-                }
-            }
-            //例外発生時
-            catch(Exception ex)
-            {
-                DebugUtility.LogError("BGMファイルのロード時にエラー発生"+ex.Message);
-            }
+            LoadAndPlayClip(query.BGMFileName, volume);
         }
         else
         {
-            DebugUtility.Log("指定されたBGM名に一致するレコードがデータベースに存在しない"); 
+            DebugUtility.Log("指定されたBGM名に一致するレコードがデータベースに存在しない");
         }
     }
-    // BGM情報を保持するクラス
-    class BGM
+
+    private void LoadAndPlayClip(string fileName, float volume)
     {
-        [PrimaryKey, AutoIncrement] // 主キー、自動インクリメント
+        try
+        {
+            AudioClip clip = Resources.Load<AudioClip>("BGM/" + fileName);
+            if (clip != null)
+            {
+                m_AudioSource.clip = clip;
+                m_AudioSource.volume = volume;
+                m_AudioSource.Play();
+            }
+            else
+            {
+                DebugUtility.Log("BGMファイルが見つからない: " + fileName);
+            }
+        }
+        catch (Exception ex)
+        {
+            DebugUtility.LogError("BGMファイルのロード時にエラー発生: " + ex.Message);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private class BGM
+    {
+        [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
-        public string BGMName { get; set; }  // BGMの名前
-        public string BGMFileName { get; set; } // BGMファイル名
+        public string BGMName { get; set; }
+        public string BGMFileName { get; set; }
     }
 }
