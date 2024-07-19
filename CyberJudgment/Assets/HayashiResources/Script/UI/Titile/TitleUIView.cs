@@ -25,6 +25,7 @@ public class TitleUIView : ITitleUIView
         }
     }
 
+
     public GameObject GetSelectedButton(int index)
     {
         if (index >= 0 && index < _linkedUIObjects.Length)
