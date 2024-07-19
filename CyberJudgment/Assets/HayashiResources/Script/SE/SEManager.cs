@@ -4,25 +4,27 @@ using SQLite4Unity3d;
 using Cysharp.Threading.Tasks;
 using System;
 using AbubuResouse.Log;
+using System.Linq;
 
 public class SEManager : SingletonMonoBehaviour<SEManager>
 {
-    public static SEManager instance;
     private AudioSource audioSource;
     [SerializeField]
-    public SQLiteConnection connection;
+    private SQLiteConnection connection;
 
     // シングルトンパターン
     protected override void Awake()
     {
         base.Awake();
-
         audioSource = GetComponent<AudioSource>();
-        var databasePath = System.IO.Path.Combine(Application.streamingAssetsPath, "se_data.db").Replace("\\", "/");
+        InitializeDatabase();
+    }
 
+    private void InitializeDatabase()
+    {
+        var databasePath = System.IO.Path.Combine(Application.streamingAssetsPath, "se_data.db").Replace("\\", "/");
         try
         {
-            // データベース接続の初期化
             connection = new SQLiteConnection(databasePath, SQLiteOpenFlags.ReadOnly);
             DebugUtility.Log("データベース接続に成功!パス: " + databasePath);
         }
@@ -32,44 +34,42 @@ public class SEManager : SingletonMonoBehaviour<SEManager>
         }
     }
 
-    public void PlaySound(string clipName,float volume)
+    public void PlaySound(string clipName, float volume)
+    {
+        var query = connection.Table<SoundClip>().FirstOrDefault(x => x.ClipName == clipName);
+        if (query != null)
+        {
+            DebugUtility.Log("サウンドクリップが見つかりました: " + query.ClipName);
+            LoadAndPlayClip(query.ClipPath, volume);
+        }
+        else
+        {
+            DebugUtility.Log("指定されたサウンドクリップ名に一致するレコードがデータベースに存在しない: " + clipName);
+        }
+    }
+
+    private void LoadAndPlayClip(string clipPath, float volume)
     {
         try
         {
-            // データベースからクリップ名に一致するレコードを取得
-            var query = connection.Table<SoundClip>().Where(x => x.ClipName == clipName).FirstOrDefault();
-
-            if (query != null)
+            AudioClip clip = Resources.Load<AudioClip>("SE/" + clipPath);
+            if (clip != null)
             {
-                DebugUtility.Log("サウンドクリップが見つかりました: " + query.ClipName);
-
-                // Resourcesフォルダからサウンドファイルをロード
-                AudioClip clip = Resources.Load<AudioClip>("SE/" + query.ClipPath);
-
-                if (clip != null)
-                {
-                    // サウンドを再生
-                    audioSource.PlayOneShot(clip);
-                    audioSource.volume = volume;
-                }
-                else
-                {
-                    DebugUtility.Log("サウンドファイルが見つからない " + query.ClipPath);
-                }
+                audioSource.PlayOneShot(clip);
+                audioSource.volume = volume;
             }
             else
             {
-                DebugUtility.Log("指定されたサウンドクリップ名に一致するレコードがデータベースに存在しない: " + clipName);
+                DebugUtility.Log("サウンドファイルが見つからない: " + clipPath);
             }
         }
-        catch (System.Exception ex)
+        catch (Exception ex)
         {
             DebugUtility.LogError("サウンドファイルのロード時にエラー発生: " + ex.Message);
         }
     }
 
-    // サウンドクリップ情報を保持するクラス
-    class SoundClip
+    private class SoundClip
     {
         [PrimaryKey, AutoIncrement] // 主キー、自動インクリメント
         public int Id { get; set; }

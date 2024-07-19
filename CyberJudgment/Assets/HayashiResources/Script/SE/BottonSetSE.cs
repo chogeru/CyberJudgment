@@ -12,7 +12,7 @@ public class BottonSetSE : MonoBehaviour
 
         if (button != null)
         {
-            button.onClick.AddListener(() => SEManager.instance.PlaySound(_seName, _volume));
+            button.onClick.AddListener(() => SEManager.Instance.PlaySound(_seName, _volume));
         }
         else
         {

@@ -6,6 +6,7 @@ using SQLite4Unity3d;
 using UnityEngine.SceneManagement;
 using AbubuResouse.Log;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 
 public class BGMManager : SingletonMonoBehaviour<BGMManager>
 {
@@ -50,13 +51,13 @@ public class BGMManager : SingletonMonoBehaviour<BGMManager>
         }
     }
 
-    public void PlayBGM(string bgmName, float volume)
+    public async void PlayBGM(string bgmName, float volume)
     {
         var query = m_Connection.Table<BGM>().FirstOrDefault(x => x.BGMName == bgmName);
         if (query != null)
         {
             DebugUtility.Log("BGMデータが見つかりました: " + query.BGMName);
-            LoadAndPlayClip(query.BGMFileName, volume);
+            await LoadAndPlayClipAsync(query.BGMFileName, volume);
         }
         else
         {
@@ -64,16 +65,17 @@ public class BGMManager : SingletonMonoBehaviour<BGMManager>
         }
     }
 
-    private void LoadAndPlayClip(string fileName, float volume)
+    private async UniTask LoadAndPlayClipAsync(string fileName, float volume)
     {
         try
         {
-            AudioClip clip = Resources.Load<AudioClip>("BGM/" + fileName);
+            AudioClip clip = await Resources.LoadAsync<AudioClip>("BGM/" + fileName) as AudioClip;
             if (clip != null)
             {
                 m_AudioSource.clip = clip;
                 m_AudioSource.volume = volume;
                 m_AudioSource.Play();
+                DebugUtility.Log("BGMを再生中: " + fileName);
             }
             else
             {
