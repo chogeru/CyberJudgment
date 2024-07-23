@@ -274,8 +274,7 @@ public class PlayerController : MonoBehaviour
 #if UNITY_EDITOR
         Debug.DrawLine(start, end, isGrounded ? Color.green : Color.red);
 #endif
-        //地面が水平であることを確認
-        return isGrounded && hit.normal.y > 0.5;
+        return isGrounded;
     }
 
     // コマンドパターンを定義するインターフェース
