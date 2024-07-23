@@ -122,13 +122,12 @@ public class PlayerController : MonoBehaviour
         await UniTask.Yield();
 
     }
-    void Update()
+    void FixedUpdate()
     {
-        //重力の適応
         UseGravity();
-        // 段差登りを試みる
         TryStepUp();
     }
+
     private void UseGravity()
     {
         // 重力の追加
@@ -147,28 +146,21 @@ public class PlayerController : MonoBehaviour
     {
         if (m_Rigidbody.velocity.magnitude < 0.1f)
             return;
-        //プレイヤーの前方0.3の位置から、レイキャストを設定
-        Vector3 forward = transform.forward * 0.35f;
-        //レイキャスト開始点はカプセルの中心点より
-        Vector3 rayStart = transform.position + forward + Vector3.up * m_CapsuleCollider.height * 0.5f;
-        //カプセルコライダーの底まで
-        Vector3 rayEnd = transform.position + forward + Vector3.down * 0.1f;
 
-        RaycastHit hitInfo;
-        if (Physics.Raycast(rayStart, Vector3.down, out hitInfo, m_CapsuleCollider.height * 0.6f, m_LayerMask))
+        Vector3 forward = transform.forward * 0.35f;
+        Vector3 rayStart = transform.position + Vector3.up * 0.1f;
+        Vector3 rayEnd = rayStart + forward;
+
+        if (Physics.Raycast(rayStart, forward, out RaycastHit hit, 0.35f, m_LayerMask))
         {
-            // レイキャストが何かにヒットし、その高さが乗り越えられる高さならプレイヤーを移動
-            float stepHeight = hitInfo.point.y - transform.position.y;
+            float stepHeight = hit.point.y - transform.position.y;
             if (stepHeight <= m_MaxStepHeight && stepHeight > 0)
             {
-                // プレイヤーの位置を段差の上に更新
-                Vector3 targetPosition = new Vector3(transform.position.x, hitInfo.point.y + stepHeight, transform.position.z);
-                //プレイヤーの位置を現在の位置からターゲットの位置に
-                transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * 10);
+                Vector3 targetPosition = new Vector3(transform.position.x, hit.point.y + m_CapsuleCollider.height * 0.5f, transform.position.z);
+                m_Rigidbody.position = Vector3.Lerp(m_Rigidbody.position, targetPosition, Time.fixedDeltaTime * 10);
             }
         }
 #if UNITY_EDITOR
-        //デバッグ用のレイキャスト表示
         Debug.DrawLine(rayStart, rayEnd, Color.blue);
 #endif
     }
@@ -198,7 +190,6 @@ public class PlayerController : MonoBehaviour
                 m_Animator.SetFloat("走り前後", vertical);
             }).AddTo(this);
     }
-    // プレイヤーを指定の速度で移動
     // プレイヤーを指定の速度で移動
     public void Move(Vector3 movement, float speed)
     {
