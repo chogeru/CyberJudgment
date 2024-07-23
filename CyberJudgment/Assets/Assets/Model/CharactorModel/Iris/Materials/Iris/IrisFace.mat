@@ -10,6 +10,7 @@ Material:
   m_Name: IrisFace
   m_Shader: {fileID: 4800000, guid: 6459b2db96a08ca41b0f9b39dc7ad59e, type: 3}
   m_ValidKeywords:
+  - N_F_CA_ON
   - N_F_CO_ON
   - N_F_EAL_ON
   - N_F_O_ON
@@ -18,6 +19,7 @@ Material:
   - N_F_TRANSAFFSHA_ON
   - N_F_TRANS_ON
   m_InvalidKeywords:
+  - NOKEWO
   - N_F_TRANSAFFSHA
   m_LightmapFlags: 0
   m_EnableInstancingVariants: 0
@@ -516,7 +518,7 @@ Material:
     - _IDMaskPrior8: 0
     - _IgnoreEncryption: 0
     - _Invisible: 0
-    - _LigIgnoYNorDir: 0
+    - _LigIgnoYNorDir: 1
     - _LightAffectOutlineColor: 0
     - _LightAffectRimLightColor: 0
     - _LightAffectShadow: 0
@@ -592,7 +594,7 @@ Material:
     - _MixMainTexToOutline: 0
     - _Mode: 0
     - _MonochromeLighting: 0
-    - _N_F_CA: 0
+    - _N_F_CA: 1
     - _N_F_CLD: 0
     - _N_F_CO: 1
     - _N_F_COEDGL: 0
@@ -672,14 +674,14 @@ Material:
     - _OutlineZPostionInCamera: 0
     - _OutlineZTest: 2
     - _OutlineZWrite: 1
-    - _OverallShadowColorPower: 0
+    - _OverallShadowColorPower: 1
     - _PSGLOTEX: 0
     - _PTexturePower: 1
     - _Parallax: 0.02
     - _ParallaxOffset: 0.5
     - _PointSpotlightIntensity: 0
     - _RELG: 1
-    - _ReduceShadowSpotDirectionalLight: 0
+    - _ReduceShadowSpotDirectionalLight: 0.5
     - _RefMetallic: 0
     - _RefVal: 0
     - _Reflectance: 0.04
@@ -718,16 +720,16 @@ Material:
     - _SPECIN: 1
     - _SPECMODE: 0
     - _STIL: 0
-    - _Saturation: 1
+    - _Saturation: 1.1
     - _SelfLitHighContrast: 1
     - _SelfLitIntensity: 0
     - _SelfLitPower: 2
     - _SelfShadowAffectedByLightShadowStrength: 0
-    - _SelfShadowHardness: 1
-    - _SelfShadowRealTimeShadowColorPower: 1
-    - _SelfShadowRealtimeShadowIntensity: 0
-    - _SelfShadowShadowTAtViewDirection: 0
-    - _SelfShadowThreshold: 0.93
+    - _SelfShadowHardness: 0.05
+    - _SelfShadowRealTimeShadowColorPower: 0
+    - _SelfShadowRealtimeShadowIntensity: 0.3
+    - _SelfShadowShadowTAtViewDirection: 1
+    - _SelfShadowThreshold: 0.36
     - _Shadow2ndBlur: 0.05
     - _Shadow2ndBorder: 0.15
     - _Shadow2ndNormalStrength: 1
@@ -746,7 +748,7 @@ Material:
     - _ShadowEnvStrength: 0
     - _ShadowFlatBlur: 1
     - _ShadowFlatBorder: 1
-    - _ShadowHardness: 0
+    - _ShadowHardness: 1
     - _ShadowMainStrength: 0
     - _ShadowMaskType: 0
     - _ShadowNormalStrength: 1
@@ -920,7 +922,7 @@ Material:
     - _OutlineOffset: {r: 0, g: 0, b: 0, a: 1}
     - _OutlineTexHSVG: {r: 0, g: 1, b: 1, a: 2}
     - _OutlineTex_ScrollRotate: {r: 0, g: 0, b: 0, a: 0}
-    - _OverallShadowColor: {r: 0, g: 0, b: 0, a: 1}
+    - _OverallShadowColor: {r: 0, g: 0, b: 0, a: 0.5294118}
     - _PTCol: {r: 0, g: 0, b: 0, a: 1}
     - _ReflectionColor: {r: 1, g: 1, b: 1, a: 1}
     - _ReflectionCubeColor: {r: 0, g: 0, b: 0, a: 1}

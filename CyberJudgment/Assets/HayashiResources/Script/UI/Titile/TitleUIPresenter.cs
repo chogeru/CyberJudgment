@@ -11,6 +11,11 @@ public class TitleUIPresenter : MonoBehaviour
     [SerializeField]
     private GameObject[] _linkedUIObjects;
 
+    [SerializeField, Header("UIêÿÇËë÷Ç¶éûSE")]
+    private string _uISelectSE;
+    [SerializeField, Header("âπó ")]
+    private float _volume;
+
     private void Start()
     {
         _view = new TitleUIView(_linkedUIObjects);
@@ -32,6 +37,8 @@ public class TitleUIPresenter : MonoBehaviour
     private void ChangeSelectedButtonIndex()
     {
         int currentIndex = _model.SelectedButtonIndex.Value;
+
+        SEManager.Instance.PlaySound(_uISelectSE, _volume);
 
         if (Input.GetKeyDown(KeyCode.UpArrow))
         {
