@@ -5,9 +5,17 @@ using VInspector;
 using AbubuResouse.UI;
 using AbubuResouse.Log;
 
+[System.Serializable]
+public class Dialogue
+{
+    public string characterName;
+    [TextArea(3, 10)] // 改行をサポート
+    public string message;
+}
+
 public class TextTrigger : MonoBehaviour
 {
-    public string[] _textsToDisplay;
+    public Dialogue[] dialogues;
     [SerializeField]
     public int _currentIndex = 0;
     [SerializeField, Header("サウンド名")]
@@ -19,12 +27,12 @@ public class TextTrigger : MonoBehaviour
     {
         if (TextManager.Instance != null)
         {
-            if (_textsToDisplay != null && _textsToDisplay.Length > 0)
+            if (dialogues != null && dialogues.Length > 0)
             {
-                if (_currentIndex < _textsToDisplay.Length)
+                if (_currentIndex < dialogues.Length)
                 {
-                    TextManager.Instance.ShowText(_textsToDisplay[_currentIndex]);
-                    DebugUtility.Log(_textsToDisplay[_currentIndex]);
+                    TextManager.Instance.ShowText(dialogues[_currentIndex].characterName, dialogues[_currentIndex].message);
+                    DebugUtility.Log(dialogues[_currentIndex].message);
                     _currentIndex++;
                     SEManager.Instance.PlaySound(_seName, _seVolume);
                 }
@@ -33,21 +41,20 @@ public class TextTrigger : MonoBehaviour
                     DebugUtility.Log("テキストがない");
                     TextManager.Instance.HideText();
                     ResetTextIndex();
-
                 }
             }
             else
             {
                 DebugUtility.LogError("テキストの要素がない");
-                TextManager.Instance.HideText(); 
-                ResetTextIndex() ;
+                TextManager.Instance.HideText();
+                ResetTextIndex();
             }
         }
         else
         {
             Debug.LogError("テキストがない!!");
         }
-        if (_currentIndex > _textsToDisplay.Length)
+        if (_currentIndex > dialogues.Length)
         {
             TextManager.Instance.HideText();
             ResetTextIndex();

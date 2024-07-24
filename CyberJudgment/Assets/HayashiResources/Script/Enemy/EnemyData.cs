@@ -18,11 +18,20 @@ public class EnemyData : ScriptableObject
     [SerializeField, Header("索敵範囲")]
     public float detectionRange;
 
+    [SerializeField, Header("徘徊ポイント停止時間")]
+    public float patrolPointWaitTime;
+
+    [SerializeField, Header("視野判定")]
+    public float visionRange;
+
     [SerializeField, Header("ドロップアイテムのプレハブ")]
     public GameObject dropItemPrefab;
 
     [SerializeField, Header("ドロップアイテムの数")]
     public int dropItemCount;
+
+    [SerializeField, Header("行動タイプ")]
+    public BehaviorType behaviorType;
 
     [SerializeField, Header("属性")]
     public EnemyAttribute enemyAttribute;
@@ -67,4 +76,9 @@ public enum EnemyType
 {
     Ground,
     Air
+}
+public enum BehaviorType
+{
+    Patrol,
+    Idle
 }

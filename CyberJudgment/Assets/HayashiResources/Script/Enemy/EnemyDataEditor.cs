@@ -49,15 +49,22 @@ public class EnemyDataEditor : Editor
             DrawPropertyField("health", "体力", "d_UnityEditor.AnimationWindow");
             DrawPropertyField("moveSpeed", "移動速度", "d_UnityEditor.ProfilerWindow");
             DrawPropertyField("detectionRange", "索敵範囲", "d_UnityEditor.GameView");
+            DrawPropertyField("visionRange", "視野判定", "d_UnityEditor.GameView");
             DrawPropertyField("dropItemPrefab", "ドロップアイテムのプレハブ", "d_UnityEditor.SceneView");
             DrawPropertyField("dropItemCount", "ドロップアイテムの数", "d_UnityEditor.HierarchyWindow");
         }
 
-        attributesFoldout = DrawFoldoutHeader("属性", attributesFoldout);
+        attributesFoldout = DrawFoldoutHeader("タイプ", attributesFoldout);
         if (attributesFoldout)
         {
             DrawPropertyField("enemyAttribute", "属性", "d_UnityEditor.ConsoleWindow", true);
             DrawPropertyField("enemyType", "敵タイプ", "d_UnityEditor.HierarchyWindow", true);
+            DrawPropertyField("behaviorType", "行動タイプ", "d_UnityEditor.HierarchyWindow", true);
+            BehaviorType behaviorType = (BehaviorType)serializedObject.FindProperty("behaviorType").enumValueIndex;
+            if (behaviorType == BehaviorType.Patrol)
+            {
+                DrawPropertyField("patrolPointWaitTime", "徘徊ポイント停止時間", "d_UnityEditor.ProfilerWindow");
+            }
             DrawPropertyField("weaponType", "戦闘武器種類", "d_UnityEditor.SceneView", true);
             WeaponType weaponType = (WeaponType)serializedObject.FindProperty("weaponType").enumValueIndex;
             if (weaponType == WeaponType.Sword || weaponType == WeaponType.Axe || weaponType == WeaponType.Hammer)
