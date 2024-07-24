@@ -123,6 +123,7 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     /// </summary>
     private void OpenLinkedUI(string uiObject)
     {
+
         var linkedObject = _linkedUIObjects.FirstOrDefault(obj => obj.name == uiObject);
         if (linkedObject != null)
         {
@@ -181,10 +182,13 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     /// </summary>
     private void OpenMenuUI()
     {
+        if (StopManager.Instance.IsStopped)
+        { return; }
         SEManager.Instance.PlaySound("MenuOpenSE", 1.0f);
         _model.IsCursorVisible.Value = true;
         _view.SetMenuVisibility(_menuUI, false);
         _view.SetSettingVisibility(_settingUI, true);
+        StopManager.Instance.IsStopped = true;
     }
 
     /// <summary>
@@ -192,6 +196,7 @@ public class UIPresenter : SingletonMonoBehaviour<UIPresenter>
     /// </summary>
     private void CloseMenuUI()
     {
+        StopManager.Instance.IsStopped = false;
         SEManager.Instance.PlaySound("MenuCloseSE", 1.0f);
         _model.IsCursorVisible.Value = false;
         _view.SetMenuVisibility(_menuUI, true);

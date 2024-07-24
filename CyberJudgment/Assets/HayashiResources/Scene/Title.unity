@@ -2690,6 +2690,8 @@ PlayableDirector:
   m_SceneBindings:
   - key: {fileID: -2238044625294994976, guid: 0dda70844d7fbb3439a4737273bc51aa, type: 2}
     value: {fileID: 1115091689}
+  - key: {fileID: -8614773147964535983, guid: 0dda70844d7fbb3439a4737273bc51aa, type: 2}
+    value: {fileID: 9126141871081489972}
   m_ExposedReferences:
     m_References: []
 --- !u!1 &155379567
@@ -77836,7 +77838,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.9019608}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -86364,6 +86366,7 @@ GameObject:
   - component: {fileID: 9126141871081489969}
   - component: {fileID: 1359516088}
   - component: {fileID: 6032774434850504628}
+  - component: {fileID: 9126141871081489972}
   m_Layer: 3
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -86436,7 +86439,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1941928812}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 25, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -0.0004523864, y: 0.00783803, z: -0.0007763716}
+--- !u!95 &9126141871081489972
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9126141871081489968}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 0}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
 --- !u!54 &9126141871204841784
 Rigidbody:
   m_ObjectHideFlags: 0
