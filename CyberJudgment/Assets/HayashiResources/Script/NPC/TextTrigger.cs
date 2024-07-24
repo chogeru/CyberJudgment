@@ -32,6 +32,7 @@ public class TextTrigger : MonoBehaviour
                 {
                     DebugUtility.Log("テキストがない");
                     TextManager.Instance.HideText();
+                    ResetTextIndex();
 
                 }
             }
@@ -39,6 +40,7 @@ public class TextTrigger : MonoBehaviour
             {
                 DebugUtility.LogError("テキストの要素がない");
                 TextManager.Instance.HideText(); 
+                ResetTextIndex() ;
             }
         }
         else
@@ -47,7 +49,8 @@ public class TextTrigger : MonoBehaviour
         }
         if (_currentIndex > _textsToDisplay.Length)
         {
-            TextManager.Instance.HideText(); 
+            TextManager.Instance.HideText();
+            ResetTextIndex();
         }
     }
 

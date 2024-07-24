@@ -17,6 +17,7 @@ public class TextManager : SingletonMonoBehaviour<TextManager>
         {
             isTextEnd = false;
             _textWindowUI.SetActive(true); 
+            _textMeshPro.gameObject.SetActive(true);
             StopManager.Instance.IsStopped = true;
             if (_textMeshPro != null)
             {
@@ -40,6 +41,7 @@ public class TextManager : SingletonMonoBehaviour<TextManager>
             isTextEnd =true;
             StopManager.Instance.IsStopped = false;
             _textWindowUI.SetActive(false);
+            _textMeshPro.gameObject.SetActive(false);
         }
     }
 }

@@ -195,7 +195,13 @@ public class PlayerController : MonoBehaviour
     public void Move(Vector3 movement, float speed)
     {
         if (StopManager.Instance.IsStopped)
+        {
+            //強制的にidleに
+            UpdateState(true, false, false);
             return;
+
+        }
+
         // 地面に触れているときのみ移動
         if (isGrounded)
         {

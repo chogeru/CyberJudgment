@@ -11,13 +11,13 @@ public class NPCSpeakSystem : MonoBehaviour
         NPC,
         ShopNPC
     }
-    [SerializeField,Header("NPCのタイプ")]
+    [SerializeField, Header("NPCのタイプ")]
     public NPCType _npcType;
 
     [SerializeField, ReadOnly, Header("プレイヤーのトランスフォーム")]
     private Transform _player;
 
-    [SerializeField,Header("ショップ用のCanvas")]
+    [SerializeField, Header("ショップ用のCanvas")]
     private GameObject _shopCanvas;
 
     [SerializeField, Header("距離で表示するUI")]
@@ -27,10 +27,10 @@ public class NPCSpeakSystem : MonoBehaviour
     [SerializeField, Header("UI表示用の距離")]
     public float _triggerDistance = 10f;
 
-    [SerializeField,Header("会話時のボタン")]
+    [SerializeField, Header("会話時のボタン")]
     private KeyCode _keyCode;
 
-    [SerializeField,Header("テキストトリガー")]
+    [SerializeField, Header("テキストトリガー")]
     public TextTrigger _textTrigger;
 
 
@@ -63,10 +63,7 @@ public class NPCSpeakSystem : MonoBehaviour
         }
         else
         {
-            // プレイヤーが指定の距離外にいる場合、UIを非表示にする
-            _speakCanvas.SetActive(false);
-            _textTrigger.ResetTextIndex(); // プレイヤーが離れたらテキストのインデックスをリセット7
-            TextManager.Instance.isTextEnd = false;
+            ResetText();
         }
 
     }
@@ -74,9 +71,14 @@ public class NPCSpeakSystem : MonoBehaviour
     {
         Cursor.visible = false;
         StopManager.Instance.IsStopped = false;
-        StopManager.Instance.IsStopped = false;
         _shopCanvas.SetActive(false);
         TextManager.Instance.isTextEnd = false;
-
+    }
+    public void ResetText()
+    {
+        // プレイヤーが指定の距離外にいる場合、UIを非表示にする
+        _speakCanvas.SetActive(false);
+        _textTrigger.ResetTextIndex();
+        TextManager.Instance.isTextEnd = false;
     }
 }
