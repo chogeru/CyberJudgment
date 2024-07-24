@@ -72,6 +72,7 @@ public class PlayerController : MonoBehaviour
     #endregion
 
     private bool isGrounded;
+
     //プレイヤーの行動状態を表すReactiveProperty
     private ReactiveProperty<bool> isIdle = new ReactiveProperty<bool>(true);
     private ReactiveProperty<bool> isWalk = new ReactiveProperty<bool>(false);
@@ -193,6 +194,8 @@ public class PlayerController : MonoBehaviour
     // プレイヤーを指定の速度で移動
     public void Move(Vector3 movement, float speed)
     {
+        if (StopManager.Instance.IsStopped)
+            return;
         // 地面に触れているときのみ移動
         if (isGrounded)
         {

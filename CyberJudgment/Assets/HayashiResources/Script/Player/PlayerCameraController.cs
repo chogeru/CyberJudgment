@@ -40,6 +40,7 @@ public class PlayerCameraController : MonoBehaviour
     private float m_ZoomVelocity = 0.0f;
 
     private UIPresenter _uiPresenter;
+
     void Start()
     {
         m_MainCamera = GetComponent<Camera>();
@@ -87,6 +88,8 @@ public class PlayerCameraController : MonoBehaviour
 
     private async UniTaskVoid UpdateCameraPositionAsync(float mouseX, float mouseY, float scrollInput)
     {
+        if (StopManager.Instance.IsStopped)
+            return;
         m_Offset = Quaternion.AngleAxis(mouseX, Vector3.up) * Quaternion.AngleAxis(-mouseY, m_MainCamera.transform.right) * m_Offset;
 
         //スクロール入力を使用してターゲット距離を更新（m_ZoomSensitivityを使用）
