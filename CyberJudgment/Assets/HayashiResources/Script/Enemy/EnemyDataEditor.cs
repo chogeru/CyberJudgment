@@ -50,6 +50,8 @@ public class EnemyDataEditor : Editor
             DrawPropertyField("moveSpeed", "移動速度", "d_UnityEditor.ProfilerWindow");
             DrawPropertyField("detectionRange", "索敵範囲", "d_UnityEditor.GameView");
             DrawPropertyField("visionRange", "視野判定", "d_UnityEditor.GameView");
+            DrawPropertyField("attackRange", "攻撃距離", "d_UnityEditor.GameView");
+            DrawPropertyField("attackCooldown", "攻撃間隔", "d_UnityEditor.GameView");
             DrawPropertyField("dropItemPrefab", "ドロップアイテムのプレハブ", "d_UnityEditor.SceneView");
             DrawPropertyField("dropItemCount", "ドロップアイテムの数", "d_UnityEditor.HierarchyWindow");
         }

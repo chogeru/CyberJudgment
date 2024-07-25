@@ -24,6 +24,12 @@ public class EnemyData : ScriptableObject
     [SerializeField, Header("視野判定")]
     public float visionRange;
 
+    [SerializeField, Header("攻撃距離")]
+    public float attackRange;
+
+    [SerializeField, Header("攻撃間隔")]
+    public float attackCooldown = 2f;
+
     [SerializeField, Header("ドロップアイテムのプレハブ")]
     public GameObject dropItemPrefab;
 

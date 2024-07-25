@@ -1,29 +1,45 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.IO.LowLevel.Unsafe;
 using UnityEngine;
 
 public abstract class EnemyBase : MonoBehaviour
 {
-    [SerializeField] protected EnemyData enemyData;
+    [SerializeField] 
+    public EnemyData enemyData;
 
     [SerializeField]
-    protected Transform player;
+    public Transform player { get; private set; }
     [SerializeField]
-    protected bool isPlayerInSight;
-    protected Rigidbody rb;
+    public bool isPlayerInSight { get; private set; }
+    public Rigidbody rb { get; private set; }
+    public Animator animator { get; private set; }
+
+    private IEnemyState currentState;
 
     protected virtual void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").transform;
         rb = GetComponent<Rigidbody>();
+        animator = GetComponent<Animator>();
+        currentState = new IdleState();
+        currentState.EnterState(this);
     }
 
     protected virtual void Update()
     {
+        currentState.UpdateState(this);
         DetectPlayer();
     }
 
-    protected abstract void Patrol();
+    public void TransitionToState(IEnemyState newState)
+    {
+        currentState.ExitState(this);
+        currentState = newState;
+        currentState.EnterState(this);
+    }
+
+    public abstract void Patrol();
 
     protected void DetectPlayer()
     {
@@ -39,7 +55,7 @@ public abstract class EnemyBase : MonoBehaviour
                 if (hit.collider.CompareTag("Player"))
                 {
                     isPlayerInSight = true;
-                    ChasePlayer();
+                    TransitionToState(new ChaseState());
                     return;
                 }
             }
@@ -47,22 +63,21 @@ public abstract class EnemyBase : MonoBehaviour
         isPlayerInSight = false;
     }
 
-    protected void ChasePlayer()
-    {
-        MoveTowards(player.position);
-        RotateTowards(player.position);
-    }
-
-    protected void MoveTowards(Vector3 targetPosition)
+    public void MoveTowards(Vector3 targetPosition)
     {
         Vector3 direction = (targetPosition - transform.position).normalized;
         rb.MovePosition(transform.position + direction * enemyData.moveSpeed * Time.deltaTime);
     }
 
-    protected void RotateTowards(Vector3 targetPosition)
+    public void RotateTowards(Vector3 targetPosition)
     {
         Vector3 direction = (targetPosition - transform.position).normalized;
         Quaternion rotation = Quaternion.LookRotation(direction);
         rb.MoveRotation(Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * 360f));
+    }
+
+    public void EndAnimation()
+    {
+        TransitionToState(new IdleState());
     }
 }

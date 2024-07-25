@@ -11,19 +11,15 @@ public class Enemy : EnemyBase
         base.Start();
         currentPatrolIndex = 0;
         patrolTimer = 0f;
+        TransitionToState(new IdleState());
     }
 
     protected override void Update()
     {
         base.Update();
-
-        if (!isPlayerInSight)
-        {
-            Patrol();
-        }
     }
 
-    protected override void Patrol()
+    public override void Patrol()
     {
         if (patrolPoints.Length == 0) return;
 

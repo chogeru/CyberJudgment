@@ -4,6 +4,7 @@ using UnityEngine;
 [CustomEditor(typeof(EnemyData))]
 public class EnemyDataPropertyDrawer : Editor
 {
+
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
@@ -14,6 +15,8 @@ public class EnemyDataPropertyDrawer : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("moveSpeed"), new GUIContent("移動速度"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("detectionRange"), new GUIContent("索敵範囲"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("visionRange"), new GUIContent("視野判定"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("attackRange"), new GUIContent("攻撃距離"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("attackCooldown"), new GUIContent("攻撃間隔"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("dropItemPrefab"), new GUIContent("ドロップアイテムのプレハブ"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("dropItemCount"), new GUIContent("ドロップアイテムの数"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("enemyAttribute"), new GUIContent("属性"));
