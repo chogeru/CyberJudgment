@@ -16,60 +16,69 @@ public class TextManager : SingletonMonoBehaviour<TextManager>
     private TextMeshProUGUI _nameMeshPro;
 
     public bool isTextEnd = false;
+
     private CancellationTokenSource _cts;
 
+    /// <summary>
+    /// テキストを表示する処理
+    /// </summary>
+    /// <param name="characterName"></param>
+    /// <param name="textToShow"></param>
     public void ShowText(string characterName, string textToShow)
     {
-        if (_textWindowUI != null)
-        {
-            isTextEnd = false;
-            _textWindowUI.SetActive(true);
-            _textMeshPro.gameObject.SetActive(true);
-            _nameMeshPro.gameObject.SetActive(true);
-            StopManager.Instance.IsStopped = true;
-            if (_textMeshPro != null)
-            {
-                if (_cts != null)
-                {
-                    _cts.Cancel();
-                }
-                _cts = new CancellationTokenSource();
-                _nameMeshPro.text = characterName;
-                TypeText(textToShow, _cts.Token).Forget();
-            }
-            else
-            {
-                DebugUtility.LogError("TMPが無い");
-            }
-        }
-        else
+        if (_textWindowUI == null || _textMeshPro == null)
         {
             DebugUtility.LogError("Textウィンドウがない");
+            return;
         }
+
+        isTextEnd = false;
+        _textWindowUI.SetActive(true);
+        _textMeshPro.gameObject.SetActive(true);
+        _nameMeshPro.gameObject.SetActive(true);
+        StopManager.Instance.IsStopped = true;
+
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+        _nameMeshPro.text = characterName;
+        TypeText(textToShow, _cts.Token).Forget();
     }
 
+    /// <summary>
+    /// テキストをタイプ表示する処理（非同期）
+    /// </summary>
+    /// <param name="textToShow"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
     private async UniTaskVoid TypeText(string textToShow, CancellationToken token)
     {
         _textMeshPro.text = "";
-        foreach(char letter in textToShow.ToCharArray())
+        foreach (char letter in textToShow.ToCharArray())
         {
             _textMeshPro.text += letter;
             await UniTask.Delay(1, cancellationToken: token);
-            if(token.IsCancellationRequested)
+            if (token.IsCancellationRequested)
             {
                 return;
             }
         }
     }
-        public void HideText()
+
+    /// <summary>
+    /// テキストを非表示にする処理
+    /// </summary>
+    public void HideText()
     {
-        if (_textWindowUI != null)
+        if (_textWindowUI == null)
         {
-            isTextEnd = true;
-            StopManager.Instance.IsStopped = false;
-            _textWindowUI.SetActive(false);
-            _textMeshPro.gameObject.SetActive(false);
-            _nameMeshPro.gameObject.SetActive(false);
+            return;
         }
+
+        isTextEnd = true;
+        StopManager.Instance.IsStopped = false;
+        _textWindowUI.SetActive(false);
+        _textMeshPro.gameObject.SetActive(false);
+        _nameMeshPro.gameObject.SetActive(false);
     }
 }
+

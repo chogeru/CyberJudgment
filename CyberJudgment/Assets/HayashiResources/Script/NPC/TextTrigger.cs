@@ -9,8 +9,10 @@ using AbubuResouse.Log;
 public class Dialogue
 {
     public string characterName;
-    [TextArea(3, 10)] // 改行をサポート
+    [TextArea(3, 10)]
     public string message;
+    public string seName;
+    public float seVolume = 1.0f;
 }
 
 public class TextTrigger : MonoBehaviour
@@ -23,37 +25,34 @@ public class TextTrigger : MonoBehaviour
     [SerializeField,Header("SE音量")]
     private float _seVolume;
 
+    /// <summary>
+    /// テキスト表示をトリガーする処理
+    /// </summary>
     public void TriggerTextDisplay()
     {
-        if (TextManager.Instance != null)
+        if (TextManager.Instance == null || dialogues == null || dialogues.Length == 0)
         {
-            if (dialogues != null && dialogues.Length > 0)
-            {
-                if (_currentIndex < dialogues.Length)
-                {
-                    TextManager.Instance.ShowText(dialogues[_currentIndex].characterName, dialogues[_currentIndex].message);
-                    DebugUtility.Log(dialogues[_currentIndex].message);
-                    _currentIndex++;
-                    SEManager.Instance.PlaySound(_seName, _seVolume);
-                }
-                else
-                {
-                    DebugUtility.Log("テキストがない");
-                    TextManager.Instance.HideText();
-                    ResetTextIndex();
-                }
-            }
-            else
-            {
-                DebugUtility.LogError("テキストの要素がない");
-                TextManager.Instance.HideText();
-                ResetTextIndex();
-            }
+            DebugUtility.LogError("テキストの要素がない");
+            TextManager.Instance?.HideText();
+            ResetTextIndex();
+            return;
+        }
+
+        if (_currentIndex < dialogues.Length)
+        {
+            var currentDialogue = dialogues[_currentIndex];
+            TextManager.Instance.ShowText(currentDialogue.characterName, currentDialogue.message);
+            PlaySoundEffect(currentDialogue.seName, currentDialogue.seVolume);
+
+            _currentIndex++;
         }
         else
         {
-            Debug.LogError("テキストがない!!");
+            DebugUtility.Log("テキストがない");
+            TextManager.Instance.HideText();
+            ResetTextIndex();
         }
+
         if (_currentIndex > dialogues.Length)
         {
             TextManager.Instance.HideText();
@@ -61,6 +60,23 @@ public class TextTrigger : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 効果音を再生する処理
+    /// </summary>
+    /// <param name="seName"></param>
+    /// <param name="seVolume"></param>
+    private void PlaySoundEffect(string seName, float seVolume)
+    {
+        if (!string.IsNullOrEmpty(seName))
+        {
+            SEManager.Instance.PlaySound(seName, seVolume);
+        }
+        SEManager.Instance.PlaySound(this._seName, this._seVolume);
+    }
+
+    /// <summary>
+    /// テキストインデックスをリセットする処理
+    /// </summary>
     public void ResetTextIndex()
     {
         _currentIndex = 0;
