@@ -33,6 +33,7 @@ public class TextTrigger : MonoBehaviour
         if (TextManager.Instance == null || dialogues == null || dialogues.Length == 0)
         {
             DebugUtility.LogError("テキストの要素がない");
+            SEManager.Instance.PlaySound(this._seName, this._seVolume);
             TextManager.Instance?.HideText();
             ResetTextIndex();
             return;
@@ -43,7 +44,7 @@ public class TextTrigger : MonoBehaviour
             var currentDialogue = dialogues[_currentIndex];
             TextManager.Instance.ShowText(currentDialogue.characterName, currentDialogue.message);
             PlaySoundEffect(currentDialogue.seName, currentDialogue.seVolume);
-
+            SEManager.Instance.PlaySound(this._seName, this._seVolume);
             _currentIndex++;
         }
         else
@@ -69,9 +70,8 @@ public class TextTrigger : MonoBehaviour
     {
         if (!string.IsNullOrEmpty(seName))
         {
-            SEManager.Instance.PlaySound(seName, seVolume);
+            VoiceManager.Instance.PlaySound(seName, seVolume);
         }
-        SEManager.Instance.PlaySound(this._seName, this._seVolume);
     }
 
     /// <summary>
