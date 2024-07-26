@@ -6,11 +6,40 @@ public class TimellineManager: MonoBehaviour
 {
     [SerializeField, Header("アクティブにするオブジェクト")]
     public GameObject[] _objectsToActivate;
-    [SerializeField, Header("非アクティブにするオブジェクト")]
+    [SerializeField, Header("ムービー後に非アクティブにするオブジェクト")]
     public GameObject[] _objectsToDeactivate;
+    [SerializeField,Header("ムービー前に非アクティブにするオブジェクト")]
+    private GameObject[] _objectsToRemove;
 
     [SerializeField, Header("スキップするタイムラインのPlayableDirector")]
     private PlayableDirector _playableDirector;
+
+    private void Start()
+    {
+        // PlayableDirectorの再生開始イベントにリスナーを追加
+        if (_playableDirector != null)
+        {
+            _playableDirector.played += OnPlayableDirectorPlayed;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        // PlayableDirectorの再生開始イベントのリスナーを削除
+        if (_playableDirector != null)
+        {
+            _playableDirector.played -= OnPlayableDirectorPlayed;
+        }
+    }
+
+    /// <summary>
+    /// PlayableDirectorが再生を開始したときに呼び出されるメソッド
+    /// </summary>
+    /// <param name="director"></param>
+    private void OnPlayableDirectorPlayed(PlayableDirector director)
+    {
+        StartInactive();
+    }
 
     void Update()
     {
@@ -46,6 +75,17 @@ public class TimellineManager: MonoBehaviour
     private void DeactivateObjects()
     {
         foreach (var obj in _objectsToDeactivate)
+        {
+            obj.SetActive(false);
+        }
+    }
+
+    /// <summary>
+    ///タイムライン再生時に非アクティブにするメソッド 
+    /// </summary>
+   private void StartInactive()
+    {
+        foreach(var obj in _objectsToRemove)
         {
             obj.SetActive(false);
         }

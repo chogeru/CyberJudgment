@@ -21,6 +21,9 @@ public class SetVoice : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 任意のタイミングでボイス再生用関数
+    /// </summary>
     public void PlayVoice()
     {
         VoiceManager.Instance.PlaySound(_voiceName, _Volume);

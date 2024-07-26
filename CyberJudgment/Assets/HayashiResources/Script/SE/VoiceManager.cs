@@ -20,6 +20,9 @@ public class VoiceManager : SingletonMonoBehaviour<VoiceManager>
         InitializeDatabase();
     }
 
+    /// <summary>
+    /// 初期化処理
+    /// </summary>
     private void InitializeDatabase()
     {
         var databasePath = System.IO.Path.Combine(Application.streamingAssetsPath, "voice_data.db").Replace("\\", "/");
@@ -34,6 +37,11 @@ public class VoiceManager : SingletonMonoBehaviour<VoiceManager>
         }
     }
 
+    /// <summary>
+    /// サウンド名と音量を受け取り、dbにあれば再生させるメソッド
+    /// </summary>
+    /// <param name="clipName"></param>
+    /// <param name="volume"></param>
     public void PlaySound(string clipName, float volume)
     {
         var query = connection.Table<VoiceClip>().FirstOrDefault(x => x.ClipName == clipName);
@@ -48,6 +56,11 @@ public class VoiceManager : SingletonMonoBehaviour<VoiceManager>
         }
     }
 
+    /// <summary>
+    ///ボイスを読み込んで再生するメソッド 
+    /// </summary>
+    /// <param name="clipPath"></param>
+    /// <param name="volume"></param>
     private void LoadAndPlayClip(string clipPath, float volume)
     {
         try
