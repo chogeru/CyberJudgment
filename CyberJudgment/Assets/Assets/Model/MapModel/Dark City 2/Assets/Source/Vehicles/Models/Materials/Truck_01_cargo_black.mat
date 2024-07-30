@@ -2,13 +2,19 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!21 &2100000
 Material:
-  serializedVersion: 6
+  serializedVersion: 8
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_Name: Truck_01_cargo_black
   m_Shader: {fileID: 4800000, guid: 807ba0f344c07fb4896b29aa817f0a96, type: 3}
-  m_ShaderKeywords: _EMISSION _EMISSIONTEXTURE_ON _METALLICGLOSSMAP _NORMALMAP
+  m_ValidKeywords: []
+  m_InvalidKeywords:
+  - _EMISSION
+  - _EMISSIONTEXTURE_ON
+  - _METALLICGLOSSMAP
+  - _NORMALMAP
   m_LightmapFlags: 1
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -78,6 +84,7 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    m_Ints: []
     m_Floats:
     - _BumpScale: 1
     - _Cutoff: 0.5
@@ -102,3 +109,4 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0.3773585, g: 0.09195522, b: 0, a: 1}
     - _MaskColor: {r: 0.11650055, g: 0.1234077, b: 0.13207549, a: 1}
+  m_BuildTextureStacks: []

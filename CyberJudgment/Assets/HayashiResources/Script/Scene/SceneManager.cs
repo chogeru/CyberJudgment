@@ -49,7 +49,9 @@ public class SceneManager : SingletonMonoBehaviour<SceneManager>
             return;
         }
         isSceneLoading = true;
-        _nextScene = GetNextSceneNameFromDB(currentSceneName);
+        // 次のシーン名を非同期で取得
+        _nextScene = await GetNextSceneNameFromDBAsync(currentSceneName);
+
         if (!string.IsNullOrEmpty(_nextScene))
         {
             UpdateLoadingScreen(_nextScene);
@@ -63,22 +65,26 @@ public class SceneManager : SingletonMonoBehaviour<SceneManager>
         }
         isSceneLoading = false;
     }
-    private string GetNextSceneNameFromDB(string currentSceneName)
+    private async UniTask<string> GetNextSceneNameFromDBAsync(string currentSceneName)
     {
         try
         {
-            var query = _connection.Table<SceneTransition>().Where(x => x.CurrentScene == currentSceneName).FirstOrDefault();
-            if (query != null)
+            return await UniTask.RunOnThreadPool(() =>
             {
-                return query.NextScene;
-            }
+                var query = _connection.Table<SceneTransition>()
+                                       .Where(x => x.CurrentScene == currentSceneName)
+                                       .FirstOrDefault();
+                return query?.NextScene;
+            });
         }
         catch (System.Exception ex)
         {
-            DebugUtility.LogError("" + ex.Message);
+            DebugUtility.LogError(ex.Message);
         }
+
         return null;
     }
+
 
     private void UpdateLoadingScreen(string sceneName)
     {
@@ -100,8 +106,7 @@ public class SceneManager : SingletonMonoBehaviour<SceneManager>
     {
         _loadingBar.fillAmount = 0;
         // シーンの非同期読み込みを開始
-        var asyncOperation = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneName);
-        // シーンの読み込みが完了するまで待機
+        var asyncOperation = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneName); // シーンの読み込みが完了するまで待機
         while (!asyncOperation.isDone)
         {
             _loadingBar.fillAmount = asyncOperation.progress;
