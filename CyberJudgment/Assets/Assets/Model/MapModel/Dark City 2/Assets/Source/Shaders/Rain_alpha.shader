@@ -10,6 +10,7 @@ Shader "MK4/Rain Alpha"
 		_Albedo("Albedo", 2D) = "white" {}
 		_NormalMap("Normal Map", 2D) = "bump" {}
 		_SpecularGloss("Specular Gloss", 2D) = "white" {}
+		_Specular("Specular", Range( 0 , 1)) = 0
 		_Smoothness("Smoothness", Range( 0 , 1)) = 0.5
 		_RainMask("Rain Mask", Range( 0 , 1)) = 0.5
 		_RainDropsNormal("RainDrops Normal", 2D) = "bump" {}
@@ -301,6 +302,7 @@ Shader "MK4/Rain Alpha"
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
+			float _Specular;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -613,6 +615,8 @@ Shader "MK4/Rain Alpha"
 				float3 lerpResult88 = lerp( tex2DNode137 , BlendNormal( tex2DNode137 , ( unpack11 + ( unpack244 + unpack230 + unpack102 ) ) ) , clampResult228);
 				float3 normalizeResult249 = normalize( lerpResult88 );
 				
+				float clampResult214 = clamp( ((-1.0 + (_Specular - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (tex2DNode210.r - 0.0) * ((0.0 + (_Specular - 0.0) * (2.0 - 0.0) / (1.0 - 0.0)) - (-1.0 + (_Specular - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
+				
 				float clampResult212 = clamp( ((-1.0 + (_Smoothness - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (tex2DNode210.a - 0.0) * (1.0 - (-1.0 + (_Smoothness - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
 				
 
@@ -620,7 +624,7 @@ Shader "MK4/Rain Alpha"
 				float3 Normal = normalizeResult249;
 				float3 Emission = 0;
 				float3 Specular = 0.5;
-				float Metallic = 0;
+				float Metallic = clampResult214;
 				float Smoothness = clampResult212;
 				float Occlusion = 1;
 				float Alpha = 1;
@@ -902,6 +906,7 @@ Shader "MK4/Rain Alpha"
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
+			float _Specular;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -1221,6 +1226,7 @@ Shader "MK4/Rain Alpha"
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
+			float _Specular;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -1513,6 +1519,7 @@ Shader "MK4/Rain Alpha"
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
+			float _Specular;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -1819,6 +1826,7 @@ Shader "MK4/Rain Alpha"
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
+			float _Specular;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -2117,6 +2125,7 @@ Shader "MK4/Rain Alpha"
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
+			float _Specular;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -2543,6 +2552,7 @@ Shader "MK4/Rain Alpha"
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
+			float _Specular;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -2848,6 +2858,8 @@ Shader "MK4/Rain Alpha"
 				float3 lerpResult88 = lerp( tex2DNode137 , BlendNormal( tex2DNode137 , ( unpack11 + ( unpack244 + unpack230 + unpack102 ) ) ) , clampResult228);
 				float3 normalizeResult249 = normalize( lerpResult88 );
 				
+				float clampResult214 = clamp( ((-1.0 + (_Specular - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (tex2DNode210.r - 0.0) * ((0.0 + (_Specular - 0.0) * (2.0 - 0.0) / (1.0 - 0.0)) - (-1.0 + (_Specular - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
+				
 				float clampResult212 = clamp( ((-1.0 + (_Smoothness - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (tex2DNode210.a - 0.0) * (1.0 - (-1.0 + (_Smoothness - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
 				
 
@@ -2855,7 +2867,7 @@ Shader "MK4/Rain Alpha"
 				float3 Normal = normalizeResult249;
 				float3 Emission = 0;
 				float3 Specular = 0.5;
-				float Metallic = 0;
+				float Metallic = clampResult214;
 				float Smoothness = clampResult212;
 				float Occlusion = 1;
 				float Alpha = 1;
@@ -3026,6 +3038,7 @@ Shader "MK4/Rain Alpha"
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
+			float _Specular;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -3282,6 +3295,7 @@ Shader "MK4/Rain Alpha"
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
+			float _Specular;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -3630,6 +3644,7 @@ WireConnection;212;0;211;0
 WireConnection;249;0;88;0
 WireConnection;257;0;121;0
 WireConnection;257;1;249;0
+WireConnection;257;3;214;0
 WireConnection;257;4;212;0
 ASEEND*/
-//CHKSM=6DB0DE69D1074860751CBDAE1F6EC582BFA7D39F
+//CHKSM=414CD270347B0A113F428042F41C7D574A8D845D

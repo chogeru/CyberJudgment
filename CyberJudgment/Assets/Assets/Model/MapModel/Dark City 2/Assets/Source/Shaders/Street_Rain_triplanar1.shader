@@ -11,6 +11,7 @@ Shader "MK4/Rain_triplanar_street1"
 		_UVTiling("UV Tiling", Range( 0 , 1)) = 0.2
 		_Normalmap("Normalmap", 2D) = "bump" {}
 		_SpecularSmoothness("Specular Smoothness", 2D) = "gray" {}
+		_Specular("Specular", Range( 0 , 1)) = 0
 		_Smoothness("Smoothness", Range( 0 , 1)) = 0.5
 		_RainMask("Rain Mask", Range( 0 , 1)) = 0.5
 		_RainDropsNormal("RainDrops Normal", 2D) = "bump" {}
@@ -305,6 +306,7 @@ Shader "MK4/Rain_triplanar_street1"
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
+			float _Specular;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -660,6 +662,8 @@ Shader "MK4/Rain_triplanar_street1"
 				float3 lerpResult88 = lerp( tanTriplanarNormal362 , BlendNormal( tanTriplanarNormal362 , ( unpack11 + ( unpack244 + unpack230 + unpack102 ) ) ) , clampResult228);
 				float3 normalizeResult249 = normalize( lerpResult88 );
 				
+				float clampResult214 = clamp( ((-1.0 + (_Specular - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (triplanar364.r - 0.0) * ((0.0 + (_Specular - 0.0) * (2.0 - 0.0) / (1.0 - 0.0)) - (-1.0 + (_Specular - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
+				
 				float clampResult212 = clamp( ((-1.0 + (_Smoothness - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (triplanar364.a - 0.0) * (1.0 - (-1.0 + (_Smoothness - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
 				
 
@@ -667,7 +671,7 @@ Shader "MK4/Rain_triplanar_street1"
 				float3 Normal = normalizeResult249;
 				float3 Emission = 0;
 				float3 Specular = 0.5;
-				float Metallic = 0;
+				float Metallic = clampResult214;
 				float Smoothness = clampResult212;
 				float Occlusion = 1;
 				float Alpha = 1;
@@ -948,6 +952,7 @@ Shader "MK4/Rain_triplanar_street1"
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
+			float _Specular;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -1266,6 +1271,7 @@ Shader "MK4/Rain_triplanar_street1"
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
+			float _Specular;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -1560,6 +1566,7 @@ Shader "MK4/Rain_triplanar_street1"
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
+			float _Specular;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -1900,6 +1907,7 @@ Shader "MK4/Rain_triplanar_street1"
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
+			float _Specular;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -2233,6 +2241,7 @@ Shader "MK4/Rain_triplanar_street1"
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
+			float _Specular;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -2694,6 +2703,7 @@ Shader "MK4/Rain_triplanar_street1"
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
+			float _Specular;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -3042,6 +3052,8 @@ Shader "MK4/Rain_triplanar_street1"
 				float3 lerpResult88 = lerp( tanTriplanarNormal362 , BlendNormal( tanTriplanarNormal362 , ( unpack11 + ( unpack244 + unpack230 + unpack102 ) ) ) , clampResult228);
 				float3 normalizeResult249 = normalize( lerpResult88 );
 				
+				float clampResult214 = clamp( ((-1.0 + (_Specular - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (triplanar364.r - 0.0) * ((0.0 + (_Specular - 0.0) * (2.0 - 0.0) / (1.0 - 0.0)) - (-1.0 + (_Specular - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
+				
 				float clampResult212 = clamp( ((-1.0 + (_Smoothness - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (triplanar364.a - 0.0) * (1.0 - (-1.0 + (_Smoothness - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
 				
 
@@ -3049,7 +3061,7 @@ Shader "MK4/Rain_triplanar_street1"
 				float3 Normal = normalizeResult249;
 				float3 Emission = 0;
 				float3 Specular = 0.5;
-				float Metallic = 0;
+				float Metallic = clampResult214;
 				float Smoothness = clampResult212;
 				float Occlusion = 1;
 				float Alpha = 1;
@@ -3219,6 +3231,7 @@ Shader "MK4/Rain_triplanar_street1"
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
+			float _Specular;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -3474,6 +3487,7 @@ Shader "MK4/Rain_triplanar_street1"
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
+			float _Specular;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -3835,6 +3849,7 @@ WireConnection;249;0;88;0
 WireConnection;212;0;211;0
 WireConnection;384;0;382;0
 WireConnection;384;1;249;0
+WireConnection;384;3;214;0
 WireConnection;384;4;212;0
 ASEEND*/
-//CHKSM=048A93FA4D6B5642A7891265CBB331B169F6E567
+//CHKSM=7CE2F3BF6F44A36DFD819D53574A9B72C5C0CDF5
