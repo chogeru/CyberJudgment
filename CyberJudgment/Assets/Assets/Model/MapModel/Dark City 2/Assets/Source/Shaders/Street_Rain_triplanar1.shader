@@ -4,8 +4,10 @@ Shader "MK4/Rain_triplanar_street1"
 {
 	Properties
 	{
-		[HideInInspector] _AlphaCutoff("Alpha Cutoff ", Range(0, 1)) = 0.5
 		[HideInInspector] _EmissionColor("Emission Color", Color) = (1,1,1,1)
+		[HideInInspector] _AlphaCutoff("Alpha Cutoff ", Range(0, 1)) = 0.5
+		_Color("Color", Color) = (0.5807742,0.7100198,0.9632353,0)
+		_Albedo("Albedo", 2D) = "gray" {}
 		_UVTiling("UV Tiling", Range( 0 , 1)) = 0.2
 		_Normalmap("Normalmap", 2D) = "bump" {}
 		_SpecularSmoothness("Specular Smoothness", 2D) = "gray" {}
@@ -19,6 +21,8 @@ Shader "MK4/Rain_triplanar_street1"
 		_WaveNormalint("Wave Normal int", Range( 0 , 5)) = 0
 		_WaveSpeed("Wave Speed", Range( 0 , 1)) = 0
 		_WaveUVTile("Wave UV Tile", Range( 0 , 1)) = 0
+		_RoadSymbols("Road Symbols", 2D) = "black" {}
+		[HideInInspector] _texcoord( "", 2D ) = "white" {}
 
 
 		//_TransmissionShadow( "Transmission Shadow", Range( 0, 1 ) ) = 0.5
@@ -285,20 +289,22 @@ Shader "MK4/Rain_triplanar_street1"
 				#if defined(DYNAMICLIGHTMAP_ON)
 					float2 dynamicLightmapUV : TEXCOORD7;
 				#endif
-				
+				float4 ase_texcoord8 : TEXCOORD8;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _RoadSymbols_ST;
+			float4 _Color;
 			float _UVTiling;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -332,10 +338,12 @@ Shader "MK4/Rain_triplanar_street1"
 				int _PassValue;
 			#endif
 
+			sampler2D _SpecularSmoothness;
+			sampler2D _RoadSymbols;
+			sampler2D _Albedo;
 			sampler2D _Normalmap;
 			sampler2D _RainDropsNormal;
 			sampler2D _WaveNormal;
-			sampler2D _SpecularSmoothness;
 
 
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/Varyings.hlsl"
@@ -345,6 +353,30 @@ Shader "MK4/Rain_triplanar_street1"
 			//#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/VisualEffectVertex.hlsl"
 			//#endif
 
+			inline float4 TriplanarSampling364( sampler2D topTexMap, float3 worldPos, float3 worldNormal, float falloff, float2 tiling, float3 normalScale, float3 index )
+			{
+				float3 projNormal = ( pow( abs( worldNormal ), falloff ) );
+				projNormal /= ( projNormal.x + projNormal.y + projNormal.z ) + 0.00001;
+				float3 nsign = sign( worldNormal );
+				half4 xNorm; half4 yNorm; half4 zNorm;
+				xNorm = tex2D( topTexMap, tiling * worldPos.zy * float2(  nsign.x, 1.0 ) );
+				yNorm = tex2D( topTexMap, tiling * worldPos.xz * float2(  nsign.y, 1.0 ) );
+				zNorm = tex2D( topTexMap, tiling * worldPos.xy * float2( -nsign.z, 1.0 ) );
+				return xNorm * projNormal.x + yNorm * projNormal.y + zNorm * projNormal.z;
+			}
+			
+			inline float4 TriplanarSampling363( sampler2D topTexMap, float3 worldPos, float3 worldNormal, float falloff, float2 tiling, float3 normalScale, float3 index )
+			{
+				float3 projNormal = ( pow( abs( worldNormal ), falloff ) );
+				projNormal /= ( projNormal.x + projNormal.y + projNormal.z ) + 0.00001;
+				float3 nsign = sign( worldNormal );
+				half4 xNorm; half4 yNorm; half4 zNorm;
+				xNorm = tex2D( topTexMap, tiling * worldPos.zy * float2(  nsign.x, 1.0 ) );
+				yNorm = tex2D( topTexMap, tiling * worldPos.xz * float2(  nsign.y, 1.0 ) );
+				zNorm = tex2D( topTexMap, tiling * worldPos.xy * float2( -nsign.z, 1.0 ) );
+				return xNorm * projNormal.x + yNorm * projNormal.y + zNorm * projNormal.z;
+			}
+			
 			inline float3 TriplanarSampling362( sampler2D topTexMap, float3 worldPos, float3 worldNormal, float falloff, float2 tiling, float3 normalScale, float3 index )
 			{
 				float3 projNormal = ( pow( abs( worldNormal ), falloff ) );
@@ -360,18 +392,6 @@ Shader "MK4/Rain_triplanar_street1"
 				return normalize( xNorm.xyz * projNormal.x + yNorm.xyz * projNormal.y + zNorm.xyz * projNormal.z );
 			}
 			
-			inline float4 TriplanarSampling364( sampler2D topTexMap, float3 worldPos, float3 worldNormal, float falloff, float2 tiling, float3 normalScale, float3 index )
-			{
-				float3 projNormal = ( pow( abs( worldNormal ), falloff ) );
-				projNormal /= ( projNormal.x + projNormal.y + projNormal.z ) + 0.00001;
-				float3 nsign = sign( worldNormal );
-				half4 xNorm; half4 yNorm; half4 zNorm;
-				xNorm = tex2D( topTexMap, tiling * worldPos.zy * float2(  nsign.x, 1.0 ) );
-				yNorm = tex2D( topTexMap, tiling * worldPos.xz * float2(  nsign.y, 1.0 ) );
-				zNorm = tex2D( topTexMap, tiling * worldPos.xy * float2( -nsign.z, 1.0 ) );
-				return xNorm * projNormal.x + yNorm * projNormal.y + zNorm * projNormal.z;
-			}
-			
 
 			VertexOutput VertexFunction( VertexInput v  )
 			{
@@ -380,7 +400,10 @@ Shader "MK4/Rain_triplanar_street1"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
+				o.ase_texcoord8.xy = v.texcoord.xy;
 				
+				//setting value to unused interpolator channels and avoid initialization warnings
+				o.ase_texcoord8.zw = 0;
 
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					float3 defaultVertexValue = v.vertex.xyz;
@@ -579,6 +602,13 @@ Shader "MK4/Rain_triplanar_street1"
 				WorldViewDirection = SafeNormalize( WorldViewDirection );
 
 				float temp_output_366_0 = (0.01 + (_UVTiling - 0.0) * (2.0 - 0.01) / (1.0 - 0.0));
+				float4 triplanar364 = TriplanarSampling364( _SpecularSmoothness, WorldPosition, WorldNormal, 1.0, temp_output_366_0, 1.0, 0 );
+				float2 uv_RoadSymbols = IN.ase_texcoord8.xy * _RoadSymbols_ST.xy + _RoadSymbols_ST.zw;
+				float clampResult375 = clamp( ( (1.0 + (triplanar364.w - 0.0) * (0.2 - 1.0) / (1.0 - 0.0)) * tex2D( _RoadSymbols, uv_RoadSymbols ).r ) , 0.0 , 1.0 );
+				float clampResult228 = clamp( ((-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (triplanar364.a - 0.0) * (1.0 - (-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
+				float4 lerpResult120 = lerp( float4( 1,1,1,0 ) , _Color , clampResult228);
+				float4 triplanar363 = TriplanarSampling363( _Albedo, WorldPosition, WorldNormal, 1.0, temp_output_366_0, 1.0, 0 );
+				
 				float3x3 ase_worldToTangent = float3x3(WorldTangent,WorldBiTangent,WorldNormal);
 				float3 triplanar362 = TriplanarSampling362( _Normalmap, WorldPosition, WorldNormal, 1.0, temp_output_366_0, 1.0, 0 );
 				float3 tanTriplanarNormal362 = mul( ase_worldToTangent, triplanar362 );
@@ -627,15 +657,13 @@ Shader "MK4/Rain_triplanar_street1"
 				float2 panner91 = ( temp_output_241_0 * float2( 0.18,0.2 ).x + appendResult183);
 				float3 unpack102 = UnpackNormalScale( tex2D( _WaveNormal, ( panner91 * temp_output_222_0 ) ), _WaveNormalint );
 				unpack102.z = lerp( 1, unpack102.z, saturate(_WaveNormalint) );
-				float4 triplanar364 = TriplanarSampling364( _SpecularSmoothness, WorldPosition, WorldNormal, 1.0, temp_output_366_0, 1.0, 0 );
-				float clampResult228 = clamp( ((-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (triplanar364.w - 0.0) * (1.0 - (-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
 				float3 lerpResult88 = lerp( tanTriplanarNormal362 , BlendNormal( tanTriplanarNormal362 , ( unpack11 + ( unpack244 + unpack230 + unpack102 ) ) ) , clampResult228);
 				float3 normalizeResult249 = normalize( lerpResult88 );
 				
 				float clampResult212 = clamp( ((-1.0 + (_Smoothness - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (triplanar364.a - 0.0) * (1.0 - (-1.0 + (_Smoothness - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
 				
 
-				float3 BaseColor = float3(0.5, 0.5, 0.5);
+				float3 BaseColor = ( clampResult375 + ( lerpResult120 * triplanar363 ) ).rgb;
 				float3 Normal = normalizeResult249;
 				float3 Emission = 0;
 				float3 Specular = 0.5;
@@ -910,14 +938,16 @@ Shader "MK4/Rain_triplanar_street1"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _RoadSymbols_ST;
+			float4 _Color;
 			float _UVTiling;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -1226,14 +1256,16 @@ Shader "MK4/Rain_triplanar_street1"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _RoadSymbols_ST;
+			float4 _Color;
 			float _UVTiling;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -1483,7 +1515,9 @@ Shader "MK4/Rain_triplanar_street1"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/MetaInput.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShaderPass.hlsl"
 
-			
+			#define ASE_NEEDS_FRAG_WORLD_POSITION
+			#define ASE_NEEDS_VERT_NORMAL
+
 
 			struct VertexInput
 			{
@@ -1509,20 +1543,23 @@ Shader "MK4/Rain_triplanar_street1"
 					float4 VizUV : TEXCOORD2;
 					float4 LightCoord : TEXCOORD3;
 				#endif
-				
+				float4 ase_texcoord4 : TEXCOORD4;
+				float4 ase_texcoord5 : TEXCOORD5;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _RoadSymbols_ST;
+			float4 _Color;
 			float _UVTiling;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -1556,7 +1593,10 @@ Shader "MK4/Rain_triplanar_street1"
 				int _PassValue;
 			#endif
 
-			
+			sampler2D _SpecularSmoothness;
+			sampler2D _RoadSymbols;
+			sampler2D _Albedo;
+
 
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/Varyings.hlsl"
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/LightingMetaPass.hlsl"
@@ -1565,7 +1605,31 @@ Shader "MK4/Rain_triplanar_street1"
 			//#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/VisualEffectVertex.hlsl"
 			//#endif
 
+			inline float4 TriplanarSampling364( sampler2D topTexMap, float3 worldPos, float3 worldNormal, float falloff, float2 tiling, float3 normalScale, float3 index )
+			{
+				float3 projNormal = ( pow( abs( worldNormal ), falloff ) );
+				projNormal /= ( projNormal.x + projNormal.y + projNormal.z ) + 0.00001;
+				float3 nsign = sign( worldNormal );
+				half4 xNorm; half4 yNorm; half4 zNorm;
+				xNorm = tex2D( topTexMap, tiling * worldPos.zy * float2(  nsign.x, 1.0 ) );
+				yNorm = tex2D( topTexMap, tiling * worldPos.xz * float2(  nsign.y, 1.0 ) );
+				zNorm = tex2D( topTexMap, tiling * worldPos.xy * float2( -nsign.z, 1.0 ) );
+				return xNorm * projNormal.x + yNorm * projNormal.y + zNorm * projNormal.z;
+			}
 			
+			inline float4 TriplanarSampling363( sampler2D topTexMap, float3 worldPos, float3 worldNormal, float falloff, float2 tiling, float3 normalScale, float3 index )
+			{
+				float3 projNormal = ( pow( abs( worldNormal ), falloff ) );
+				projNormal /= ( projNormal.x + projNormal.y + projNormal.z ) + 0.00001;
+				float3 nsign = sign( worldNormal );
+				half4 xNorm; half4 yNorm; half4 zNorm;
+				xNorm = tex2D( topTexMap, tiling * worldPos.zy * float2(  nsign.x, 1.0 ) );
+				yNorm = tex2D( topTexMap, tiling * worldPos.xz * float2(  nsign.y, 1.0 ) );
+				zNorm = tex2D( topTexMap, tiling * worldPos.xy * float2( -nsign.z, 1.0 ) );
+				return xNorm * projNormal.x + yNorm * projNormal.y + zNorm * projNormal.z;
+			}
+			
+
 			VertexOutput VertexFunction( VertexInput v  )
 			{
 				VertexOutput o = (VertexOutput)0;
@@ -1573,7 +1637,14 @@ Shader "MK4/Rain_triplanar_street1"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
+				float3 ase_worldNormal = TransformObjectToWorldNormal(v.ase_normal);
+				o.ase_texcoord4.xyz = ase_worldNormal;
 				
+				o.ase_texcoord5.xy = v.texcoord0.xy;
+				
+				//setting value to unused interpolator channels and avoid initialization warnings
+				o.ase_texcoord4.w = 0;
+				o.ase_texcoord5.zw = 0;
 
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					float3 defaultVertexValue = v.vertex.xyz;
@@ -1724,9 +1795,17 @@ Shader "MK4/Rain_triplanar_street1"
 					#endif
 				#endif
 
+				float temp_output_366_0 = (0.01 + (_UVTiling - 0.0) * (2.0 - 0.01) / (1.0 - 0.0));
+				float3 ase_worldNormal = IN.ase_texcoord4.xyz;
+				float4 triplanar364 = TriplanarSampling364( _SpecularSmoothness, WorldPosition, ase_worldNormal, 1.0, temp_output_366_0, 1.0, 0 );
+				float2 uv_RoadSymbols = IN.ase_texcoord5.xy * _RoadSymbols_ST.xy + _RoadSymbols_ST.zw;
+				float clampResult375 = clamp( ( (1.0 + (triplanar364.w - 0.0) * (0.2 - 1.0) / (1.0 - 0.0)) * tex2D( _RoadSymbols, uv_RoadSymbols ).r ) , 0.0 , 1.0 );
+				float clampResult228 = clamp( ((-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (triplanar364.a - 0.0) * (1.0 - (-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
+				float4 lerpResult120 = lerp( float4( 1,1,1,0 ) , _Color , clampResult228);
+				float4 triplanar363 = TriplanarSampling363( _Albedo, WorldPosition, ase_worldNormal, 1.0, temp_output_366_0, 1.0, 0 );
 				
 
-				float3 BaseColor = float3(0.5, 0.5, 0.5);
+				float3 BaseColor = ( clampResult375 + ( lerpResult120 * triplanar363 ) ).rgb;
 				float3 Emission = 0;
 				float Alpha = 1;
 				float AlphaClipThreshold = 0.5;
@@ -1783,13 +1862,15 @@ Shader "MK4/Rain_triplanar_street1"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShaderPass.hlsl"
 
-			
+			#define ASE_NEEDS_FRAG_WORLD_POSITION
+			#define ASE_NEEDS_VERT_NORMAL
+
 
 			struct VertexInput
 			{
 				float4 vertex : POSITION;
 				float3 ase_normal : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -1802,20 +1883,23 @@ Shader "MK4/Rain_triplanar_street1"
 				#if defined(REQUIRES_VERTEX_SHADOW_COORD_INTERPOLATOR) && defined(ASE_NEEDS_FRAG_SHADOWCOORDS)
 					float4 shadowCoord : TEXCOORD1;
 				#endif
-				
+				float4 ase_texcoord2 : TEXCOORD2;
+				float4 ase_texcoord3 : TEXCOORD3;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _RoadSymbols_ST;
+			float4 _Color;
 			float _UVTiling;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -1849,7 +1933,10 @@ Shader "MK4/Rain_triplanar_street1"
 				int _PassValue;
 			#endif
 
-			
+			sampler2D _SpecularSmoothness;
+			sampler2D _RoadSymbols;
+			sampler2D _Albedo;
+
 
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/Varyings.hlsl"
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/PBR2DPass.hlsl"
@@ -1858,7 +1945,31 @@ Shader "MK4/Rain_triplanar_street1"
 			//#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/VisualEffectVertex.hlsl"
 			//#endif
 
+			inline float4 TriplanarSampling364( sampler2D topTexMap, float3 worldPos, float3 worldNormal, float falloff, float2 tiling, float3 normalScale, float3 index )
+			{
+				float3 projNormal = ( pow( abs( worldNormal ), falloff ) );
+				projNormal /= ( projNormal.x + projNormal.y + projNormal.z ) + 0.00001;
+				float3 nsign = sign( worldNormal );
+				half4 xNorm; half4 yNorm; half4 zNorm;
+				xNorm = tex2D( topTexMap, tiling * worldPos.zy * float2(  nsign.x, 1.0 ) );
+				yNorm = tex2D( topTexMap, tiling * worldPos.xz * float2(  nsign.y, 1.0 ) );
+				zNorm = tex2D( topTexMap, tiling * worldPos.xy * float2( -nsign.z, 1.0 ) );
+				return xNorm * projNormal.x + yNorm * projNormal.y + zNorm * projNormal.z;
+			}
 			
+			inline float4 TriplanarSampling363( sampler2D topTexMap, float3 worldPos, float3 worldNormal, float falloff, float2 tiling, float3 normalScale, float3 index )
+			{
+				float3 projNormal = ( pow( abs( worldNormal ), falloff ) );
+				projNormal /= ( projNormal.x + projNormal.y + projNormal.z ) + 0.00001;
+				float3 nsign = sign( worldNormal );
+				half4 xNorm; half4 yNorm; half4 zNorm;
+				xNorm = tex2D( topTexMap, tiling * worldPos.zy * float2(  nsign.x, 1.0 ) );
+				yNorm = tex2D( topTexMap, tiling * worldPos.xz * float2(  nsign.y, 1.0 ) );
+				zNorm = tex2D( topTexMap, tiling * worldPos.xy * float2( -nsign.z, 1.0 ) );
+				return xNorm * projNormal.x + yNorm * projNormal.y + zNorm * projNormal.z;
+			}
+			
+
 			VertexOutput VertexFunction( VertexInput v  )
 			{
 				VertexOutput o = (VertexOutput)0;
@@ -1866,7 +1977,14 @@ Shader "MK4/Rain_triplanar_street1"
 				UNITY_TRANSFER_INSTANCE_ID( v, o );
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO( o );
 
+				float3 ase_worldNormal = TransformObjectToWorldNormal(v.ase_normal);
+				o.ase_texcoord2.xyz = ase_worldNormal;
 				
+				o.ase_texcoord3.xy = v.ase_texcoord.xy;
+				
+				//setting value to unused interpolator channels and avoid initialization warnings
+				o.ase_texcoord2.w = 0;
+				o.ase_texcoord3.zw = 0;
 
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					float3 defaultVertexValue = v.vertex.xyz;
@@ -1908,7 +2026,8 @@ Shader "MK4/Rain_triplanar_street1"
 			{
 				float4 vertex : INTERNALTESSPOS;
 				float3 ase_normal : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
+
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -1925,7 +2044,7 @@ Shader "MK4/Rain_triplanar_street1"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				o.vertex = v.vertex;
 				o.ase_normal = v.ase_normal;
-				
+				o.ase_texcoord = v.ase_texcoord;
 				return o;
 			}
 
@@ -1964,7 +2083,7 @@ Shader "MK4/Rain_triplanar_street1"
 				VertexInput o = (VertexInput) 0;
 				o.vertex = patch[0].vertex * bary.x + patch[1].vertex * bary.y + patch[2].vertex * bary.z;
 				o.ase_normal = patch[0].ase_normal * bary.x + patch[1].ase_normal * bary.y + patch[2].ase_normal * bary.z;
-				
+				o.ase_texcoord = patch[0].ase_texcoord * bary.x + patch[1].ase_texcoord * bary.y + patch[2].ase_texcoord * bary.z;
 				#if defined(ASE_PHONG_TESSELLATION)
 				float3 pp[3];
 				for (int i = 0; i < 3; ++i)
@@ -2001,9 +2120,17 @@ Shader "MK4/Rain_triplanar_street1"
 					#endif
 				#endif
 
+				float temp_output_366_0 = (0.01 + (_UVTiling - 0.0) * (2.0 - 0.01) / (1.0 - 0.0));
+				float3 ase_worldNormal = IN.ase_texcoord2.xyz;
+				float4 triplanar364 = TriplanarSampling364( _SpecularSmoothness, WorldPosition, ase_worldNormal, 1.0, temp_output_366_0, 1.0, 0 );
+				float2 uv_RoadSymbols = IN.ase_texcoord3.xy * _RoadSymbols_ST.xy + _RoadSymbols_ST.zw;
+				float clampResult375 = clamp( ( (1.0 + (triplanar364.w - 0.0) * (0.2 - 1.0) / (1.0 - 0.0)) * tex2D( _RoadSymbols, uv_RoadSymbols ).r ) , 0.0 , 1.0 );
+				float clampResult228 = clamp( ((-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (triplanar364.a - 0.0) * (1.0 - (-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
+				float4 lerpResult120 = lerp( float4( 1,1,1,0 ) , _Color , clampResult228);
+				float4 triplanar363 = TriplanarSampling363( _Albedo, WorldPosition, ase_worldNormal, 1.0, temp_output_366_0, 1.0, 0 );
 				
 
-				float3 BaseColor = float3(0.5, 0.5, 0.5);
+				float3 BaseColor = ( clampResult375 + ( lerpResult120 * triplanar363 ) ).rgb;
 				float Alpha = 1;
 				float AlphaClipThreshold = 0.5;
 
@@ -2096,14 +2223,16 @@ Shader "MK4/Rain_triplanar_street1"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _RoadSymbols_ST;
+			float4 _Color;
 			float _UVTiling;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -2549,20 +2678,22 @@ Shader "MK4/Rain_triplanar_street1"
 				#if defined(DYNAMICLIGHTMAP_ON)
 				float2 dynamicLightmapUV : TEXCOORD7;
 				#endif
-				
+				float4 ase_texcoord8 : TEXCOORD8;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _RoadSymbols_ST;
+			float4 _Color;
 			float _UVTiling;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -2596,16 +2727,42 @@ Shader "MK4/Rain_triplanar_street1"
 				int _PassValue;
 			#endif
 
+			sampler2D _SpecularSmoothness;
+			sampler2D _RoadSymbols;
+			sampler2D _Albedo;
 			sampler2D _Normalmap;
 			sampler2D _RainDropsNormal;
 			sampler2D _WaveNormal;
-			sampler2D _SpecularSmoothness;
 
 
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/Varyings.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/UnityGBuffer.hlsl"
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/PBRGBufferPass.hlsl"
 
+			inline float4 TriplanarSampling364( sampler2D topTexMap, float3 worldPos, float3 worldNormal, float falloff, float2 tiling, float3 normalScale, float3 index )
+			{
+				float3 projNormal = ( pow( abs( worldNormal ), falloff ) );
+				projNormal /= ( projNormal.x + projNormal.y + projNormal.z ) + 0.00001;
+				float3 nsign = sign( worldNormal );
+				half4 xNorm; half4 yNorm; half4 zNorm;
+				xNorm = tex2D( topTexMap, tiling * worldPos.zy * float2(  nsign.x, 1.0 ) );
+				yNorm = tex2D( topTexMap, tiling * worldPos.xz * float2(  nsign.y, 1.0 ) );
+				zNorm = tex2D( topTexMap, tiling * worldPos.xy * float2( -nsign.z, 1.0 ) );
+				return xNorm * projNormal.x + yNorm * projNormal.y + zNorm * projNormal.z;
+			}
+			
+			inline float4 TriplanarSampling363( sampler2D topTexMap, float3 worldPos, float3 worldNormal, float falloff, float2 tiling, float3 normalScale, float3 index )
+			{
+				float3 projNormal = ( pow( abs( worldNormal ), falloff ) );
+				projNormal /= ( projNormal.x + projNormal.y + projNormal.z ) + 0.00001;
+				float3 nsign = sign( worldNormal );
+				half4 xNorm; half4 yNorm; half4 zNorm;
+				xNorm = tex2D( topTexMap, tiling * worldPos.zy * float2(  nsign.x, 1.0 ) );
+				yNorm = tex2D( topTexMap, tiling * worldPos.xz * float2(  nsign.y, 1.0 ) );
+				zNorm = tex2D( topTexMap, tiling * worldPos.xy * float2( -nsign.z, 1.0 ) );
+				return xNorm * projNormal.x + yNorm * projNormal.y + zNorm * projNormal.z;
+			}
+			
 			inline float3 TriplanarSampling362( sampler2D topTexMap, float3 worldPos, float3 worldNormal, float falloff, float2 tiling, float3 normalScale, float3 index )
 			{
 				float3 projNormal = ( pow( abs( worldNormal ), falloff ) );
@@ -2621,18 +2778,6 @@ Shader "MK4/Rain_triplanar_street1"
 				return normalize( xNorm.xyz * projNormal.x + yNorm.xyz * projNormal.y + zNorm.xyz * projNormal.z );
 			}
 			
-			inline float4 TriplanarSampling364( sampler2D topTexMap, float3 worldPos, float3 worldNormal, float falloff, float2 tiling, float3 normalScale, float3 index )
-			{
-				float3 projNormal = ( pow( abs( worldNormal ), falloff ) );
-				projNormal /= ( projNormal.x + projNormal.y + projNormal.z ) + 0.00001;
-				float3 nsign = sign( worldNormal );
-				half4 xNorm; half4 yNorm; half4 zNorm;
-				xNorm = tex2D( topTexMap, tiling * worldPos.zy * float2(  nsign.x, 1.0 ) );
-				yNorm = tex2D( topTexMap, tiling * worldPos.xz * float2(  nsign.y, 1.0 ) );
-				zNorm = tex2D( topTexMap, tiling * worldPos.xy * float2( -nsign.z, 1.0 ) );
-				return xNorm * projNormal.x + yNorm * projNormal.y + zNorm * projNormal.z;
-			}
-			
 
 			VertexOutput VertexFunction( VertexInput v  )
 			{
@@ -2641,7 +2786,10 @@ Shader "MK4/Rain_triplanar_street1"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
+				o.ase_texcoord8.xy = v.texcoord.xy;
 				
+				//setting value to unused interpolator channels and avoid initialization warnings
+				o.ase_texcoord8.zw = 0;
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					float3 defaultVertexValue = v.vertex.xyz;
 				#else
@@ -2836,6 +2984,13 @@ Shader "MK4/Rain_triplanar_street1"
 				WorldViewDirection = SafeNormalize( WorldViewDirection );
 
 				float temp_output_366_0 = (0.01 + (_UVTiling - 0.0) * (2.0 - 0.01) / (1.0 - 0.0));
+				float4 triplanar364 = TriplanarSampling364( _SpecularSmoothness, WorldPosition, WorldNormal, 1.0, temp_output_366_0, 1.0, 0 );
+				float2 uv_RoadSymbols = IN.ase_texcoord8.xy * _RoadSymbols_ST.xy + _RoadSymbols_ST.zw;
+				float clampResult375 = clamp( ( (1.0 + (triplanar364.w - 0.0) * (0.2 - 1.0) / (1.0 - 0.0)) * tex2D( _RoadSymbols, uv_RoadSymbols ).r ) , 0.0 , 1.0 );
+				float clampResult228 = clamp( ((-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (triplanar364.a - 0.0) * (1.0 - (-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
+				float4 lerpResult120 = lerp( float4( 1,1,1,0 ) , _Color , clampResult228);
+				float4 triplanar363 = TriplanarSampling363( _Albedo, WorldPosition, WorldNormal, 1.0, temp_output_366_0, 1.0, 0 );
+				
 				float3x3 ase_worldToTangent = float3x3(WorldTangent,WorldBiTangent,WorldNormal);
 				float3 triplanar362 = TriplanarSampling362( _Normalmap, WorldPosition, WorldNormal, 1.0, temp_output_366_0, 1.0, 0 );
 				float3 tanTriplanarNormal362 = mul( ase_worldToTangent, triplanar362 );
@@ -2884,15 +3039,13 @@ Shader "MK4/Rain_triplanar_street1"
 				float2 panner91 = ( temp_output_241_0 * float2( 0.18,0.2 ).x + appendResult183);
 				float3 unpack102 = UnpackNormalScale( tex2D( _WaveNormal, ( panner91 * temp_output_222_0 ) ), _WaveNormalint );
 				unpack102.z = lerp( 1, unpack102.z, saturate(_WaveNormalint) );
-				float4 triplanar364 = TriplanarSampling364( _SpecularSmoothness, WorldPosition, WorldNormal, 1.0, temp_output_366_0, 1.0, 0 );
-				float clampResult228 = clamp( ((-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (triplanar364.w - 0.0) * (1.0 - (-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
 				float3 lerpResult88 = lerp( tanTriplanarNormal362 , BlendNormal( tanTriplanarNormal362 , ( unpack11 + ( unpack244 + unpack230 + unpack102 ) ) ) , clampResult228);
 				float3 normalizeResult249 = normalize( lerpResult88 );
 				
 				float clampResult212 = clamp( ((-1.0 + (_Smoothness - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (triplanar364.a - 0.0) * (1.0 - (-1.0 + (_Smoothness - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
 				
 
-				float3 BaseColor = float3(0.5, 0.5, 0.5);
+				float3 BaseColor = ( clampResult375 + ( lerpResult120 * triplanar363 ) ).rgb;
 				float3 Normal = normalizeResult249;
 				float3 Emission = 0;
 				float3 Specular = 0.5;
@@ -3056,14 +3209,16 @@ Shader "MK4/Rain_triplanar_street1"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _RoadSymbols_ST;
+			float4 _Color;
 			float _UVTiling;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -3309,14 +3464,16 @@ Shader "MK4/Rain_triplanar_street1"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _RoadSymbols_ST;
+			float4 _Color;
 			float _UVTiling;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -3676,7 +3833,8 @@ WireConnection;382;0;375;0
 WireConnection;382;1;121;0
 WireConnection;249;0;88;0
 WireConnection;212;0;211;0
+WireConnection;384;0;382;0
 WireConnection;384;1;249;0
 WireConnection;384;4;212;0
 ASEEND*/
-//CHKSM=0131C7C4E3D4F286F4B11E49113B664F10756917
+//CHKSM=048A93FA4D6B5642A7891265CBB331B169F6E567

@@ -4,8 +4,10 @@ Shader "MK4/Rain Alpha"
 {
 	Properties
 	{
-		[HideInInspector] _AlphaCutoff("Alpha Cutoff ", Range(0, 1)) = 0.5
 		[HideInInspector] _EmissionColor("Emission Color", Color) = (1,1,1,1)
+		[HideInInspector] _AlphaCutoff("Alpha Cutoff ", Range(0, 1)) = 0.5
+		_Color0("Color 0", Color) = (0.5807742,0.7100198,0.9632353,0)
+		_Albedo("Albedo", 2D) = "white" {}
 		_NormalMap("Normal Map", 2D) = "bump" {}
 		_SpecularGloss("Specular Gloss", 2D) = "white" {}
 		_Smoothness("Smoothness", Range( 0 , 1)) = 0.5
@@ -288,15 +290,17 @@ Shader "MK4/Rain Alpha"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _NormalMap_ST;
+			float4 _Color0;
 			float4 _SpecularGloss_ST;
+			float4 _Albedo_ST;
+			float4 _NormalMap_ST;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -330,10 +334,11 @@ Shader "MK4/Rain Alpha"
 				int _PassValue;
 			#endif
 
+			sampler2D _SpecularGloss;
+			sampler2D _Albedo;
 			sampler2D _NormalMap;
 			sampler2D _RainDropsNormal;
 			sampler2D _WaveNormal;
-			sampler2D _SpecularGloss;
 
 
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/Varyings.hlsl"
@@ -552,6 +557,12 @@ Shader "MK4/Rain Alpha"
 
 				WorldViewDirection = SafeNormalize( WorldViewDirection );
 
+				float2 uv_SpecularGloss = IN.ase_texcoord8.xy * _SpecularGloss_ST.xy + _SpecularGloss_ST.zw;
+				float4 tex2DNode210 = tex2D( _SpecularGloss, uv_SpecularGloss );
+				float clampResult228 = clamp( ((-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (tex2DNode210.a - 0.0) * (1.0 - (-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
+				float4 lerpResult120 = lerp( float4( 1,1,1,0 ) , _Color0 , clampResult228);
+				float2 uv_Albedo = IN.ase_texcoord8.xy * _Albedo_ST.xy + _Albedo_ST.zw;
+				
 				float2 uv_NormalMap = IN.ase_texcoord8.xy * _NormalMap_ST.xy + _NormalMap_ST.zw;
 				float3 tex2DNode137 = UnpackNormalScale( tex2D( _NormalMap, uv_NormalMap ), 1.0f );
 				float temp_output_254_0 = (0.05 + (_RaindropsUVTile - 0.0) * (3.0 - 0.05) / (1.0 - 0.0));
@@ -599,16 +610,13 @@ Shader "MK4/Rain Alpha"
 				float2 panner91 = ( temp_output_241_0 * float2( 0.18,0.2 ).x + appendResult183);
 				float3 unpack102 = UnpackNormalScale( tex2D( _WaveNormal, ( panner91 * temp_output_222_0 ) ), _WaveNormalint );
 				unpack102.z = lerp( 1, unpack102.z, saturate(_WaveNormalint) );
-				float2 uv_SpecularGloss = IN.ase_texcoord8.xy * _SpecularGloss_ST.xy + _SpecularGloss_ST.zw;
-				float4 tex2DNode210 = tex2D( _SpecularGloss, uv_SpecularGloss );
-				float clampResult228 = clamp( ((-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (tex2DNode210.a - 0.0) * (1.0 - (-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
 				float3 lerpResult88 = lerp( tex2DNode137 , BlendNormal( tex2DNode137 , ( unpack11 + ( unpack244 + unpack230 + unpack102 ) ) ) , clampResult228);
 				float3 normalizeResult249 = normalize( lerpResult88 );
 				
 				float clampResult212 = clamp( ((-1.0 + (_Smoothness - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (tex2DNode210.a - 0.0) * (1.0 - (-1.0 + (_Smoothness - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
 				
 
-				float3 BaseColor = float3(0.5, 0.5, 0.5);
+				float3 BaseColor = ( lerpResult120 * tex2D( _Albedo, uv_Albedo ) ).rgb;
 				float3 Normal = normalizeResult249;
 				float3 Emission = 0;
 				float3 Specular = 0.5;
@@ -883,15 +891,17 @@ Shader "MK4/Rain Alpha"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _NormalMap_ST;
+			float4 _Color0;
 			float4 _SpecularGloss_ST;
+			float4 _Albedo_ST;
+			float4 _NormalMap_ST;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -1200,15 +1210,17 @@ Shader "MK4/Rain Alpha"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _NormalMap_ST;
+			float4 _Color0;
 			float4 _SpecularGloss_ST;
+			float4 _Albedo_ST;
+			float4 _NormalMap_ST;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -1484,21 +1496,23 @@ Shader "MK4/Rain Alpha"
 					float4 VizUV : TEXCOORD2;
 					float4 LightCoord : TEXCOORD3;
 				#endif
-				
+				float4 ase_texcoord4 : TEXCOORD4;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _NormalMap_ST;
+			float4 _Color0;
 			float4 _SpecularGloss_ST;
+			float4 _Albedo_ST;
+			float4 _NormalMap_ST;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -1532,7 +1546,9 @@ Shader "MK4/Rain Alpha"
 				int _PassValue;
 			#endif
 
-			
+			sampler2D _SpecularGloss;
+			sampler2D _Albedo;
+
 
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/Varyings.hlsl"
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/LightingMetaPass.hlsl"
@@ -1549,7 +1565,10 @@ Shader "MK4/Rain Alpha"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
+				o.ase_texcoord4.xy = v.texcoord0.xy;
 				
+				//setting value to unused interpolator channels and avoid initialization warnings
+				o.ase_texcoord4.zw = 0;
 
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					float3 defaultVertexValue = v.vertex.xyz;
@@ -1700,9 +1719,14 @@ Shader "MK4/Rain Alpha"
 					#endif
 				#endif
 
+				float2 uv_SpecularGloss = IN.ase_texcoord4.xy * _SpecularGloss_ST.xy + _SpecularGloss_ST.zw;
+				float4 tex2DNode210 = tex2D( _SpecularGloss, uv_SpecularGloss );
+				float clampResult228 = clamp( ((-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (tex2DNode210.a - 0.0) * (1.0 - (-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
+				float4 lerpResult120 = lerp( float4( 1,1,1,0 ) , _Color0 , clampResult228);
+				float2 uv_Albedo = IN.ase_texcoord4.xy * _Albedo_ST.xy + _Albedo_ST.zw;
 				
 
-				float3 BaseColor = float3(0.5, 0.5, 0.5);
+				float3 BaseColor = ( lerpResult120 * tex2D( _Albedo, uv_Albedo ) ).rgb;
 				float3 Emission = 0;
 				float Alpha = 1;
 				float AlphaClipThreshold = 0.5;
@@ -1765,7 +1789,7 @@ Shader "MK4/Rain Alpha"
 			{
 				float4 vertex : POSITION;
 				float3 ase_normal : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -1778,21 +1802,23 @@ Shader "MK4/Rain Alpha"
 				#if defined(REQUIRES_VERTEX_SHADOW_COORD_INTERPOLATOR) && defined(ASE_NEEDS_FRAG_SHADOWCOORDS)
 					float4 shadowCoord : TEXCOORD1;
 				#endif
-				
+				float4 ase_texcoord2 : TEXCOORD2;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _NormalMap_ST;
+			float4 _Color0;
 			float4 _SpecularGloss_ST;
+			float4 _Albedo_ST;
+			float4 _NormalMap_ST;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -1826,7 +1852,9 @@ Shader "MK4/Rain Alpha"
 				int _PassValue;
 			#endif
 
-			
+			sampler2D _SpecularGloss;
+			sampler2D _Albedo;
+
 
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/Varyings.hlsl"
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/PBR2DPass.hlsl"
@@ -1843,7 +1871,10 @@ Shader "MK4/Rain Alpha"
 				UNITY_TRANSFER_INSTANCE_ID( v, o );
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO( o );
 
+				o.ase_texcoord2.xy = v.ase_texcoord.xy;
 				
+				//setting value to unused interpolator channels and avoid initialization warnings
+				o.ase_texcoord2.zw = 0;
 
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					float3 defaultVertexValue = v.vertex.xyz;
@@ -1885,7 +1916,8 @@ Shader "MK4/Rain Alpha"
 			{
 				float4 vertex : INTERNALTESSPOS;
 				float3 ase_normal : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
+
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -1902,7 +1934,7 @@ Shader "MK4/Rain Alpha"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				o.vertex = v.vertex;
 				o.ase_normal = v.ase_normal;
-				
+				o.ase_texcoord = v.ase_texcoord;
 				return o;
 			}
 
@@ -1941,7 +1973,7 @@ Shader "MK4/Rain Alpha"
 				VertexInput o = (VertexInput) 0;
 				o.vertex = patch[0].vertex * bary.x + patch[1].vertex * bary.y + patch[2].vertex * bary.z;
 				o.ase_normal = patch[0].ase_normal * bary.x + patch[1].ase_normal * bary.y + patch[2].ase_normal * bary.z;
-				
+				o.ase_texcoord = patch[0].ase_texcoord * bary.x + patch[1].ase_texcoord * bary.y + patch[2].ase_texcoord * bary.z;
 				#if defined(ASE_PHONG_TESSELLATION)
 				float3 pp[3];
 				for (int i = 0; i < 3; ++i)
@@ -1978,9 +2010,14 @@ Shader "MK4/Rain Alpha"
 					#endif
 				#endif
 
+				float2 uv_SpecularGloss = IN.ase_texcoord2.xy * _SpecularGloss_ST.xy + _SpecularGloss_ST.zw;
+				float4 tex2DNode210 = tex2D( _SpecularGloss, uv_SpecularGloss );
+				float clampResult228 = clamp( ((-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (tex2DNode210.a - 0.0) * (1.0 - (-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
+				float4 lerpResult120 = lerp( float4( 1,1,1,0 ) , _Color0 , clampResult228);
+				float2 uv_Albedo = IN.ase_texcoord2.xy * _Albedo_ST.xy + _Albedo_ST.zw;
 				
 
-				float3 BaseColor = float3(0.5, 0.5, 0.5);
+				float3 BaseColor = ( lerpResult120 * tex2D( _Albedo, uv_Albedo ) ).rgb;
 				float Alpha = 1;
 				float AlphaClipThreshold = 0.5;
 
@@ -2069,15 +2106,17 @@ Shader "MK4/Rain Alpha"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _NormalMap_ST;
+			float4 _Color0;
 			float4 _SpecularGloss_ST;
+			float4 _Albedo_ST;
+			float4 _NormalMap_ST;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -2493,15 +2532,17 @@ Shader "MK4/Rain Alpha"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _NormalMap_ST;
+			float4 _Color0;
 			float4 _SpecularGloss_ST;
+			float4 _Albedo_ST;
+			float4 _NormalMap_ST;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -2535,10 +2576,11 @@ Shader "MK4/Rain Alpha"
 				int _PassValue;
 			#endif
 
+			sampler2D _SpecularGloss;
+			sampler2D _Albedo;
 			sampler2D _NormalMap;
 			sampler2D _RainDropsNormal;
 			sampler2D _WaveNormal;
-			sampler2D _SpecularGloss;
 
 
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/Varyings.hlsl"
@@ -2750,6 +2792,12 @@ Shader "MK4/Rain Alpha"
 
 				WorldViewDirection = SafeNormalize( WorldViewDirection );
 
+				float2 uv_SpecularGloss = IN.ase_texcoord8.xy * _SpecularGloss_ST.xy + _SpecularGloss_ST.zw;
+				float4 tex2DNode210 = tex2D( _SpecularGloss, uv_SpecularGloss );
+				float clampResult228 = clamp( ((-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (tex2DNode210.a - 0.0) * (1.0 - (-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
+				float4 lerpResult120 = lerp( float4( 1,1,1,0 ) , _Color0 , clampResult228);
+				float2 uv_Albedo = IN.ase_texcoord8.xy * _Albedo_ST.xy + _Albedo_ST.zw;
+				
 				float2 uv_NormalMap = IN.ase_texcoord8.xy * _NormalMap_ST.xy + _NormalMap_ST.zw;
 				float3 tex2DNode137 = UnpackNormalScale( tex2D( _NormalMap, uv_NormalMap ), 1.0f );
 				float temp_output_254_0 = (0.05 + (_RaindropsUVTile - 0.0) * (3.0 - 0.05) / (1.0 - 0.0));
@@ -2797,16 +2845,13 @@ Shader "MK4/Rain Alpha"
 				float2 panner91 = ( temp_output_241_0 * float2( 0.18,0.2 ).x + appendResult183);
 				float3 unpack102 = UnpackNormalScale( tex2D( _WaveNormal, ( panner91 * temp_output_222_0 ) ), _WaveNormalint );
 				unpack102.z = lerp( 1, unpack102.z, saturate(_WaveNormalint) );
-				float2 uv_SpecularGloss = IN.ase_texcoord8.xy * _SpecularGloss_ST.xy + _SpecularGloss_ST.zw;
-				float4 tex2DNode210 = tex2D( _SpecularGloss, uv_SpecularGloss );
-				float clampResult228 = clamp( ((-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (tex2DNode210.a - 0.0) * (1.0 - (-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
 				float3 lerpResult88 = lerp( tex2DNode137 , BlendNormal( tex2DNode137 , ( unpack11 + ( unpack244 + unpack230 + unpack102 ) ) ) , clampResult228);
 				float3 normalizeResult249 = normalize( lerpResult88 );
 				
 				float clampResult212 = clamp( ((-1.0 + (_Smoothness - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (tex2DNode210.a - 0.0) * (1.0 - (-1.0 + (_Smoothness - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
 				
 
-				float3 BaseColor = float3(0.5, 0.5, 0.5);
+				float3 BaseColor = ( lerpResult120 * tex2D( _Albedo, uv_Albedo ) ).rgb;
 				float3 Normal = normalizeResult249;
 				float3 Emission = 0;
 				float3 Specular = 0.5;
@@ -2970,15 +3015,17 @@ Shader "MK4/Rain Alpha"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _NormalMap_ST;
+			float4 _Color0;
 			float4 _SpecularGloss_ST;
+			float4 _Albedo_ST;
+			float4 _NormalMap_ST;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -3224,15 +3271,17 @@ Shader "MK4/Rain Alpha"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _NormalMap_ST;
+			float4 _Color0;
 			float4 _SpecularGloss_ST;
+			float4 _Albedo_ST;
+			float4 _NormalMap_ST;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -3434,9 +3483,9 @@ Shader "MK4/Rain Alpha"
 }
 /*ASEBEGIN
 Version=19200
-Node;AmplifyShaderEditor.RangedFloatNode;240;-1850.364,1102.581;Float;False;Property;_WaveSpeed;Wave Speed;15;0;Create;True;0;0;0;False;0;False;0;0.2;0;1;0;1;FLOAT;0
+Node;AmplifyShaderEditor.RangedFloatNode;240;-1850.364,1102.581;Float;False;Property;_WaveSpeed;Wave Speed;14;0;Create;True;0;0;0;False;0;False;0;0.2;0;1;0;1;FLOAT;0
 Node;AmplifyShaderEditor.TFHCRemapNode;239;-1562.2,1087.039;Inherit;False;5;0;FLOAT;0;False;1;FLOAT;0;False;2;FLOAT;1;False;3;FLOAT;0;False;4;FLOAT;2;False;1;FLOAT;0
-Node;AmplifyShaderEditor.RangedFloatNode;253;-1880.981,-388.4875;Float;False;Property;_RaindropsUVTile;Raindrops UV Tile;11;0;Create;True;0;0;0;False;0;False;0;0.4;0;1;0;1;FLOAT;0
+Node;AmplifyShaderEditor.RangedFloatNode;253;-1880.981,-388.4875;Float;False;Property;_RaindropsUVTile;Raindrops UV Tile;10;0;Create;True;0;0;0;False;0;False;0;0.4;0;1;0;1;FLOAT;0
 Node;AmplifyShaderEditor.WorldPosInputsNode;207;-1740.444,-145.1366;Float;False;0;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3
 Node;AmplifyShaderEditor.TimeNode;108;-1607.632,931.8244;Inherit;False;0;5;FLOAT4;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.TFHCRemapNode;254;-1590.733,-361.693;Inherit;False;5;0;FLOAT;0;False;1;FLOAT;0;False;2;FLOAT;1;False;3;FLOAT;0.05;False;4;FLOAT;3;False;1;FLOAT;0
@@ -3444,7 +3493,7 @@ Node;AmplifyShaderEditor.SimpleMultiplyOpNode;241;-1382.023,1016.797;Inherit;Fal
 Node;AmplifyShaderEditor.DynamicAppendNode;183;-1563.946,104.9836;Inherit;False;FLOAT2;4;0;FLOAT;0;False;1;FLOAT;0;False;2;FLOAT;0;False;3;FLOAT;0;False;1;FLOAT2;0
 Node;AmplifyShaderEditor.Vector2Node;235;-1279.325,732.469;Float;False;Constant;_WaveUV2;Wave UV2;12;0;Create;True;0;0;0;False;0;False;-0.15,-0.23;-0.15,-0.25;0;3;FLOAT2;0;FLOAT;1;FLOAT;2
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;251;-1472.912,-184.8229;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0.5;False;1;FLOAT;0
-Node;AmplifyShaderEditor.RangedFloatNode;223;-1267.693,1199.14;Float;False;Property;_WaveUVTile;Wave UV Tile;16;0;Create;True;0;0;0;False;0;False;0;0.1;0;1;0;1;FLOAT;0
+Node;AmplifyShaderEditor.RangedFloatNode;223;-1267.693,1199.14;Float;False;Property;_WaveUVTile;Wave UV Tile;15;0;Create;True;0;0;0;False;0;False;0;0.1;0;1;0;1;FLOAT;0
 Node;AmplifyShaderEditor.Vector2Node;246;-1277.963,514.2607;Float;False;Constant;_Vector0;Vector 0;12;0;Create;True;0;0;0;False;0;False;0.27,-0.25;-0.15,-0.25;0;3;FLOAT2;0;FLOAT;1;FLOAT;2
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;252;-1469.608,-87.20174;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0.5;False;1;FLOAT;0
 Node;AmplifyShaderEditor.PannerNode;231;-1043.139,720.2559;Inherit;False;3;0;FLOAT2;0,0;False;2;FLOAT2;0,0;False;1;FLOAT;1;False;1;FLOAT2;0
@@ -3455,29 +3504,29 @@ Node;AmplifyShaderEditor.PannerNode;245;-1039.81,550.4917;Inherit;False;3;0;FLOA
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;236;-864.3458,727.386;Inherit;False;2;2;0;FLOAT2;0,0;False;1;FLOAT2;0.9,0.9;False;1;FLOAT2;0
 Node;AmplifyShaderEditor.FractNode;73;-1217.356,-275.8096;Inherit;False;1;0;FLOAT;0;False;1;FLOAT;0
 Node;AmplifyShaderEditor.FractNode;74;-1211.876,-194.9783;Inherit;False;1;0;FLOAT;0;False;1;FLOAT;0
-Node;AmplifyShaderEditor.RangedFloatNode;6;-843.4626,-74.19863;Float;False;Property;_RainSpeed;Rain Speed;12;0;Create;True;0;0;0;False;0;False;0;33;0;50;0;1;FLOAT;0
+Node;AmplifyShaderEditor.RangedFloatNode;6;-843.4626,-74.19863;Float;False;Property;_RainSpeed;Rain Speed;11;0;Create;True;0;0;0;False;0;False;0;33;0;50;0;1;FLOAT;0
 Node;AmplifyShaderEditor.DynamicAppendNode;75;-983.6446,-257.4715;Inherit;False;FLOAT2;4;0;FLOAT;0;False;1;FLOAT;0;False;2;FLOAT;0;False;3;FLOAT;0;False;1;FLOAT2;0
-Node;AmplifyShaderEditor.RangedFloatNode;237;-675.1719,834.9395;Float;False;Property;_WaveNormalint;Wave Normal int;14;0;Create;True;0;0;0;False;0;False;0;0.1;0;5;0;1;FLOAT;0
-Node;AmplifyShaderEditor.TexturePropertyNode;238;-623.578,384.2714;Float;True;Property;_WaveNormal;Wave Normal;13;0;Create;True;0;0;0;False;0;False;None;20e16ccd543ebdf4fbc4a9bcb13374b1;True;bump;Auto;Texture2D;-1;0;2;SAMPLER2D;0;SAMPLERSTATE;1
+Node;AmplifyShaderEditor.RangedFloatNode;237;-675.1719,834.9395;Float;False;Property;_WaveNormalint;Wave Normal int;13;0;Create;True;0;0;0;False;0;False;0;0.1;0;5;0;1;FLOAT;0
+Node;AmplifyShaderEditor.TexturePropertyNode;238;-623.578,384.2714;Float;True;Property;_WaveNormal;Wave Normal;12;0;Create;True;0;0;0;False;0;False;None;20e16ccd543ebdf4fbc4a9bcb13374b1;True;bump;Auto;Texture2D;-1;0;2;SAMPLER2D;0;SAMPLERSTATE;1
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;221;-701.4404,982.7373;Inherit;False;2;2;0;FLOAT2;0,0;False;1;FLOAT;0;False;1;FLOAT2;0
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;247;-734.5847,592.1376;Inherit;False;2;2;0;FLOAT2;0,0;False;1;FLOAT;0;False;1;FLOAT2;0
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;234;-725.8802,722.6469;Inherit;False;2;2;0;FLOAT2;0,0;False;1;FLOAT;0;False;1;FLOAT2;0
 Node;AmplifyShaderEditor.SamplerNode;244;-341.8859,523.6908;Inherit;True;Property;_TextureSample1;Texture Sample 1;5;0;Create;True;0;0;0;False;0;False;-1;None;None;True;0;True;bump;Auto;True;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
-Node;AmplifyShaderEditor.RangedFloatNode;250;-571.3339,32.2523;Float;False;Property;_Raindropsint;Raindrops  int;10;0;Create;True;0;0;0;False;0;False;0;1;0;5;0;1;FLOAT;0
-Node;AmplifyShaderEditor.RangedFloatNode;229;-551.9796,-773.2418;Float;False;Property;_RainMask;Rain Mask;8;0;Create;True;0;0;0;False;0;False;0.5;0.5;0;1;0;1;FLOAT;0
+Node;AmplifyShaderEditor.RangedFloatNode;250;-571.3339,32.2523;Float;False;Property;_Raindropsint;Raindrops  int;9;0;Create;True;0;0;0;False;0;False;0;1;0;5;0;1;FLOAT;0
+Node;AmplifyShaderEditor.RangedFloatNode;229;-551.9796,-773.2418;Float;False;Property;_RainMask;Rain Mask;7;0;Create;True;0;0;0;False;0;False;0.5;0.5;0;1;0;1;FLOAT;0
 Node;AmplifyShaderEditor.SamplerNode;230;-341.8411,729.6231;Inherit;True;Property;_TextureSample0;Texture Sample 0;5;0;Create;True;0;0;0;False;0;False;-1;None;None;True;0;True;bump;Auto;True;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.SamplerNode;102;-340.1845,927.4704;Inherit;True;Property;_WaterNormal;Water Normal;6;0;Create;True;0;0;0;False;0;False;-1;None;None;True;0;True;bump;Auto;True;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.TFHCFlipBookUVAnimation;4;-577.3209,-222.5767;Inherit;False;0;0;6;0;FLOAT2;0,0;False;1;FLOAT;8;False;2;FLOAT;8;False;3;FLOAT;0;False;4;FLOAT;0;False;5;FLOAT;0;False;3;FLOAT2;0;FLOAT;1;FLOAT;2
 Node;AmplifyShaderEditor.TFHCRemapNode;226;-219.4937,-761.6447;Inherit;False;5;0;FLOAT;0;False;1;FLOAT;0;False;2;FLOAT;1;False;3;FLOAT;-1;False;4;FLOAT;1;False;1;FLOAT;0
 Node;AmplifyShaderEditor.SimpleAddOpNode;248;335.8223,196.254;Inherit;False;3;3;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;2;FLOAT3;0,0,0;False;1;FLOAT3;0
-Node;AmplifyShaderEditor.SamplerNode;210;-354.3409,-1119.198;Inherit;True;Property;_SpecularGloss;Specular Gloss;5;0;Create;True;0;0;0;False;0;False;-1;None;0346e69ca7a95ed43afbf520404cd509;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
-Node;AmplifyShaderEditor.SamplerNode;11;-135.3428,-38.99204;Inherit;True;Property;_RainDropsNormal;RainDrops Normal;9;0;Create;True;0;0;0;False;0;False;-1;None;fd09dc3c530e8654dacba5a7ee36cb20;True;0;True;bump;Auto;True;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+Node;AmplifyShaderEditor.SamplerNode;210;-354.3409,-1119.198;Inherit;True;Property;_SpecularGloss;Specular Gloss;4;0;Create;True;0;0;0;False;0;False;-1;None;0346e69ca7a95ed43afbf520404cd509;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+Node;AmplifyShaderEditor.SamplerNode;11;-135.3428,-38.99204;Inherit;True;Property;_RainDropsNormal;RainDrops Normal;8;0;Create;True;0;0;0;False;0;False;-1;None;fd09dc3c530e8654dacba5a7ee36cb20;True;0;True;bump;Auto;True;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.SimpleAddOpNode;126;461.6678,-33.37104;Inherit;False;2;2;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;1;FLOAT3;0
-Node;AmplifyShaderEditor.SamplerNode;137;-97.0103,-272.5109;Inherit;True;Property;_NormalMap;Normal Map;3;0;Create;True;0;0;0;False;0;False;-1;None;df740c58db304c64fbd0c1172b291267;True;0;True;bump;Auto;True;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+Node;AmplifyShaderEditor.SamplerNode;137;-97.0103,-272.5109;Inherit;True;Property;_NormalMap;Normal Map;2;0;Create;True;0;0;0;False;0;False;-1;None;df740c58db304c64fbd0c1172b291267;True;0;True;bump;Auto;True;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.TFHCRemapNode;227;3.859527,-774.0189;Inherit;False;5;0;FLOAT;0;False;1;FLOAT;0;False;2;FLOAT;1;False;3;FLOAT;-0.8;False;4;FLOAT;1;False;1;FLOAT;0
-Node;AmplifyShaderEditor.RangedFloatNode;216;-505.1732,-559.656;Float;False;Property;_Smoothness;Smoothness;7;0;Create;True;0;0;0;False;0;False;0.5;0.5;0;1;0;1;FLOAT;0
-Node;AmplifyShaderEditor.RangedFloatNode;220;-209.7496,-1163.032;Float;False;Property;_Specular;Specular;6;0;Create;True;0;0;0;False;0;False;0;0.5;0;1;0;1;FLOAT;0
-Node;AmplifyShaderEditor.ColorNode;119;183.4844,-1459.574;Float;False;Property;_Color0;Color 0;1;0;Create;True;0;0;0;False;0;False;0.5807742,0.7100198,0.9632353,0;1,1,1,0;False;0;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+Node;AmplifyShaderEditor.RangedFloatNode;216;-505.1732,-559.656;Float;False;Property;_Smoothness;Smoothness;6;0;Create;True;0;0;0;False;0;False;0.5;0.5;0;1;0;1;FLOAT;0
+Node;AmplifyShaderEditor.RangedFloatNode;220;-209.7496,-1163.032;Float;False;Property;_Specular;Specular;5;0;Create;True;0;0;0;False;0;False;0;0.5;0;1;0;1;FLOAT;0
+Node;AmplifyShaderEditor.ColorNode;119;183.4844,-1459.574;Float;False;Property;_Color0;Color 0;0;0;Create;True;0;0;0;False;0;False;0.5807742,0.7100198,0.9632353,0;1,1,1,0;False;0;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.TFHCRemapNode;218;113.4896,-1174.304;Inherit;False;5;0;FLOAT;0;False;1;FLOAT;0;False;2;FLOAT;1;False;3;FLOAT;-1;False;4;FLOAT;1;False;1;FLOAT;0
 Node;AmplifyShaderEditor.TFHCRemapNode;219;118.2222,-1019.957;Inherit;False;5;0;FLOAT;0;False;1;FLOAT;0;False;2;FLOAT;1;False;3;FLOAT;0;False;4;FLOAT;2;False;1;FLOAT;0
 Node;AmplifyShaderEditor.TFHCRemapNode;215;-193.0442,-568.278;Inherit;False;5;0;FLOAT;0;False;1;FLOAT;0;False;2;FLOAT;1;False;3;FLOAT;-1;False;4;FLOAT;1;False;1;FLOAT;0
@@ -3487,7 +3536,7 @@ Node;AmplifyShaderEditor.LerpOp;120;475.216,-1298.346;Inherit;False;3;0;COLOR;1,
 Node;AmplifyShaderEditor.TFHCRemapNode;211;7.196518,-561.9423;Inherit;False;5;0;FLOAT;0;False;1;FLOAT;0;False;2;FLOAT;1;False;3;FLOAT;-0.8;False;4;FLOAT;1;False;1;FLOAT;0
 Node;AmplifyShaderEditor.TFHCRemapNode;213;316.6418,-1166.876;Inherit;False;5;0;FLOAT;0;False;1;FLOAT;0;False;2;FLOAT;1;False;3;FLOAT;1;False;4;FLOAT;2;False;1;FLOAT;0
 Node;AmplifyShaderEditor.LerpOp;88;921.1825,-228.6158;Inherit;False;3;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;2;FLOAT;0;False;1;FLOAT3;0
-Node;AmplifyShaderEditor.SamplerNode;66;-330.6409,-1360.836;Inherit;True;Property;_Albedo;Albedo;2;0;Create;True;0;0;0;False;0;False;-1;None;d3ef52e790e69784aa0905a1c5e2d7c7;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+Node;AmplifyShaderEditor.SamplerNode;66;-330.6409,-1360.836;Inherit;True;Property;_Albedo;Albedo;1;0;Create;True;0;0;0;False;0;False;-1;None;d3ef52e790e69784aa0905a1c5e2d7c7;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;121;651.6189,-1273.678;Inherit;False;2;2;0;COLOR;0,0,0,0;False;1;COLOR;0,0,0,0;False;1;COLOR;0
 Node;AmplifyShaderEditor.ClampOpNode;214;511.1818,-1110.743;Inherit;False;3;0;FLOAT;0;False;1;FLOAT;0;False;2;FLOAT;1;False;1;FLOAT;0
 Node;AmplifyShaderEditor.ClampOpNode;212;195.0841,-555.9862;Inherit;False;3;0;FLOAT;0;False;1;FLOAT;0;False;2;FLOAT;1;False;1;FLOAT;0
@@ -3495,7 +3544,7 @@ Node;AmplifyShaderEditor.NormalizeNode;249;1084.586,-233.8844;Inherit;False;Fals
 Node;AmplifyShaderEditor.TextureCoordinatesNode;104;-1089.608,-65.06468;Inherit;False;0;-1;2;3;2;SAMPLER2D;;False;0;FLOAT2;1,1;False;1;FLOAT2;0,0;False;5;FLOAT2;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.PosVertexDataNode;178;-1840.375,-56.45053;Inherit;False;0;0;5;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.TextureCoordinatesNode;40;-1355.173,-382.181;Inherit;False;0;-1;2;3;2;SAMPLER2D;;False;0;FLOAT2;1,1;False;1;FLOAT2;0,0;False;5;FLOAT2;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
-Node;AmplifyShaderEditor.SamplerNode;255;352.0829,-644.9924;Inherit;True;Property;_AO;AO;4;0;Create;True;0;0;0;False;0;False;-1;None;None;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+Node;AmplifyShaderEditor.SamplerNode;255;352.0829,-644.9924;Inherit;True;Property;_AO;AO;3;0;Create;True;0;0;0;False;0;False;-1;None;None;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;256;1306.817,-390.812;Float;False;False;-1;2;UnityEditor.ShaderGraphLitGUI;0;1;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;ExtraPrePass;0;0;ExtraPrePass;5;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;3;True;12;all;0;False;True;1;1;False;;0;False;;0;1;False;;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;True;True;True;True;0;False;;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;0;False;False;0;;0;0;Standard;0;False;0
 Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;257;1306.817,-390.812;Float;False;True;-1;2;UnityEditor.ShaderGraphLitGUI;0;12;MK4/Rain Alpha;94348b07e5e8bab40bd6c8a1e3df54cd;True;Forward;0;1;Forward;20;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;3;True;12;all;0;False;True;1;1;False;;0;False;;1;1;False;;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;True;True;True;True;0;False;;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;1;LightMode=UniversalForward;False;False;0;;0;0;Standard;41;Workflow;1;0;Surface;0;0;  Refraction Model;0;0;  Blend;0;0;Two Sided;1;0;Fragment Normal Space,InvertActionOnDeselection;0;0;Forward Only;0;0;Transmission;0;0;  Transmission Shadow;0.5,False,;0;Translucency;0;0;  Translucency Strength;1,False,;0;  Normal Distortion;0.5,False,;0;  Scattering;2,False,;0;  Direct;0.9,False,;0;  Ambient;0.1,False,;0;  Shadow;0.5,False,;0;Cast Shadows;1;0;  Use Shadow Threshold;0;0;Receive Shadows;1;0;GPU Instancing;1;0;LOD CrossFade;1;0;Built-in Fog;1;0;_FinalColorxAlpha;0;0;Meta Pass;1;0;Override Baked GI;0;0;Extra Pre Pass;0;0;DOTS Instancing;0;0;Tessellation;0;0;  Phong;0;0;  Strength;0.5,False,;0;  Type;0;0;  Tess;16,False,;0;  Min;10,False,;0;  Max;25,False,;0;  Edge Length;16,False,;0;  Max Displacement;25,False,;0;Write Depth;0;0;  Early Z;0;0;Vertex Position,InvertActionOnDeselection;1;0;Debug Display;0;0;Clear Coat;0;0;0;10;False;True;True;True;True;True;True;True;True;True;False;;False;0
 Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;258;1306.817,-390.812;Float;False;False;-1;2;UnityEditor.ShaderGraphLitGUI;0;1;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;ShadowCaster;0;2;ShadowCaster;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;3;True;12;all;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;False;False;True;False;False;False;False;0;False;;False;False;False;False;False;False;False;False;False;True;1;False;;True;3;False;;False;True;1;LightMode=ShadowCaster;False;False;0;;0;0;Standard;0;False;0
@@ -3579,7 +3628,8 @@ WireConnection;121;1;66;0
 WireConnection;214;0;213;0
 WireConnection;212;0;211;0
 WireConnection;249;0;88;0
+WireConnection;257;0;121;0
 WireConnection;257;1;249;0
 WireConnection;257;4;212;0
 ASEEND*/
-//CHKSM=CEED6F7EC1EFCAFCD6517F1D2FF2F0EE286E9E23
+//CHKSM=6DB0DE69D1074860751CBDAE1F6EC582BFA7D39F

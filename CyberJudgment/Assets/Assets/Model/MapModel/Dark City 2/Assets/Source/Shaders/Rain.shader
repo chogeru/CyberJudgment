@@ -4,8 +4,10 @@ Shader "MK4/Rain"
 {
 	Properties
 	{
-		[HideInInspector] _AlphaCutoff("Alpha Cutoff ", Range(0, 1)) = 0.5
 		[HideInInspector] _EmissionColor("Emission Color", Color) = (1,1,1,1)
+		[HideInInspector] _AlphaCutoff("Alpha Cutoff ", Range(0, 1)) = 0.5
+		_Color("Color", Color) = (0.5807742,0.7100198,0.9632353,0)
+		_Albedo("Albedo", 2D) = "white" {}
 		_NormalMap("Normal Map", 2D) = "bump" {}
 		_SpecularGloss("Specular Gloss", 2D) = "white" {}
 		_Smoothness("Smoothness", Range( 0 , 1)) = 0.5
@@ -288,15 +290,17 @@ Shader "MK4/Rain"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _NormalMap_ST;
+			float4 _Color;
 			float4 _SpecularGloss_ST;
+			float4 _Albedo_ST;
+			float4 _NormalMap_ST;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -330,10 +334,11 @@ Shader "MK4/Rain"
 				int _PassValue;
 			#endif
 
+			sampler2D _SpecularGloss;
+			sampler2D _Albedo;
 			sampler2D _NormalMap;
 			sampler2D _RainDropsNormal;
 			sampler2D _WaveNormal;
-			sampler2D _SpecularGloss;
 
 
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/Varyings.hlsl"
@@ -552,6 +557,12 @@ Shader "MK4/Rain"
 
 				WorldViewDirection = SafeNormalize( WorldViewDirection );
 
+				float2 uv_SpecularGloss = IN.ase_texcoord8.xy * _SpecularGloss_ST.xy + _SpecularGloss_ST.zw;
+				float4 tex2DNode210 = tex2D( _SpecularGloss, uv_SpecularGloss );
+				float clampResult228 = clamp( ((-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (tex2DNode210.a - 0.0) * (1.0 - (-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
+				float4 lerpResult120 = lerp( float4( 1,1,1,0 ) , _Color , clampResult228);
+				float2 uv_Albedo = IN.ase_texcoord8.xy * _Albedo_ST.xy + _Albedo_ST.zw;
+				
 				float2 uv_NormalMap = IN.ase_texcoord8.xy * _NormalMap_ST.xy + _NormalMap_ST.zw;
 				float3 tex2DNode137 = UnpackNormalScale( tex2D( _NormalMap, uv_NormalMap ), 1.0f );
 				float temp_output_254_0 = (0.05 + (_RaindropsUVTile - 0.0) * (3.0 - 0.05) / (1.0 - 0.0));
@@ -599,16 +610,13 @@ Shader "MK4/Rain"
 				float2 panner91 = ( temp_output_241_0 * float2( 0.18,0.2 ).x + appendResult183);
 				float3 unpack102 = UnpackNormalScale( tex2D( _WaveNormal, ( panner91 * temp_output_222_0 ) ), _WaveNormalint );
 				unpack102.z = lerp( 1, unpack102.z, saturate(_WaveNormalint) );
-				float2 uv_SpecularGloss = IN.ase_texcoord8.xy * _SpecularGloss_ST.xy + _SpecularGloss_ST.zw;
-				float4 tex2DNode210 = tex2D( _SpecularGloss, uv_SpecularGloss );
-				float clampResult228 = clamp( ((-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (tex2DNode210.a - 0.0) * (1.0 - (-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
 				float3 lerpResult88 = lerp( tex2DNode137 , BlendNormal( tex2DNode137 , ( unpack11 + ( unpack244 + unpack230 + unpack102 ) ) ) , clampResult228);
 				float3 normalizeResult249 = normalize( lerpResult88 );
 				
 				float clampResult212 = clamp( ((-1.0 + (_Smoothness - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (tex2DNode210.a - 0.0) * (1.0 - (-1.0 + (_Smoothness - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
 				
 
-				float3 BaseColor = float3(0.5, 0.5, 0.5);
+				float3 BaseColor = ( lerpResult120 * tex2D( _Albedo, uv_Albedo ) ).rgb;
 				float3 Normal = normalizeResult249;
 				float3 Emission = 0;
 				float3 Specular = 0.5;
@@ -883,15 +891,17 @@ Shader "MK4/Rain"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _NormalMap_ST;
+			float4 _Color;
 			float4 _SpecularGloss_ST;
+			float4 _Albedo_ST;
+			float4 _NormalMap_ST;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -1200,15 +1210,17 @@ Shader "MK4/Rain"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _NormalMap_ST;
+			float4 _Color;
 			float4 _SpecularGloss_ST;
+			float4 _Albedo_ST;
+			float4 _NormalMap_ST;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -1484,21 +1496,23 @@ Shader "MK4/Rain"
 					float4 VizUV : TEXCOORD2;
 					float4 LightCoord : TEXCOORD3;
 				#endif
-				
+				float4 ase_texcoord4 : TEXCOORD4;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _NormalMap_ST;
+			float4 _Color;
 			float4 _SpecularGloss_ST;
+			float4 _Albedo_ST;
+			float4 _NormalMap_ST;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -1532,7 +1546,9 @@ Shader "MK4/Rain"
 				int _PassValue;
 			#endif
 
-			
+			sampler2D _SpecularGloss;
+			sampler2D _Albedo;
+
 
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/Varyings.hlsl"
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/LightingMetaPass.hlsl"
@@ -1549,7 +1565,10 @@ Shader "MK4/Rain"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
+				o.ase_texcoord4.xy = v.texcoord0.xy;
 				
+				//setting value to unused interpolator channels and avoid initialization warnings
+				o.ase_texcoord4.zw = 0;
 
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					float3 defaultVertexValue = v.vertex.xyz;
@@ -1700,9 +1719,14 @@ Shader "MK4/Rain"
 					#endif
 				#endif
 
+				float2 uv_SpecularGloss = IN.ase_texcoord4.xy * _SpecularGloss_ST.xy + _SpecularGloss_ST.zw;
+				float4 tex2DNode210 = tex2D( _SpecularGloss, uv_SpecularGloss );
+				float clampResult228 = clamp( ((-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (tex2DNode210.a - 0.0) * (1.0 - (-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
+				float4 lerpResult120 = lerp( float4( 1,1,1,0 ) , _Color , clampResult228);
+				float2 uv_Albedo = IN.ase_texcoord4.xy * _Albedo_ST.xy + _Albedo_ST.zw;
 				
 
-				float3 BaseColor = float3(0.5, 0.5, 0.5);
+				float3 BaseColor = ( lerpResult120 * tex2D( _Albedo, uv_Albedo ) ).rgb;
 				float3 Emission = 0;
 				float Alpha = 1;
 				float AlphaClipThreshold = 0.5;
@@ -1765,7 +1789,7 @@ Shader "MK4/Rain"
 			{
 				float4 vertex : POSITION;
 				float3 ase_normal : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -1778,21 +1802,23 @@ Shader "MK4/Rain"
 				#if defined(REQUIRES_VERTEX_SHADOW_COORD_INTERPOLATOR) && defined(ASE_NEEDS_FRAG_SHADOWCOORDS)
 					float4 shadowCoord : TEXCOORD1;
 				#endif
-				
+				float4 ase_texcoord2 : TEXCOORD2;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _NormalMap_ST;
+			float4 _Color;
 			float4 _SpecularGloss_ST;
+			float4 _Albedo_ST;
+			float4 _NormalMap_ST;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -1826,7 +1852,9 @@ Shader "MK4/Rain"
 				int _PassValue;
 			#endif
 
-			
+			sampler2D _SpecularGloss;
+			sampler2D _Albedo;
+
 
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/Varyings.hlsl"
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/PBR2DPass.hlsl"
@@ -1843,7 +1871,10 @@ Shader "MK4/Rain"
 				UNITY_TRANSFER_INSTANCE_ID( v, o );
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO( o );
 
+				o.ase_texcoord2.xy = v.ase_texcoord.xy;
 				
+				//setting value to unused interpolator channels and avoid initialization warnings
+				o.ase_texcoord2.zw = 0;
 
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					float3 defaultVertexValue = v.vertex.xyz;
@@ -1885,7 +1916,8 @@ Shader "MK4/Rain"
 			{
 				float4 vertex : INTERNALTESSPOS;
 				float3 ase_normal : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
+
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -1902,7 +1934,7 @@ Shader "MK4/Rain"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				o.vertex = v.vertex;
 				o.ase_normal = v.ase_normal;
-				
+				o.ase_texcoord = v.ase_texcoord;
 				return o;
 			}
 
@@ -1941,7 +1973,7 @@ Shader "MK4/Rain"
 				VertexInput o = (VertexInput) 0;
 				o.vertex = patch[0].vertex * bary.x + patch[1].vertex * bary.y + patch[2].vertex * bary.z;
 				o.ase_normal = patch[0].ase_normal * bary.x + patch[1].ase_normal * bary.y + patch[2].ase_normal * bary.z;
-				
+				o.ase_texcoord = patch[0].ase_texcoord * bary.x + patch[1].ase_texcoord * bary.y + patch[2].ase_texcoord * bary.z;
 				#if defined(ASE_PHONG_TESSELLATION)
 				float3 pp[3];
 				for (int i = 0; i < 3; ++i)
@@ -1978,9 +2010,14 @@ Shader "MK4/Rain"
 					#endif
 				#endif
 
+				float2 uv_SpecularGloss = IN.ase_texcoord2.xy * _SpecularGloss_ST.xy + _SpecularGloss_ST.zw;
+				float4 tex2DNode210 = tex2D( _SpecularGloss, uv_SpecularGloss );
+				float clampResult228 = clamp( ((-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (tex2DNode210.a - 0.0) * (1.0 - (-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
+				float4 lerpResult120 = lerp( float4( 1,1,1,0 ) , _Color , clampResult228);
+				float2 uv_Albedo = IN.ase_texcoord2.xy * _Albedo_ST.xy + _Albedo_ST.zw;
 				
 
-				float3 BaseColor = float3(0.5, 0.5, 0.5);
+				float3 BaseColor = ( lerpResult120 * tex2D( _Albedo, uv_Albedo ) ).rgb;
 				float Alpha = 1;
 				float AlphaClipThreshold = 0.5;
 
@@ -2069,15 +2106,17 @@ Shader "MK4/Rain"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _NormalMap_ST;
+			float4 _Color;
 			float4 _SpecularGloss_ST;
+			float4 _Albedo_ST;
+			float4 _NormalMap_ST;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -2493,15 +2532,17 @@ Shader "MK4/Rain"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _NormalMap_ST;
+			float4 _Color;
 			float4 _SpecularGloss_ST;
+			float4 _Albedo_ST;
+			float4 _NormalMap_ST;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -2535,10 +2576,11 @@ Shader "MK4/Rain"
 				int _PassValue;
 			#endif
 
+			sampler2D _SpecularGloss;
+			sampler2D _Albedo;
 			sampler2D _NormalMap;
 			sampler2D _RainDropsNormal;
 			sampler2D _WaveNormal;
-			sampler2D _SpecularGloss;
 
 
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/Varyings.hlsl"
@@ -2750,6 +2792,12 @@ Shader "MK4/Rain"
 
 				WorldViewDirection = SafeNormalize( WorldViewDirection );
 
+				float2 uv_SpecularGloss = IN.ase_texcoord8.xy * _SpecularGloss_ST.xy + _SpecularGloss_ST.zw;
+				float4 tex2DNode210 = tex2D( _SpecularGloss, uv_SpecularGloss );
+				float clampResult228 = clamp( ((-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (tex2DNode210.a - 0.0) * (1.0 - (-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
+				float4 lerpResult120 = lerp( float4( 1,1,1,0 ) , _Color , clampResult228);
+				float2 uv_Albedo = IN.ase_texcoord8.xy * _Albedo_ST.xy + _Albedo_ST.zw;
+				
 				float2 uv_NormalMap = IN.ase_texcoord8.xy * _NormalMap_ST.xy + _NormalMap_ST.zw;
 				float3 tex2DNode137 = UnpackNormalScale( tex2D( _NormalMap, uv_NormalMap ), 1.0f );
 				float temp_output_254_0 = (0.05 + (_RaindropsUVTile - 0.0) * (3.0 - 0.05) / (1.0 - 0.0));
@@ -2797,16 +2845,13 @@ Shader "MK4/Rain"
 				float2 panner91 = ( temp_output_241_0 * float2( 0.18,0.2 ).x + appendResult183);
 				float3 unpack102 = UnpackNormalScale( tex2D( _WaveNormal, ( panner91 * temp_output_222_0 ) ), _WaveNormalint );
 				unpack102.z = lerp( 1, unpack102.z, saturate(_WaveNormalint) );
-				float2 uv_SpecularGloss = IN.ase_texcoord8.xy * _SpecularGloss_ST.xy + _SpecularGloss_ST.zw;
-				float4 tex2DNode210 = tex2D( _SpecularGloss, uv_SpecularGloss );
-				float clampResult228 = clamp( ((-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (tex2DNode210.a - 0.0) * (1.0 - (-1.0 + (_RainMask - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
 				float3 lerpResult88 = lerp( tex2DNode137 , BlendNormal( tex2DNode137 , ( unpack11 + ( unpack244 + unpack230 + unpack102 ) ) ) , clampResult228);
 				float3 normalizeResult249 = normalize( lerpResult88 );
 				
 				float clampResult212 = clamp( ((-1.0 + (_Smoothness - 0.0) * (1.0 - -1.0) / (1.0 - 0.0)) + (tex2DNode210.a - 0.0) * (1.0 - (-1.0 + (_Smoothness - 0.0) * (1.0 - -1.0) / (1.0 - 0.0))) / (1.0 - 0.0)) , 0.0 , 1.0 );
 				
 
-				float3 BaseColor = float3(0.5, 0.5, 0.5);
+				float3 BaseColor = ( lerpResult120 * tex2D( _Albedo, uv_Albedo ) ).rgb;
 				float3 Normal = normalizeResult249;
 				float3 Emission = 0;
 				float3 Specular = 0.5;
@@ -2970,15 +3015,17 @@ Shader "MK4/Rain"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _NormalMap_ST;
+			float4 _Color;
 			float4 _SpecularGloss_ST;
+			float4 _Albedo_ST;
+			float4 _NormalMap_ST;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -3224,15 +3271,17 @@ Shader "MK4/Rain"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _NormalMap_ST;
+			float4 _Color;
 			float4 _SpecularGloss_ST;
+			float4 _Albedo_ST;
+			float4 _NormalMap_ST;
+			float _RainMask;
 			float _RaindropsUVTile;
 			float _RainSpeed;
 			float _Raindropsint;
 			float _WaveSpeed;
 			float _WaveUVTile;
 			float _WaveNormalint;
-			float _RainMask;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
 				float _TransmissionShadow;
@@ -3579,7 +3628,8 @@ WireConnection;121;0;120;0
 WireConnection;121;1;66;0
 WireConnection;212;0;211;0
 WireConnection;249;0;88;0
+WireConnection;257;0;121;0
 WireConnection;257;1;249;0
 WireConnection;257;4;212;0
 ASEEND*/
-//CHKSM=8D6405C25B25D158B6DF8C0D82DB22A67834127B
+//CHKSM=CE424AA554B280A4F7854401DFB0C963C6CDBD70
