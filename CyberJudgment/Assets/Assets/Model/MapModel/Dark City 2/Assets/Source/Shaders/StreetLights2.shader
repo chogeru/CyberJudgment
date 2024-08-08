@@ -11,6 +11,7 @@ Shader "MK4/StreetLights2"
 		_Color1("Color 1", Color) = (0,0,0,0)
 		_Color2("Color 2", Color) = (0,0,0,0)
 		_Background("Background", Color) = (0,0,0,0)
+		_AlbedoPower("Albedo Power", Range( 0 , 1)) = 0
 		_EmissionPower("Emission Power", Range( 0 , 1)) = 0
 		_SlideSpeed("Slide Speed", Range( 0 , 1)) = 0
 
@@ -285,6 +286,7 @@ Shader "MK4/StreetLights2"
 			float4 _Color1;
 			float4 _Color2;
 			float _SlideSpeed;
+			float _AlbedoPower;
 			float _EmissionPower;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -547,7 +549,7 @@ Shader "MK4/StreetLights2"
 				float4 lerpResult310 = lerp( lerpResult305 , lerpResult309 , tex2DNode308.b);
 				
 
-				float3 BaseColor = float3(0.5, 0.5, 0.5);
+				float3 BaseColor = ( lerpResult310 * _AlbedoPower ).rgb;
 				float3 Normal = float3(0, 0, 1);
 				float3 Emission = ( lerpResult310 * _EmissionPower ).rgb;
 				float3 Specular = 0.5;
@@ -826,6 +828,7 @@ Shader "MK4/StreetLights2"
 			float4 _Color1;
 			float4 _Color2;
 			float _SlideSpeed;
+			float _AlbedoPower;
 			float _EmissionPower;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -1139,6 +1142,7 @@ Shader "MK4/StreetLights2"
 			float4 _Color1;
 			float4 _Color2;
 			float _SlideSpeed;
+			float _AlbedoPower;
 			float _EmissionPower;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -1425,6 +1429,7 @@ Shader "MK4/StreetLights2"
 			float4 _Color1;
 			float4 _Color2;
 			float _SlideSpeed;
+			float _AlbedoPower;
 			float _EmissionPower;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -1640,7 +1645,7 @@ Shader "MK4/StreetLights2"
 				float4 lerpResult310 = lerp( lerpResult305 , lerpResult309 , tex2DNode308.b);
 				
 
-				float3 BaseColor = float3(0.5, 0.5, 0.5);
+				float3 BaseColor = ( lerpResult310 * _AlbedoPower ).rgb;
 				float3 Emission = ( lerpResult310 * _EmissionPower ).rgb;
 				float Alpha = 1;
 				float AlphaClipThreshold = 0.5;
@@ -1703,7 +1708,7 @@ Shader "MK4/StreetLights2"
 			{
 				float4 vertex : POSITION;
 				float3 ase_normal : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -1716,7 +1721,7 @@ Shader "MK4/StreetLights2"
 				#if defined(REQUIRES_VERTEX_SHADOW_COORD_INTERPOLATOR) && defined(ASE_NEEDS_FRAG_SHADOWCOORDS)
 					float4 shadowCoord : TEXCOORD1;
 				#endif
-				
+				float4 ase_texcoord2 : TEXCOORD2;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
@@ -1726,6 +1731,7 @@ Shader "MK4/StreetLights2"
 			float4 _Color1;
 			float4 _Color2;
 			float _SlideSpeed;
+			float _AlbedoPower;
 			float _EmissionPower;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -1760,7 +1766,8 @@ Shader "MK4/StreetLights2"
 				int _PassValue;
 			#endif
 
-			
+			sampler2D _Emission;
+
 
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/Varyings.hlsl"
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/PBR2DPass.hlsl"
@@ -1777,7 +1784,10 @@ Shader "MK4/StreetLights2"
 				UNITY_TRANSFER_INSTANCE_ID( v, o );
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO( o );
 
+				o.ase_texcoord2.xy = v.ase_texcoord.xy;
 				
+				//setting value to unused interpolator channels and avoid initialization warnings
+				o.ase_texcoord2.zw = 0;
 
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					float3 defaultVertexValue = v.vertex.xyz;
@@ -1819,7 +1829,8 @@ Shader "MK4/StreetLights2"
 			{
 				float4 vertex : INTERNALTESSPOS;
 				float3 ase_normal : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
+
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -1836,7 +1847,7 @@ Shader "MK4/StreetLights2"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				o.vertex = v.vertex;
 				o.ase_normal = v.ase_normal;
-				
+				o.ase_texcoord = v.ase_texcoord;
 				return o;
 			}
 
@@ -1875,7 +1886,7 @@ Shader "MK4/StreetLights2"
 				VertexInput o = (VertexInput) 0;
 				o.vertex = patch[0].vertex * bary.x + patch[1].vertex * bary.y + patch[2].vertex * bary.z;
 				o.ase_normal = patch[0].ase_normal * bary.x + patch[1].ase_normal * bary.y + patch[2].ase_normal * bary.z;
-				
+				o.ase_texcoord = patch[0].ase_texcoord * bary.x + patch[1].ase_texcoord * bary.y + patch[2].ase_texcoord * bary.z;
 				#if defined(ASE_PHONG_TESSELLATION)
 				float3 pp[3];
 				for (int i = 0; i < 3; ++i)
@@ -1912,9 +1923,16 @@ Shader "MK4/StreetLights2"
 					#endif
 				#endif
 
+				float2 appendResult320 = (float2((-0.5 + (_SlideSpeed - 0.0) * (0.5 - -0.5) / (1.0 - 0.0)) , 0.0));
+				float2 texCoord311 = IN.ase_texcoord2.xy * float2( 1,1 ) + float2( 0,0 );
+				float2 panner312 = ( ( _TimeParameters.x ) * appendResult320 + texCoord311);
+				float4 lerpResult305 = lerp( _Background , _Color1 , tex2D( _Emission, panner312 ).r);
+				float4 tex2DNode308 = tex2D( _Emission, texCoord311 );
+				float4 lerpResult309 = lerp( _Background , _Color2 , tex2DNode308.g);
+				float4 lerpResult310 = lerp( lerpResult305 , lerpResult309 , tex2DNode308.b);
 				
 
-				float3 BaseColor = float3(0.5, 0.5, 0.5);
+				float3 BaseColor = ( lerpResult310 * _AlbedoPower ).rgb;
 				float Alpha = 1;
 				float AlphaClipThreshold = 0.5;
 
@@ -2006,6 +2024,7 @@ Shader "MK4/StreetLights2"
 			float4 _Color1;
 			float4 _Color2;
 			float _SlideSpeed;
+			float _AlbedoPower;
 			float _EmissionPower;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -2365,6 +2384,7 @@ Shader "MK4/StreetLights2"
 			float4 _Color1;
 			float4 _Color2;
 			float _SlideSpeed;
+			float _AlbedoPower;
 			float _EmissionPower;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -2620,7 +2640,7 @@ Shader "MK4/StreetLights2"
 				float4 lerpResult310 = lerp( lerpResult305 , lerpResult309 , tex2DNode308.b);
 				
 
-				float3 BaseColor = float3(0.5, 0.5, 0.5);
+				float3 BaseColor = ( lerpResult310 * _AlbedoPower ).rgb;
 				float3 Normal = float3(0, 0, 1);
 				float3 Emission = ( lerpResult310 * _EmissionPower ).rgb;
 				float3 Specular = 0.5;
@@ -2788,6 +2808,7 @@ Shader "MK4/StreetLights2"
 			float4 _Color1;
 			float4 _Color2;
 			float _SlideSpeed;
+			float _AlbedoPower;
 			float _EmissionPower;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -3038,6 +3059,7 @@ Shader "MK4/StreetLights2"
 			float4 _Color1;
 			float4 _Color2;
 			float _SlideSpeed;
+			float _AlbedoPower;
 			float _EmissionPower;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -3293,7 +3315,8 @@ WireConnection;322;0;310;0
 WireConnection;322;1;323;0
 WireConnection;324;0;310;0
 WireConnection;324;1;325;0
+WireConnection;327;0;324;0
 WireConnection;327;2;322;0
 WireConnection;327;4;216;0
 ASEEND*/
-//CHKSM=CBD93ED56D495E1CEF446D758132108DDFB60DE5
+//CHKSM=A3744DC4C3047751EFDC1D1B26EB9DE304CA87AE

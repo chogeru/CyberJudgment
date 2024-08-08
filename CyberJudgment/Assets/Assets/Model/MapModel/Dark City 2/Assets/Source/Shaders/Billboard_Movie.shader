@@ -4,10 +4,11 @@ Shader "MK4/Movie Billboard"
 {
 	Properties
 	{
-		[HideInInspector] _AlphaCutoff("Alpha Cutoff ", Range(0, 1)) = 0.5
 		[HideInInspector] _EmissionColor("Emission Color", Color) = (1,1,1,1)
+		[HideInInspector] _AlphaCutoff("Alpha Cutoff ", Range(0, 1)) = 0.5
 		_Maintexture("Main texture", 2D) = "white" {}
 		_Masks("Masks", 2D) = "white" {}
+		_Color("Color", Color) = (0.5807742,0.7100198,0.9632353,0)
 		_Animation("Animation", 2D) = "white" {}
 		_Columns("Columns", Range( 0 , 128)) = 0
 		_Rows("Rows", Range( 0 , 128)) = 16
@@ -288,14 +289,15 @@ Shader "MK4/Movie Billboard"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _LED_ST;
+			float4 _Color;
 			float4 _Masks_ST;
-			float _EmissionLED;
+			float4 _LED_ST;
 			float _DistortSpeed;
 			float _Distort;
 			float _Columns;
 			float _Rows;
 			float _MovieSpeed;
+			float _EmissionLED;
 			float _EmissionAlbedo;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -330,11 +332,11 @@ Shader "MK4/Movie Billboard"
 				int _PassValue;
 			#endif
 
-			sampler2D _LED;
 			sampler2D _Masks;
 			sampler2D _Maintexture;
 			sampler2D _Texture0;
 			sampler2D _Animation;
+			sampler2D _LED;
 
 
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/Varyings.hlsl"
@@ -553,7 +555,6 @@ Shader "MK4/Movie Billboard"
 
 				WorldViewDirection = SafeNormalize( WorldViewDirection );
 
-				float2 uv_LED = IN.ase_texcoord8.xy * _LED_ST.xy + _LED_ST.zw;
 				float2 texCoord304 = IN.ase_texcoord8.xy * float2( 1,1 ) + float2( 0,0 );
 				float2 panner308 = ( 1.0 * _Time.y * float2( 0,0.1 ) + texCoord304);
 				float2 uv_Masks = IN.ase_texcoord8.xy * _Masks_ST.xy + _Masks_ST.zw;
@@ -602,8 +603,10 @@ Shader "MK4/Movie Billboard"
 				float4 lerpResult299 = lerp( tex2DNode297 , tex2D( _Animation, ( fbuv4 + temp_output_284_0 ) ) , tex2DNode297.a);
 				float4 temp_output_312_0 = ( lerpResult311 + ( lerpResult305 + lerpResult299 ) );
 				
+				float2 uv_LED = IN.ase_texcoord8.xy * _LED_ST.xy + _LED_ST.zw;
+				
 
-				float3 BaseColor = float3(0.5, 0.5, 0.5);
+				float3 BaseColor = ( _Color * temp_output_312_0 ).rgb;
 				float3 Normal = float3(0, 0, 1);
 				float3 Emission = ( ( tex2D( _LED, uv_LED ) * _EmissionLED ) + ( temp_output_312_0 * _EmissionAlbedo ) ).rgb;
 				float3 Specular = 0.5;
@@ -878,14 +881,15 @@ Shader "MK4/Movie Billboard"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _LED_ST;
+			float4 _Color;
 			float4 _Masks_ST;
-			float _EmissionLED;
+			float4 _LED_ST;
 			float _DistortSpeed;
 			float _Distort;
 			float _Columns;
 			float _Rows;
 			float _MovieSpeed;
+			float _EmissionLED;
 			float _EmissionAlbedo;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -1195,14 +1199,15 @@ Shader "MK4/Movie Billboard"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _LED_ST;
+			float4 _Color;
 			float4 _Masks_ST;
-			float _EmissionLED;
+			float4 _LED_ST;
 			float _DistortSpeed;
 			float _Distort;
 			float _Columns;
 			float _Rows;
 			float _MovieSpeed;
+			float _EmissionLED;
 			float _EmissionAlbedo;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -1485,14 +1490,15 @@ Shader "MK4/Movie Billboard"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _LED_ST;
+			float4 _Color;
 			float4 _Masks_ST;
-			float _EmissionLED;
+			float4 _LED_ST;
 			float _DistortSpeed;
 			float _Distort;
 			float _Columns;
 			float _Rows;
 			float _MovieSpeed;
+			float _EmissionLED;
 			float _EmissionAlbedo;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -1527,11 +1533,11 @@ Shader "MK4/Movie Billboard"
 				int _PassValue;
 			#endif
 
-			sampler2D _LED;
 			sampler2D _Masks;
 			sampler2D _Maintexture;
 			sampler2D _Texture0;
 			sampler2D _Animation;
+			sampler2D _LED;
 
 
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/Varyings.hlsl"
@@ -1703,7 +1709,6 @@ Shader "MK4/Movie Billboard"
 					#endif
 				#endif
 
-				float2 uv_LED = IN.ase_texcoord4.xy * _LED_ST.xy + _LED_ST.zw;
 				float2 texCoord304 = IN.ase_texcoord4.xy * float2( 1,1 ) + float2( 0,0 );
 				float2 panner308 = ( 1.0 * _Time.y * float2( 0,0.1 ) + texCoord304);
 				float2 uv_Masks = IN.ase_texcoord4.xy * _Masks_ST.xy + _Masks_ST.zw;
@@ -1752,8 +1757,10 @@ Shader "MK4/Movie Billboard"
 				float4 lerpResult299 = lerp( tex2DNode297 , tex2D( _Animation, ( fbuv4 + temp_output_284_0 ) ) , tex2DNode297.a);
 				float4 temp_output_312_0 = ( lerpResult311 + ( lerpResult305 + lerpResult299 ) );
 				
+				float2 uv_LED = IN.ase_texcoord4.xy * _LED_ST.xy + _LED_ST.zw;
+				
 
-				float3 BaseColor = float3(0.5, 0.5, 0.5);
+				float3 BaseColor = ( _Color * temp_output_312_0 ).rgb;
 				float3 Emission = ( ( tex2D( _LED, uv_LED ) * _EmissionLED ) + ( temp_output_312_0 * _EmissionAlbedo ) ).rgb;
 				float Alpha = 1;
 				float AlphaClipThreshold = 0.5;
@@ -1816,7 +1823,7 @@ Shader "MK4/Movie Billboard"
 			{
 				float4 vertex : POSITION;
 				float3 ase_normal : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -1829,20 +1836,21 @@ Shader "MK4/Movie Billboard"
 				#if defined(REQUIRES_VERTEX_SHADOW_COORD_INTERPOLATOR) && defined(ASE_NEEDS_FRAG_SHADOWCOORDS)
 					float4 shadowCoord : TEXCOORD1;
 				#endif
-				
+				float4 ase_texcoord2 : TEXCOORD2;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _LED_ST;
+			float4 _Color;
 			float4 _Masks_ST;
-			float _EmissionLED;
+			float4 _LED_ST;
 			float _DistortSpeed;
 			float _Distort;
 			float _Columns;
 			float _Rows;
 			float _MovieSpeed;
+			float _EmissionLED;
 			float _EmissionAlbedo;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -1877,7 +1885,11 @@ Shader "MK4/Movie Billboard"
 				int _PassValue;
 			#endif
 
-			
+			sampler2D _Masks;
+			sampler2D _Maintexture;
+			sampler2D _Texture0;
+			sampler2D _Animation;
+
 
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/Varyings.hlsl"
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/PBR2DPass.hlsl"
@@ -1894,7 +1906,10 @@ Shader "MK4/Movie Billboard"
 				UNITY_TRANSFER_INSTANCE_ID( v, o );
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO( o );
 
+				o.ase_texcoord2.xy = v.ase_texcoord.xy;
 				
+				//setting value to unused interpolator channels and avoid initialization warnings
+				o.ase_texcoord2.zw = 0;
 
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					float3 defaultVertexValue = v.vertex.xyz;
@@ -1936,7 +1951,8 @@ Shader "MK4/Movie Billboard"
 			{
 				float4 vertex : INTERNALTESSPOS;
 				float3 ase_normal : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
+
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -1953,7 +1969,7 @@ Shader "MK4/Movie Billboard"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				o.vertex = v.vertex;
 				o.ase_normal = v.ase_normal;
-				
+				o.ase_texcoord = v.ase_texcoord;
 				return o;
 			}
 
@@ -1992,7 +2008,7 @@ Shader "MK4/Movie Billboard"
 				VertexInput o = (VertexInput) 0;
 				o.vertex = patch[0].vertex * bary.x + patch[1].vertex * bary.y + patch[2].vertex * bary.z;
 				o.ase_normal = patch[0].ase_normal * bary.x + patch[1].ase_normal * bary.y + patch[2].ase_normal * bary.z;
-				
+				o.ase_texcoord = patch[0].ase_texcoord * bary.x + patch[1].ase_texcoord * bary.y + patch[2].ase_texcoord * bary.z;
 				#if defined(ASE_PHONG_TESSELLATION)
 				float3 pp[3];
 				for (int i = 0; i < 3; ++i)
@@ -2029,9 +2045,56 @@ Shader "MK4/Movie Billboard"
 					#endif
 				#endif
 
+				float2 texCoord304 = IN.ase_texcoord2.xy * float2( 1,1 ) + float2( 0,0 );
+				float2 panner308 = ( 1.0 * _Time.y * float2( 0,0.1 ) + texCoord304);
+				float2 uv_Masks = IN.ase_texcoord2.xy * _Masks_ST.xy + _Masks_ST.zw;
+				float4 tex2DNode314 = tex2D( _Masks, uv_Masks );
+				float lerpResult311 = lerp( 0.0 , tex2D( _Masks, panner308 ).g , tex2DNode314.a);
+				float2 panner303 = ( 1.0 * _Time.y * float2( -0.1,0 ) + texCoord304);
+				float lerpResult305 = lerp( 0.0 , tex2D( _Masks, panner303 ).r , tex2DNode314.b);
+				float2 texCoord258 = IN.ase_texcoord2.xy * float2( 1,1 ) + float2( 0,0 );
+				float temp_output_287_0 = ( ( _TimeParameters.x ) * _DistortSpeed );
+				float2 texCoord271 = IN.ase_texcoord2.xy * float2( 0.3,0.3 ) + float2( 0,0 );
+				float2 panner273 = ( temp_output_287_0 * float2( -3,6 ) + texCoord271);
+				float2 panner274 = ( temp_output_287_0 * float2( 3,4 ) + texCoord271);
+				float2 panner272 = ( temp_output_287_0 * float2( -3.3,-2 ) + texCoord271);
+				float temp_output_284_0 = ( ( ( tex2D( _Texture0, panner273 ).a * 0.5 ) + ( tex2D( _Texture0, panner274 ).a + tex2D( _Texture0, panner272 ).a ) ) * (0.0 + (_Distort - 0.0) * (0.01 - 0.0) / (1.0 - 0.0)) );
+				float4 tex2DNode297 = tex2D( _Maintexture, ( texCoord258 + temp_output_284_0 ) );
+				float2 appendResult290 = (float2(frac( ( ( texCoord258.x * 2.5 ) + 0.5 ) ) , frac( ( ( texCoord258.y * 2.5 ) + 0.5 ) )));
+				// *** BEGIN Flipbook UV Animation vars ***
+				// Total tiles of Flipbook Texture
+				float fbtotaltiles4 = _Columns * _Rows;
+				// Offsets for cols and rows of Flipbook Texture
+				float fbcolsoffset4 = 1.0f / _Columns;
+				float fbrowsoffset4 = 1.0f / _Rows;
+				// Speed of animation
+				float fbspeed4 = _Time[ 1 ] * _MovieSpeed;
+				// UV Tiling (col and row offset)
+				float2 fbtiling4 = float2(fbcolsoffset4, fbrowsoffset4);
+				// UV Offset - calculate current tile linear index, and convert it to (X * coloffset, Y * rowoffset)
+				// Calculate current tile linear index
+				float fbcurrenttileindex4 = round( fmod( fbspeed4 + 0.0, fbtotaltiles4) );
+				fbcurrenttileindex4 += ( fbcurrenttileindex4 < 0) ? fbtotaltiles4 : 0;
+				// Obtain Offset X coordinate from current tile linear index
+				float fblinearindextox4 = round ( fmod ( fbcurrenttileindex4, _Columns ) );
+				// Multiply Offset X by coloffset
+				float fboffsetx4 = fblinearindextox4 * fbcolsoffset4;
+				// Obtain Offset Y coordinate from current tile linear index
+				float fblinearindextoy4 = round( fmod( ( fbcurrenttileindex4 - fblinearindextox4 ) / _Columns, _Rows ) );
+				// Reverse Y to get tiles from Top to Bottom
+				fblinearindextoy4 = (int)(_Rows-1) - fblinearindextoy4;
+				// Multiply Offset Y by rowoffset
+				float fboffsety4 = fblinearindextoy4 * fbrowsoffset4;
+				// UV Offset
+				float2 fboffset4 = float2(fboffsetx4, fboffsety4);
+				// Flipbook UV
+				half2 fbuv4 = appendResult290 * fbtiling4 + fboffset4;
+				// *** END Flipbook UV Animation vars ***
+				float4 lerpResult299 = lerp( tex2DNode297 , tex2D( _Animation, ( fbuv4 + temp_output_284_0 ) ) , tex2DNode297.a);
+				float4 temp_output_312_0 = ( lerpResult311 + ( lerpResult305 + lerpResult299 ) );
 				
 
-				float3 BaseColor = float3(0.5, 0.5, 0.5);
+				float3 BaseColor = ( _Color * temp_output_312_0 ).rgb;
 				float Alpha = 1;
 				float AlphaClipThreshold = 0.5;
 
@@ -2119,14 +2182,15 @@ Shader "MK4/Movie Billboard"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _LED_ST;
+			float4 _Color;
 			float4 _Masks_ST;
-			float _EmissionLED;
+			float4 _LED_ST;
 			float _DistortSpeed;
 			float _Distort;
 			float _Columns;
 			float _Rows;
 			float _MovieSpeed;
+			float _EmissionLED;
 			float _EmissionAlbedo;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -2482,14 +2546,15 @@ Shader "MK4/Movie Billboard"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _LED_ST;
+			float4 _Color;
 			float4 _Masks_ST;
-			float _EmissionLED;
+			float4 _LED_ST;
 			float _DistortSpeed;
 			float _Distort;
 			float _Columns;
 			float _Rows;
 			float _MovieSpeed;
+			float _EmissionLED;
 			float _EmissionAlbedo;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -2524,11 +2589,11 @@ Shader "MK4/Movie Billboard"
 				int _PassValue;
 			#endif
 
-			sampler2D _LED;
 			sampler2D _Masks;
 			sampler2D _Maintexture;
 			sampler2D _Texture0;
 			sampler2D _Animation;
+			sampler2D _LED;
 
 
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/Varyings.hlsl"
@@ -2740,7 +2805,6 @@ Shader "MK4/Movie Billboard"
 
 				WorldViewDirection = SafeNormalize( WorldViewDirection );
 
-				float2 uv_LED = IN.ase_texcoord8.xy * _LED_ST.xy + _LED_ST.zw;
 				float2 texCoord304 = IN.ase_texcoord8.xy * float2( 1,1 ) + float2( 0,0 );
 				float2 panner308 = ( 1.0 * _Time.y * float2( 0,0.1 ) + texCoord304);
 				float2 uv_Masks = IN.ase_texcoord8.xy * _Masks_ST.xy + _Masks_ST.zw;
@@ -2789,8 +2853,10 @@ Shader "MK4/Movie Billboard"
 				float4 lerpResult299 = lerp( tex2DNode297 , tex2D( _Animation, ( fbuv4 + temp_output_284_0 ) ) , tex2DNode297.a);
 				float4 temp_output_312_0 = ( lerpResult311 + ( lerpResult305 + lerpResult299 ) );
 				
+				float2 uv_LED = IN.ase_texcoord8.xy * _LED_ST.xy + _LED_ST.zw;
+				
 
-				float3 BaseColor = float3(0.5, 0.5, 0.5);
+				float3 BaseColor = ( _Color * temp_output_312_0 ).rgb;
 				float3 Normal = float3(0, 0, 1);
 				float3 Emission = ( ( tex2D( _LED, uv_LED ) * _EmissionLED ) + ( temp_output_312_0 * _EmissionAlbedo ) ).rgb;
 				float3 Specular = 0.5;
@@ -2954,14 +3020,15 @@ Shader "MK4/Movie Billboard"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _LED_ST;
+			float4 _Color;
 			float4 _Masks_ST;
-			float _EmissionLED;
+			float4 _LED_ST;
 			float _DistortSpeed;
 			float _Distort;
 			float _Columns;
 			float _Rows;
 			float _MovieSpeed;
+			float _EmissionLED;
 			float _EmissionAlbedo;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -3208,14 +3275,15 @@ Shader "MK4/Movie Billboard"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
-			float4 _LED_ST;
+			float4 _Color;
 			float4 _Masks_ST;
-			float _EmissionLED;
+			float4 _LED_ST;
 			float _DistortSpeed;
 			float _Distort;
 			float _Columns;
 			float _Rows;
 			float _MovieSpeed;
+			float _EmissionLED;
 			float _EmissionAlbedo;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -3568,7 +3636,8 @@ WireConnection;215;0;216;0
 WireConnection;121;0;119;0
 WireConnection;121;1;312;0
 WireConnection;218;0;220;0
+WireConnection;316;0;121;0
 WireConnection;316;2;269;0
 WireConnection;316;4;216;0
 ASEEND*/
-//CHKSM=B4FAAC521FDE5BB15F99C6CDC194EEFB3F9CB27C
+//CHKSM=58EA0DC1B20B8DC905504964F657A7C660B0DBB9

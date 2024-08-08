@@ -186,18 +186,15 @@ Shader "FORGE3D/Planets HD/Sun Corona"
 			#define _SURFACE_TYPE_TRANSPARENT 1
 			#define _RECEIVE_SHADOWS_OFF 1
 			#pragma multi_compile_instancing
-			#define ASE_SRP_VERSION 140008
+			#define ASE_SRP_VERSION 120110
 			#define REQUIRE_DEPTH_TEXTURE 1
 
 
-			#pragma instancing_options renderinglayer
+			#pragma multi_compile _ _DBUFFER_MRT1 _DBUFFER_MRT2 _DBUFFER_MRT3
 
 			#pragma multi_compile _ LIGHTMAP_ON
 			#pragma multi_compile _ DIRLIGHTMAP_COMBINED
-			#pragma multi_compile_fragment _ _DBUFFER_MRT1 _DBUFFER_MRT2 _DBUFFER_MRT3
-        	#pragma multi_compile_fragment _ DEBUG_DISPLAY
-        	#pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
-        	#pragma multi_compile_fragment _ _WRITE_RENDERING_LAYERS
+			#pragma multi_compile _ DEBUG_DISPLAY
 
 			#pragma vertex vert
 			#pragma fragment frag
@@ -216,7 +213,6 @@ Shader "FORGE3D/Planets HD/Sun Corona"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Debug/Debugging3D.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Input.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/SurfaceData.hlsl"
-			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/LODCrossFade.hlsl"
 
 			#define ASE_NEEDS_FRAG_WORLD_POSITION
 
@@ -448,11 +444,7 @@ Shader "FORGE3D/Planets HD/Sun Corona"
 			}
 			#endif
 
-			half4 frag ( VertexOutput IN
-				#ifdef _WRITE_RENDERING_LAYERS
-				, out float4 outRenderingLayers : SV_Target1
-				#endif
-				 ) : SV_Target
+			half4 frag ( VertexOutput IN  ) : SV_Target
 			{
 				UNITY_SETUP_INSTANCE_ID( IN );
 				UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX( IN );
@@ -529,7 +521,7 @@ Shader "FORGE3D/Planets HD/Sun Corona"
 				float2 temp_cast_10 = (0.5).xx;
 				float2 temp_cast_11 = (2.0).xx;
 				float2 break10_g39 = pow( ( texCoord76 - temp_cast_10 ) , temp_cast_11 );
-				float cMaskB85 = saturate( pow( max( 0.0 , ( cMaskA82 * saturate( ( 1.0 - pow( ( 2.25 * sqrt( ( ( 1.0 * break10_g39.x ) + ( 1.0 * break10_g39.y ) ) ) ) , 0.01 ) ) ) * _CoronaBoost ) ) , _CoronaFalloff ) );
+				float cMaskB85 = saturate( pow( max( sStorm70 , ( cMaskA82 * saturate( ( 1.0 - pow( ( 2.25 * sqrt( ( ( 1.0 * break10_g39.x ) + ( 1.0 * break10_g39.y ) ) ) ) , 0.01 ) ) ) * _CoronaBoost ) ) , _CoronaFalloff ) );
 				float2 temp_cast_12 = (1.0).xx;
 				float2 temp_output_5_0_g42 = ( temp_output_11_0 - temp_cast_12 );
 				float2 break15_g42 = temp_output_5_0_g42;
@@ -577,16 +569,11 @@ Shader "FORGE3D/Planets HD/Sun Corona"
 				#endif
 
 				#ifdef LOD_FADE_CROSSFADE
-					LODFadeCrossFade( IN.clipPos );
+					LODDitheringTransition( IN.clipPos.xyz, unity_LODFade.x );
 				#endif
 
 				#ifdef ASE_FOG
 					Color = MixFog( Color, IN.fogFactor );
-				#endif
-
-				#ifdef _WRITE_RENDERING_LAYERS
-					uint renderingLayers = GetMeshRenderingLayer();
-					outRenderingLayers = float4( EncodeMeshRenderingLayer( renderingLayers ), 0, 0, 0 );
 				#endif
 
 				return half4( Color, Alpha );
@@ -610,7 +597,7 @@ Shader "FORGE3D/Planets HD/Sun Corona"
 			#define _SURFACE_TYPE_TRANSPARENT 1
 			#define _RECEIVE_SHADOWS_OFF 1
 			#pragma multi_compile_instancing
-			#define ASE_SRP_VERSION 140008
+			#define ASE_SRP_VERSION 120110
 
 
 			#pragma vertex vert
@@ -620,7 +607,6 @@ Shader "FORGE3D/Planets HD/Sun Corona"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
-			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/LODCrossFade.hlsl"
 
 			
 
@@ -828,7 +814,7 @@ Shader "FORGE3D/Planets HD/Sun Corona"
 				#endif
 
 				#ifdef LOD_FADE_CROSSFADE
-					LODFadeCrossFade( IN.clipPos );
+					LODDitheringTransition( IN.clipPos.xyz, unity_LODFade.x );
 				#endif
 				return 0;
 			}
@@ -849,7 +835,7 @@ Shader "FORGE3D/Planets HD/Sun Corona"
 			#define _SURFACE_TYPE_TRANSPARENT 1
 			#define _RECEIVE_SHADOWS_OFF 1
 			#pragma multi_compile_instancing
-			#define ASE_SRP_VERSION 140008
+			#define ASE_SRP_VERSION 120110
 
 
 			#pragma vertex vert
@@ -1073,7 +1059,7 @@ Shader "FORGE3D/Planets HD/Sun Corona"
 			#define _SURFACE_TYPE_TRANSPARENT 1
 			#define _RECEIVE_SHADOWS_OFF 1
 			#pragma multi_compile_instancing
-			#define ASE_SRP_VERSION 140008
+			#define ASE_SRP_VERSION 120110
 
 
 			#pragma vertex vert
@@ -1299,14 +1285,11 @@ Shader "FORGE3D/Planets HD/Sun Corona"
 			#define _SURFACE_TYPE_TRANSPARENT 1
 			#define _RECEIVE_SHADOWS_OFF 1
 			#pragma multi_compile_instancing
-			#define ASE_SRP_VERSION 140008
+			#define ASE_SRP_VERSION 120110
 
 
 			#pragma vertex vert
 			#pragma fragment frag
-
-			#pragma multi_compile_fragment _ _WRITE_RENDERING_LAYERS
-        	#pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
 
 			#define ATTRIBUTES_NEED_NORMAL
 			#define ATTRIBUTES_NEED_TANGENT
@@ -1321,7 +1304,6 @@ Shader "FORGE3D/Planets HD/Sun Corona"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShaderPass.hlsl"
-			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/LODCrossFade.hlsl"
 
 			
 
@@ -1494,12 +1476,7 @@ Shader "FORGE3D/Planets HD/Sun Corona"
 			}
 			#endif
 
-			void frag( VertexOutput IN
-				, out half4 outNormalWS : SV_Target0
-			#ifdef _WRITE_RENDERING_LAYERS
-				, out float4 outRenderingLayers : SV_Target1
-			#endif
-				 )
+			half4 frag(VertexOutput IN ) : SV_TARGET
 			{
 				SurfaceDescription surfaceDescription = (SurfaceDescription)0;
 
@@ -1513,24 +1490,12 @@ Shader "FORGE3D/Planets HD/Sun Corona"
 				#endif
 
 				#ifdef LOD_FADE_CROSSFADE
-					LODFadeCrossFade( IN.clipPos );
+					LODDitheringTransition( IN.clipPos.xyz, unity_LODFade.x );
 				#endif
 
-				#if defined(_GBUFFER_NORMALS_OCT)
-					float3 normalWS = normalize(IN.normalWS);
-					float2 octNormalWS = PackNormalOctQuadEncode(normalWS);           // values between [-1, +1], must use fp32 on some platforms
-					float2 remappedOctNormalWS = saturate(octNormalWS * 0.5 + 0.5);   // values between [ 0,  1]
-					half3 packedNormalWS = PackFloat2To888(remappedOctNormalWS);      // values between [ 0,  1]
-					outNormalWS = half4(packedNormalWS, 0.0);
-				#else
-					float3 normalWS = IN.normalWS;
-					outNormalWS = half4(NormalizeNormalPerPixel(normalWS), 0.0);
-				#endif
+				float3 normalWS = IN.normalWS;
 
-				#ifdef _WRITE_RENDERING_LAYERS
-					uint renderingLayers = GetMeshRenderingLayer();
-					outRenderingLayers = float4(EncodeMeshRenderingLayer(renderingLayers), 0, 0, 0);
-				#endif
+				return half4(NormalizeNormalPerPixel(normalWS), 0.0);
 			}
 
 			ENDHLSL
@@ -1743,6 +1708,7 @@ WireConnection;67;1;66;0
 WireConnection;2;0;14;0
 WireConnection;2;2;32;0
 WireConnection;2;1;30;0
+WireConnection;146;0;70;0
 WireConnection;146;1;84;0
 WireConnection;68;0;143;0
 WireConnection;68;1;58;0
@@ -1777,4 +1743,4 @@ WireConnection;115;1;113;0
 WireConnection;120;0;121;0
 WireConnection;139;2;118;0
 ASEEND*/
-//CHKSM=CF52B03C8936C7CADC3C0F7C5557C4F6F2B6EBB7
+//CHKSM=BFEF39D0E5D85C744E825CB7C9DE3A7A25FBF8D2

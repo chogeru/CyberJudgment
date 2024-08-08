@@ -11,6 +11,7 @@ Shader "MK4/Billboards"
 		_PannerY("Panner Y", Range( 0 , 1)) = 0
 		_DistortPower("Distort Power", Range( 0 , 1)) = 0
 		_Distortions("Distortions", 2D) = "white" {}
+		_AlbedoColor("Albedo Color", Color) = (0.490566,0.490566,0.490566,0)
 		_Background("Background", 2D) = "gray" {}
 		_BackgroundEm("Background Em", Range( 0 , 1)) = 0
 		_LEDint("LED int", Range( 0 , 1)) = 0
@@ -289,15 +290,16 @@ Shader "MK4/Billboards"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _AlbedoColor;
 			float4 _Logo_ST;
 			float4 _LED_ST;
 			float4 _Glitch1;
 			float4 _Glitch2;
+			float _DistortPower;
 			float _GlitchIntensity;
 			float _LEDint;
 			float _PannerX;
 			float _PannerY;
-			float _DistortPower;
 			float _BackgroundEm;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -332,11 +334,11 @@ Shader "MK4/Billboards"
 				int _PassValue;
 			#endif
 
-			sampler2D _LEDGlow;
-			sampler2D _Logo;
-			sampler2D _LED;
-			sampler2D _Distortions;
 			sampler2D _Background;
+			sampler2D _Logo;
+			sampler2D _Distortions;
+			sampler2D _LED;
+			sampler2D _LEDGlow;
 
 
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/Varyings.hlsl"
@@ -559,6 +561,13 @@ Shader "MK4/Billboards"
 				float2 uv_LED = IN.ase_texcoord8.xy * _LED_ST.xy + _LED_ST.zw;
 				float4 tex2DNode249 = tex2D( _LED, uv_LED );
 				float2 temp_output_272_0 = ( uv_Logo + ( tex2DNode249.a * 0.1 ) );
+				float2 panner223 = ( 1.0 * _Time.y * float2( 1,2 ) + temp_output_272_0);
+				float2 panner226 = ( 1.0 * _Time.y * float2( -1.8,0.3 ) + temp_output_272_0);
+				float2 panner229 = ( 1.0 * _Time.y * float2( 0.8,-1.5 ) + temp_output_272_0);
+				float2 panner231 = ( 1.0 * _Time.y * float2( -0.8,-1.5 ) + temp_output_272_0);
+				float temp_output_216_0 = ( ( ( ( tex2D( _Distortions, panner223 ).r + tex2D( _Distortions, panner226 ).g ) + tex2D( _Distortions, panner229 ).b ) + tex2D( _Distortions, panner231 ).a ) * (0.0 + (_DistortPower - 0.0) * (0.5 - 0.0) / (1.0 - 0.0)) );
+				float4 tex2DNode244 = tex2D( _Background, ( uv_Logo + temp_output_216_0 ) );
+				
 				float2 panner267 = ( 1.0 * _Time.y * float2( -6,5 ) + temp_output_272_0);
 				float clampResult295 = clamp( ( _GlitchIntensity + tex2D( _LEDGlow, panner267 ).a ) , 0.0 , 1.0 );
 				float2 panner257 = ( 1.0 * _Time.y * float2( 2,3 ) + temp_output_272_0);
@@ -567,16 +576,10 @@ Shader "MK4/Billboards"
 				float2 panner263 = ( 1.0 * _Time.y * float2( -5,-2.3 ) + temp_output_272_0);
 				float2 appendResult286 = (float2(_PannerX , _PannerY));
 				float2 panner219 = ( 1.0 * _Time.y * appendResult286 + uv_Logo);
-				float2 panner223 = ( 1.0 * _Time.y * float2( 1,2 ) + temp_output_272_0);
-				float2 panner226 = ( 1.0 * _Time.y * float2( -1.8,0.3 ) + temp_output_272_0);
-				float2 panner229 = ( 1.0 * _Time.y * float2( 0.8,-1.5 ) + temp_output_272_0);
-				float2 panner231 = ( 1.0 * _Time.y * float2( -0.8,-1.5 ) + temp_output_272_0);
-				float temp_output_216_0 = ( ( ( ( tex2D( _Distortions, panner223 ).r + tex2D( _Distortions, panner226 ).g ) + tex2D( _Distortions, panner229 ).b ) + tex2D( _Distortions, panner231 ).a ) * (0.0 + (_DistortPower - 0.0) * (0.5 - 0.0) / (1.0 - 0.0)) );
-				float4 tex2DNode244 = tex2D( _Background, ( uv_Logo + temp_output_216_0 ) );
 				float4 clampResult284 = clamp( ( ( ( clampResult295 * ( ( ( _Glitch1 * tex2D( _LEDGlow, panner257 ).g ) + ( ( _Glitch2 * tex2D( _LEDGlow, panner255 ).r ) + ( tex2DNode249 * clampResult280 ) ) ) * _LEDint ) ) + ( tex2D( _LEDGlow, panner263 ).b * tex2D( _Logo, ( panner219 + temp_output_216_0 ) ) ) ) + ( tex2DNode244 * _BackgroundEm ) ) , float4( 0,0,0,0 ) , float4( 1,1,1,0 ) );
 				
 
-				float3 BaseColor = float3(0.5, 0.5, 0.5);
+				float3 BaseColor = ( _AlbedoColor * tex2DNode244 ).rgb;
 				float3 Normal = float3(0, 0, 1);
 				float3 Emission = clampResult284.rgb;
 				float3 Specular = 0.5;
@@ -851,15 +854,16 @@ Shader "MK4/Billboards"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _AlbedoColor;
 			float4 _Logo_ST;
 			float4 _LED_ST;
 			float4 _Glitch1;
 			float4 _Glitch2;
+			float _DistortPower;
 			float _GlitchIntensity;
 			float _LEDint;
 			float _PannerX;
 			float _PannerY;
-			float _DistortPower;
 			float _BackgroundEm;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -1169,15 +1173,16 @@ Shader "MK4/Billboards"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _AlbedoColor;
 			float4 _Logo_ST;
 			float4 _LED_ST;
 			float4 _Glitch1;
 			float4 _Glitch2;
+			float _DistortPower;
 			float _GlitchIntensity;
 			float _LEDint;
 			float _PannerX;
 			float _PannerY;
-			float _DistortPower;
 			float _BackgroundEm;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -1460,15 +1465,16 @@ Shader "MK4/Billboards"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _AlbedoColor;
 			float4 _Logo_ST;
 			float4 _LED_ST;
 			float4 _Glitch1;
 			float4 _Glitch2;
+			float _DistortPower;
 			float _GlitchIntensity;
 			float _LEDint;
 			float _PannerX;
 			float _PannerY;
-			float _DistortPower;
 			float _BackgroundEm;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -1503,11 +1509,11 @@ Shader "MK4/Billboards"
 				int _PassValue;
 			#endif
 
-			sampler2D _LEDGlow;
-			sampler2D _Logo;
-			sampler2D _LED;
-			sampler2D _Distortions;
 			sampler2D _Background;
+			sampler2D _Logo;
+			sampler2D _Distortions;
+			sampler2D _LED;
+			sampler2D _LEDGlow;
 
 
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/Varyings.hlsl"
@@ -1683,6 +1689,13 @@ Shader "MK4/Billboards"
 				float2 uv_LED = IN.ase_texcoord4.xy * _LED_ST.xy + _LED_ST.zw;
 				float4 tex2DNode249 = tex2D( _LED, uv_LED );
 				float2 temp_output_272_0 = ( uv_Logo + ( tex2DNode249.a * 0.1 ) );
+				float2 panner223 = ( 1.0 * _Time.y * float2( 1,2 ) + temp_output_272_0);
+				float2 panner226 = ( 1.0 * _Time.y * float2( -1.8,0.3 ) + temp_output_272_0);
+				float2 panner229 = ( 1.0 * _Time.y * float2( 0.8,-1.5 ) + temp_output_272_0);
+				float2 panner231 = ( 1.0 * _Time.y * float2( -0.8,-1.5 ) + temp_output_272_0);
+				float temp_output_216_0 = ( ( ( ( tex2D( _Distortions, panner223 ).r + tex2D( _Distortions, panner226 ).g ) + tex2D( _Distortions, panner229 ).b ) + tex2D( _Distortions, panner231 ).a ) * (0.0 + (_DistortPower - 0.0) * (0.5 - 0.0) / (1.0 - 0.0)) );
+				float4 tex2DNode244 = tex2D( _Background, ( uv_Logo + temp_output_216_0 ) );
+				
 				float2 panner267 = ( 1.0 * _Time.y * float2( -6,5 ) + temp_output_272_0);
 				float clampResult295 = clamp( ( _GlitchIntensity + tex2D( _LEDGlow, panner267 ).a ) , 0.0 , 1.0 );
 				float2 panner257 = ( 1.0 * _Time.y * float2( 2,3 ) + temp_output_272_0);
@@ -1691,16 +1704,10 @@ Shader "MK4/Billboards"
 				float2 panner263 = ( 1.0 * _Time.y * float2( -5,-2.3 ) + temp_output_272_0);
 				float2 appendResult286 = (float2(_PannerX , _PannerY));
 				float2 panner219 = ( 1.0 * _Time.y * appendResult286 + uv_Logo);
-				float2 panner223 = ( 1.0 * _Time.y * float2( 1,2 ) + temp_output_272_0);
-				float2 panner226 = ( 1.0 * _Time.y * float2( -1.8,0.3 ) + temp_output_272_0);
-				float2 panner229 = ( 1.0 * _Time.y * float2( 0.8,-1.5 ) + temp_output_272_0);
-				float2 panner231 = ( 1.0 * _Time.y * float2( -0.8,-1.5 ) + temp_output_272_0);
-				float temp_output_216_0 = ( ( ( ( tex2D( _Distortions, panner223 ).r + tex2D( _Distortions, panner226 ).g ) + tex2D( _Distortions, panner229 ).b ) + tex2D( _Distortions, panner231 ).a ) * (0.0 + (_DistortPower - 0.0) * (0.5 - 0.0) / (1.0 - 0.0)) );
-				float4 tex2DNode244 = tex2D( _Background, ( uv_Logo + temp_output_216_0 ) );
 				float4 clampResult284 = clamp( ( ( ( clampResult295 * ( ( ( _Glitch1 * tex2D( _LEDGlow, panner257 ).g ) + ( ( _Glitch2 * tex2D( _LEDGlow, panner255 ).r ) + ( tex2DNode249 * clampResult280 ) ) ) * _LEDint ) ) + ( tex2D( _LEDGlow, panner263 ).b * tex2D( _Logo, ( panner219 + temp_output_216_0 ) ) ) ) + ( tex2DNode244 * _BackgroundEm ) ) , float4( 0,0,0,0 ) , float4( 1,1,1,0 ) );
 				
 
-				float3 BaseColor = float3(0.5, 0.5, 0.5);
+				float3 BaseColor = ( _AlbedoColor * tex2DNode244 ).rgb;
 				float3 Emission = clampResult284.rgb;
 				float Alpha = 1;
 				float AlphaClipThreshold = 0.5;
@@ -1763,7 +1770,7 @@ Shader "MK4/Billboards"
 			{
 				float4 vertex : POSITION;
 				float3 ase_normal : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -1776,21 +1783,22 @@ Shader "MK4/Billboards"
 				#if defined(REQUIRES_VERTEX_SHADOW_COORD_INTERPOLATOR) && defined(ASE_NEEDS_FRAG_SHADOWCOORDS)
 					float4 shadowCoord : TEXCOORD1;
 				#endif
-				
+				float4 ase_texcoord2 : TEXCOORD2;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _AlbedoColor;
 			float4 _Logo_ST;
 			float4 _LED_ST;
 			float4 _Glitch1;
 			float4 _Glitch2;
+			float _DistortPower;
 			float _GlitchIntensity;
 			float _LEDint;
 			float _PannerX;
 			float _PannerY;
-			float _DistortPower;
 			float _BackgroundEm;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -1825,7 +1833,11 @@ Shader "MK4/Billboards"
 				int _PassValue;
 			#endif
 
-			
+			sampler2D _Background;
+			sampler2D _Logo;
+			sampler2D _Distortions;
+			sampler2D _LED;
+
 
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/Varyings.hlsl"
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/PBR2DPass.hlsl"
@@ -1842,7 +1854,10 @@ Shader "MK4/Billboards"
 				UNITY_TRANSFER_INSTANCE_ID( v, o );
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO( o );
 
+				o.ase_texcoord2.xy = v.ase_texcoord.xy;
 				
+				//setting value to unused interpolator channels and avoid initialization warnings
+				o.ase_texcoord2.zw = 0;
 
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					float3 defaultVertexValue = v.vertex.xyz;
@@ -1884,7 +1899,8 @@ Shader "MK4/Billboards"
 			{
 				float4 vertex : INTERNALTESSPOS;
 				float3 ase_normal : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
+
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -1901,7 +1917,7 @@ Shader "MK4/Billboards"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				o.vertex = v.vertex;
 				o.ase_normal = v.ase_normal;
-				
+				o.ase_texcoord = v.ase_texcoord;
 				return o;
 			}
 
@@ -1940,7 +1956,7 @@ Shader "MK4/Billboards"
 				VertexInput o = (VertexInput) 0;
 				o.vertex = patch[0].vertex * bary.x + patch[1].vertex * bary.y + patch[2].vertex * bary.z;
 				o.ase_normal = patch[0].ase_normal * bary.x + patch[1].ase_normal * bary.y + patch[2].ase_normal * bary.z;
-				
+				o.ase_texcoord = patch[0].ase_texcoord * bary.x + patch[1].ase_texcoord * bary.y + patch[2].ase_texcoord * bary.z;
 				#if defined(ASE_PHONG_TESSELLATION)
 				float3 pp[3];
 				for (int i = 0; i < 3; ++i)
@@ -1977,9 +1993,19 @@ Shader "MK4/Billboards"
 					#endif
 				#endif
 
+				float2 uv_Logo = IN.ase_texcoord2.xy * _Logo_ST.xy + _Logo_ST.zw;
+				float2 uv_LED = IN.ase_texcoord2.xy * _LED_ST.xy + _LED_ST.zw;
+				float4 tex2DNode249 = tex2D( _LED, uv_LED );
+				float2 temp_output_272_0 = ( uv_Logo + ( tex2DNode249.a * 0.1 ) );
+				float2 panner223 = ( 1.0 * _Time.y * float2( 1,2 ) + temp_output_272_0);
+				float2 panner226 = ( 1.0 * _Time.y * float2( -1.8,0.3 ) + temp_output_272_0);
+				float2 panner229 = ( 1.0 * _Time.y * float2( 0.8,-1.5 ) + temp_output_272_0);
+				float2 panner231 = ( 1.0 * _Time.y * float2( -0.8,-1.5 ) + temp_output_272_0);
+				float temp_output_216_0 = ( ( ( ( tex2D( _Distortions, panner223 ).r + tex2D( _Distortions, panner226 ).g ) + tex2D( _Distortions, panner229 ).b ) + tex2D( _Distortions, panner231 ).a ) * (0.0 + (_DistortPower - 0.0) * (0.5 - 0.0) / (1.0 - 0.0)) );
+				float4 tex2DNode244 = tex2D( _Background, ( uv_Logo + temp_output_216_0 ) );
 				
 
-				float3 BaseColor = float3(0.5, 0.5, 0.5);
+				float3 BaseColor = ( _AlbedoColor * tex2DNode244 ).rgb;
 				float Alpha = 1;
 				float AlphaClipThreshold = 0.5;
 
@@ -2067,15 +2093,16 @@ Shader "MK4/Billboards"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _AlbedoColor;
 			float4 _Logo_ST;
 			float4 _LED_ST;
 			float4 _Glitch1;
 			float4 _Glitch2;
+			float _DistortPower;
 			float _GlitchIntensity;
 			float _LEDint;
 			float _PannerX;
 			float _PannerY;
-			float _DistortPower;
 			float _BackgroundEm;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -2431,15 +2458,16 @@ Shader "MK4/Billboards"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _AlbedoColor;
 			float4 _Logo_ST;
 			float4 _LED_ST;
 			float4 _Glitch1;
 			float4 _Glitch2;
+			float _DistortPower;
 			float _GlitchIntensity;
 			float _LEDint;
 			float _PannerX;
 			float _PannerY;
-			float _DistortPower;
 			float _BackgroundEm;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -2474,11 +2502,11 @@ Shader "MK4/Billboards"
 				int _PassValue;
 			#endif
 
-			sampler2D _LEDGlow;
-			sampler2D _Logo;
-			sampler2D _LED;
-			sampler2D _Distortions;
 			sampler2D _Background;
+			sampler2D _Logo;
+			sampler2D _Distortions;
+			sampler2D _LED;
+			sampler2D _LEDGlow;
 
 
 			//#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/Varyings.hlsl"
@@ -2694,6 +2722,13 @@ Shader "MK4/Billboards"
 				float2 uv_LED = IN.ase_texcoord8.xy * _LED_ST.xy + _LED_ST.zw;
 				float4 tex2DNode249 = tex2D( _LED, uv_LED );
 				float2 temp_output_272_0 = ( uv_Logo + ( tex2DNode249.a * 0.1 ) );
+				float2 panner223 = ( 1.0 * _Time.y * float2( 1,2 ) + temp_output_272_0);
+				float2 panner226 = ( 1.0 * _Time.y * float2( -1.8,0.3 ) + temp_output_272_0);
+				float2 panner229 = ( 1.0 * _Time.y * float2( 0.8,-1.5 ) + temp_output_272_0);
+				float2 panner231 = ( 1.0 * _Time.y * float2( -0.8,-1.5 ) + temp_output_272_0);
+				float temp_output_216_0 = ( ( ( ( tex2D( _Distortions, panner223 ).r + tex2D( _Distortions, panner226 ).g ) + tex2D( _Distortions, panner229 ).b ) + tex2D( _Distortions, panner231 ).a ) * (0.0 + (_DistortPower - 0.0) * (0.5 - 0.0) / (1.0 - 0.0)) );
+				float4 tex2DNode244 = tex2D( _Background, ( uv_Logo + temp_output_216_0 ) );
+				
 				float2 panner267 = ( 1.0 * _Time.y * float2( -6,5 ) + temp_output_272_0);
 				float clampResult295 = clamp( ( _GlitchIntensity + tex2D( _LEDGlow, panner267 ).a ) , 0.0 , 1.0 );
 				float2 panner257 = ( 1.0 * _Time.y * float2( 2,3 ) + temp_output_272_0);
@@ -2702,16 +2737,10 @@ Shader "MK4/Billboards"
 				float2 panner263 = ( 1.0 * _Time.y * float2( -5,-2.3 ) + temp_output_272_0);
 				float2 appendResult286 = (float2(_PannerX , _PannerY));
 				float2 panner219 = ( 1.0 * _Time.y * appendResult286 + uv_Logo);
-				float2 panner223 = ( 1.0 * _Time.y * float2( 1,2 ) + temp_output_272_0);
-				float2 panner226 = ( 1.0 * _Time.y * float2( -1.8,0.3 ) + temp_output_272_0);
-				float2 panner229 = ( 1.0 * _Time.y * float2( 0.8,-1.5 ) + temp_output_272_0);
-				float2 panner231 = ( 1.0 * _Time.y * float2( -0.8,-1.5 ) + temp_output_272_0);
-				float temp_output_216_0 = ( ( ( ( tex2D( _Distortions, panner223 ).r + tex2D( _Distortions, panner226 ).g ) + tex2D( _Distortions, panner229 ).b ) + tex2D( _Distortions, panner231 ).a ) * (0.0 + (_DistortPower - 0.0) * (0.5 - 0.0) / (1.0 - 0.0)) );
-				float4 tex2DNode244 = tex2D( _Background, ( uv_Logo + temp_output_216_0 ) );
 				float4 clampResult284 = clamp( ( ( ( clampResult295 * ( ( ( _Glitch1 * tex2D( _LEDGlow, panner257 ).g ) + ( ( _Glitch2 * tex2D( _LEDGlow, panner255 ).r ) + ( tex2DNode249 * clampResult280 ) ) ) * _LEDint ) ) + ( tex2D( _LEDGlow, panner263 ).b * tex2D( _Logo, ( panner219 + temp_output_216_0 ) ) ) ) + ( tex2DNode244 * _BackgroundEm ) ) , float4( 0,0,0,0 ) , float4( 1,1,1,0 ) );
 				
 
-				float3 BaseColor = float3(0.5, 0.5, 0.5);
+				float3 BaseColor = ( _AlbedoColor * tex2DNode244 ).rgb;
 				float3 Normal = float3(0, 0, 1);
 				float3 Emission = clampResult284.rgb;
 				float3 Specular = 0.5;
@@ -2875,15 +2904,16 @@ Shader "MK4/Billboards"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _AlbedoColor;
 			float4 _Logo_ST;
 			float4 _LED_ST;
 			float4 _Glitch1;
 			float4 _Glitch2;
+			float _DistortPower;
 			float _GlitchIntensity;
 			float _LEDint;
 			float _PannerX;
 			float _PannerY;
-			float _DistortPower;
 			float _BackgroundEm;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -3130,15 +3160,16 @@ Shader "MK4/Billboards"
 			};
 
 			CBUFFER_START(UnityPerMaterial)
+			float4 _AlbedoColor;
 			float4 _Logo_ST;
 			float4 _LED_ST;
 			float4 _Glitch1;
 			float4 _Glitch2;
+			float _DistortPower;
 			float _GlitchIntensity;
 			float _LEDint;
 			float _PannerX;
 			float _PannerY;
-			float _DistortPower;
 			float _BackgroundEm;
 			float _Smoothness;
 			#ifdef ASE_TRANSMISSION
@@ -3341,13 +3372,13 @@ Shader "MK4/Billboards"
 }
 /*ASEBEGIN
 Version=19200
-Node;AmplifyShaderEditor.SamplerNode;249;1801.119,85.17075;Inherit;True;Property;_LED;LED;10;0;Create;True;0;0;0;False;0;False;-1;None;18e1965a87226254b8eb7f01462acc78;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+Node;AmplifyShaderEditor.SamplerNode;249;1801.119,85.17075;Inherit;True;Property;_LED;LED;9;0;Create;True;0;0;0;False;0;False;-1;None;18e1965a87226254b8eb7f01462acc78;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;273;-434.681,698.6474;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0.1;False;1;FLOAT;0
 Node;AmplifyShaderEditor.TextureCoordinatesNode;213;-313.429,-556.2374;Inherit;False;0;210;2;3;2;SAMPLER2D;;False;0;FLOAT2;1,1;False;1;FLOAT2;0,0;False;5;FLOAT2;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.SimpleAddOpNode;272;-179.4507,701.5998;Inherit;False;2;2;0;FLOAT2;0,0;False;1;FLOAT;0;False;1;FLOAT2;0
 Node;AmplifyShaderEditor.SinTimeNode;275;2220.253,1377.427;Inherit;False;0;5;FLOAT4;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.PannerNode;223;251.7749,285.6696;Inherit;False;3;0;FLOAT2;0,0;False;2;FLOAT2;1,2;False;1;FLOAT;1;False;1;FLOAT2;0
-Node;AmplifyShaderEditor.TexturePropertyNode;224;478.1371,373.2149;Float;True;Property;_Distortions;Distortions;5;0;Create;True;0;0;0;False;0;False;None;3dd9bc17f8d555d47b674afa5665325a;False;white;Auto;Texture2D;-1;0;2;SAMPLER2D;0;SAMPLERSTATE;1
+Node;AmplifyShaderEditor.TexturePropertyNode;224;478.1371,373.2149;Float;True;Property;_Distortions;Distortions;4;0;Create;True;0;0;0;False;0;False;None;3dd9bc17f8d555d47b674afa5665325a;False;white;Auto;Texture2D;-1;0;2;SAMPLER2D;0;SAMPLERSTATE;1
 Node;AmplifyShaderEditor.PannerNode;226;247.9896,414.4718;Inherit;False;3;0;FLOAT2;0,0;False;2;FLOAT2;-1.8,0.3;False;1;FLOAT;1;False;1;FLOAT2;0
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;276;2529.076,1555.208;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;1.3;False;1;FLOAT;0
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;277;2533.389,1429.933;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;2.5;False;1;FLOAT;0
@@ -3356,22 +3387,22 @@ Node;AmplifyShaderEditor.SamplerNode;225;773.539,364.8753;Inherit;True;Property;
 Node;AmplifyShaderEditor.PannerNode;229;240.6166,550.2777;Inherit;False;3;0;FLOAT2;0,0;False;2;FLOAT2;0.8,-1.5;False;1;FLOAT;1;False;1;FLOAT2;0
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;278;2707.098,1334.953;Inherit;False;3;3;0;FLOAT;0;False;1;FLOAT;0;False;2;FLOAT;0;False;1;FLOAT;0
 Node;AmplifyShaderEditor.PannerNode;255;1347.064,950.5872;Inherit;False;3;0;FLOAT2;0,0;False;2;FLOAT2;0,0.6;False;1;FLOAT;1;False;1;FLOAT2;0
-Node;AmplifyShaderEditor.TexturePropertyNode;253;1344.555,762.0715;Float;True;Property;_LEDGlow;LED Glow;12;0;Create;True;0;0;0;False;0;False;None;27642ca2a9fa91649812bb3bade99fd6;False;white;Auto;Texture2D;-1;0;2;SAMPLER2D;0;SAMPLERSTATE;1
+Node;AmplifyShaderEditor.TexturePropertyNode;253;1344.555,762.0715;Float;True;Property;_LEDGlow;LED Glow;11;0;Create;True;0;0;0;False;0;False;None;27642ca2a9fa91649812bb3bade99fd6;False;white;Auto;Texture2D;-1;0;2;SAMPLER2D;0;SAMPLERSTATE;1
 Node;AmplifyShaderEditor.SamplerNode;228;768.9166,564.8228;Inherit;True;Property;_TextureSample2;Texture Sample 2;4;0;Create;True;0;0;0;False;0;False;-1;None;63fe5b98ec4b4364dbbb1da0dce1ce3c;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.SimpleAddOpNode;227;1170.35,339.8283;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0;False;1;FLOAT;0
 Node;AmplifyShaderEditor.TFHCRemapNode;283;2919.491,1128.174;Inherit;False;5;0;FLOAT;0;False;1;FLOAT;-2;False;2;FLOAT;1;False;3;FLOAT;0.7;False;4;FLOAT;1;False;1;FLOAT;0
 Node;AmplifyShaderEditor.PannerNode;231;255.0305,679.7548;Inherit;False;3;0;FLOAT2;0,0;False;2;FLOAT2;-0.8,-1.5;False;1;FLOAT;1;False;1;FLOAT2;0
 Node;AmplifyShaderEditor.PannerNode;257;1350.547,1157.059;Inherit;False;3;0;FLOAT2;0,0;False;2;FLOAT2;2,3;False;1;FLOAT;1;False;1;FLOAT2;0
 Node;AmplifyShaderEditor.SamplerNode;254;1666.207,769.5079;Inherit;True;Property;_TextureSample4;Texture Sample 4;13;0;Create;True;0;0;0;False;0;False;-1;None;None;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
-Node;AmplifyShaderEditor.ColorNode;265;1733.723,600.1031;Float;False;Property;_Glitch2;Glitch2;14;0;Create;True;0;0;0;False;0;False;0.5588235,0.08093307,0,0;0,0.3158722,1,0;False;0;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
-Node;AmplifyShaderEditor.RangedFloatNode;287;900.2725,-330.0593;Float;False;Property;_PannerX;Panner X;2;0;Create;True;0;0;0;False;0;False;0;0.029;0;1;0;1;FLOAT;0
+Node;AmplifyShaderEditor.ColorNode;265;1733.723,600.1031;Float;False;Property;_Glitch2;Glitch2;13;0;Create;True;0;0;0;False;0;False;0.5588235,0.08093307,0,0;0,0.3158722,1,0;False;0;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+Node;AmplifyShaderEditor.RangedFloatNode;287;900.2725,-330.0593;Float;False;Property;_PannerX;Panner X;1;0;Create;True;0;0;0;False;0;False;0;0.029;0;1;0;1;FLOAT;0
 Node;AmplifyShaderEditor.SimpleAddOpNode;230;1345.318,417.1234;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0;False;1;FLOAT;0
 Node;AmplifyShaderEditor.ClampOpNode;280;1912.744,323.019;Inherit;False;3;0;FLOAT;0;False;1;FLOAT;0;False;2;FLOAT;1;False;1;FLOAT;0
-Node;AmplifyShaderEditor.RangedFloatNode;288;896.0468,-243.4251;Float;False;Property;_PannerY;Panner Y;3;0;Create;True;0;0;0;False;0;False;0;0;0;1;0;1;FLOAT;0
-Node;AmplifyShaderEditor.RangedFloatNode;217;1006.36,55.72845;Float;False;Property;_DistortPower;Distort Power;4;0;Create;True;0;0;0;False;0;False;0;0.029;0;1;0;1;FLOAT;0
+Node;AmplifyShaderEditor.RangedFloatNode;288;896.0468,-243.4251;Float;False;Property;_PannerY;Panner Y;2;0;Create;True;0;0;0;False;0;False;0;0;0;1;0;1;FLOAT;0
+Node;AmplifyShaderEditor.RangedFloatNode;217;1006.36,55.72845;Float;False;Property;_DistortPower;Distort Power;3;0;Create;True;0;0;0;False;0;False;0;0.029;0;1;0;1;FLOAT;0
 Node;AmplifyShaderEditor.SamplerNode;232;766.8814,785.6386;Inherit;True;Property;_TextureSample3;Texture Sample 3;4;0;Create;True;0;0;0;False;0;False;-1;None;63fe5b98ec4b4364dbbb1da0dce1ce3c;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;266;2090.903,867.355;Inherit;False;2;2;0;COLOR;0,0,0,0;False;1;FLOAT;0;False;1;COLOR;0
-Node;AmplifyShaderEditor.ColorNode;261;1963.257,1026.448;Float;False;Property;_Glitch1;Glitch1;13;0;Create;True;0;0;0;False;0;False;0.5197807,0.4306336,0.9926471,0;0,0.4130404,1,0;False;0;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+Node;AmplifyShaderEditor.ColorNode;261;1963.257,1026.448;Float;False;Property;_Glitch1;Glitch1;12;0;Create;True;0;0;0;False;0;False;0.5197807,0.4306336,0.9926471,0;0,0.4130404,1,0;False;0;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.PannerNode;267;1356.308,1551.777;Inherit;False;3;0;FLOAT2;0,0;False;2;FLOAT2;-6,5;False;1;FLOAT;1;False;1;FLOAT2;0
 Node;AmplifyShaderEditor.SamplerNode;258;1671.789,1032.217;Inherit;True;Property;_TextureSample5;Texture Sample 5;13;0;Create;True;0;0;0;False;0;False;-1;None;None;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.DynamicAppendNode;286;1227.792,-250.8208;Inherit;False;FLOAT2;4;0;FLOAT;0;False;1;FLOAT;0;False;2;FLOAT;0;False;3;FLOAT;0;False;1;FLOAT2;0
@@ -3379,7 +3410,7 @@ Node;AmplifyShaderEditor.SimpleAddOpNode;233;1491.991,413.0472;Inherit;False;2;2
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;279;2092.634,276.1865;Inherit;False;2;2;0;COLOR;0,0,0,0;False;1;FLOAT;0;False;1;COLOR;0
 Node;AmplifyShaderEditor.TFHCRemapNode;218;1323.952,49.29295;Inherit;False;5;0;FLOAT;0;False;1;FLOAT;0;False;2;FLOAT;1;False;3;FLOAT;0;False;4;FLOAT;0.5;False;1;FLOAT;0
 Node;AmplifyShaderEditor.SimpleAddOpNode;256;2266.693,277.9997;Inherit;False;2;2;0;COLOR;0,0,0,0;False;1;COLOR;0,0,0,0;False;1;COLOR;0
-Node;AmplifyShaderEditor.RangedFloatNode;291;2258.916,510.9701;Float;False;Property;_GlitchIntensity;Glitch Intensity;11;0;Create;True;0;0;0;False;0;False;0;1;0;1;0;1;FLOAT;0
+Node;AmplifyShaderEditor.RangedFloatNode;291;2258.916,510.9701;Float;False;Property;_GlitchIntensity;Glitch Intensity;10;0;Create;True;0;0;0;False;0;False;0;1;0;1;0;1;FLOAT;0
 Node;AmplifyShaderEditor.SamplerNode;268;1674.47,1455.005;Inherit;True;Property;_TextureSample7;Texture Sample 7;13;0;Create;True;0;0;0;False;0;False;-1;None;None;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.PannerNode;219;1468.361,-280.0379;Inherit;False;3;0;FLOAT2;0,0;False;2;FLOAT2;0,0;False;1;FLOAT;1;False;1;FLOAT2;0
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;216;1599.441,64.26983;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0;False;1;FLOAT;0
@@ -3388,21 +3419,21 @@ Node;AmplifyShaderEditor.SimpleAddOpNode;294;2600.46,609.2111;Inherit;False;2;2;
 Node;AmplifyShaderEditor.SimpleAddOpNode;259;2425.517,276.1189;Inherit;False;2;2;0;COLOR;0,0,0,0;False;1;COLOR;0,0,0,0;False;1;COLOR;0
 Node;AmplifyShaderEditor.SimpleAddOpNode;214;1817.879,-176.8494;Inherit;False;2;2;0;FLOAT2;0,0;False;1;FLOAT;0;False;1;FLOAT2;0
 Node;AmplifyShaderEditor.PannerNode;263;1350.463,1375.835;Inherit;False;3;0;FLOAT2;0,0;False;2;FLOAT2;-5,-2.3;False;1;FLOAT;1;False;1;FLOAT2;0
-Node;AmplifyShaderEditor.RangedFloatNode;252;2152.547,46.00183;Float;False;Property;_LEDint;LED int;9;0;Create;True;0;0;0;False;0;False;0;0.35;0;1;0;1;FLOAT;0
+Node;AmplifyShaderEditor.RangedFloatNode;252;2152.547,46.00183;Float;False;Property;_LEDint;LED int;8;0;Create;True;0;0;0;False;0;False;0;0.35;0;1;0;1;FLOAT;0
 Node;AmplifyShaderEditor.ClampOpNode;295;2699.431,394.0644;Inherit;False;3;0;FLOAT;0;False;1;FLOAT;0;False;2;FLOAT;1;False;1;FLOAT;0
 Node;AmplifyShaderEditor.SamplerNode;262;1671.705,1254.391;Inherit;True;Property;_TextureSample6;Texture Sample 6;13;0;Create;True;0;0;0;False;0;False;-1;None;None;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
-Node;AmplifyShaderEditor.SamplerNode;210;2003.236,-221.4626;Inherit;True;Property;_Logo;Logo;1;0;Create;True;0;0;0;False;0;False;-1;None;537b210ed4792ab46b2436bbe1e155de;True;0;False;black;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;1;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+Node;AmplifyShaderEditor.SamplerNode;210;2003.236,-221.4626;Inherit;True;Property;_Logo;Logo;0;0;Create;True;0;0;0;False;0;False;-1;None;537b210ed4792ab46b2436bbe1e155de;True;0;False;black;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;1;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.SimpleAddOpNode;285;1250.652,-642.3152;Inherit;False;2;2;0;FLOAT2;0,0;False;1;FLOAT;0;False;1;FLOAT2;0
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;251;2451.6,32.07762;Inherit;False;2;2;0;COLOR;0,0,0,0;False;1;FLOAT;0;False;1;COLOR;0
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;264;2377.378,-195.9778;Inherit;False;2;2;0;FLOAT;0;False;1;COLOR;0,0,0,0;False;1;COLOR;0
-Node;AmplifyShaderEditor.RangedFloatNode;298;2306.176,-352.4445;Float;False;Property;_BackgroundEm;Background Em;8;0;Create;True;0;0;0;False;0;False;0;0;0;1;0;1;FLOAT;0
-Node;AmplifyShaderEditor.SamplerNode;244;1547.187,-670.547;Inherit;True;Property;_Background;Background;7;0;Create;True;0;0;0;False;0;False;-1;None;None;True;0;False;gray;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+Node;AmplifyShaderEditor.RangedFloatNode;298;2306.176,-352.4445;Float;False;Property;_BackgroundEm;Background Em;7;0;Create;True;0;0;0;False;0;False;0;0;0;1;0;1;FLOAT;0
+Node;AmplifyShaderEditor.SamplerNode;244;1547.187,-670.547;Inherit;True;Property;_Background;Background;6;0;Create;True;0;0;0;False;0;False;-1;None;None;True;0;False;gray;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;269;2623.405,34.90611;Inherit;True;2;2;0;FLOAT;0;False;1;COLOR;0,0,0,0;False;1;COLOR;0
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;297;2628.46,-381.3949;Inherit;False;2;2;0;COLOR;0,0,0,0;False;1;FLOAT;0;False;1;COLOR;0
 Node;AmplifyShaderEditor.SimpleAddOpNode;250;2748.355,-115.3429;Inherit;False;2;2;0;COLOR;0,0,0,0;False;1;COLOR;0,0,0,0;False;1;COLOR;0
 Node;AmplifyShaderEditor.SimpleAddOpNode;296;2921.904,-157.3116;Inherit;False;2;2;0;COLOR;0,0,0,0;False;1;COLOR;0,0,0,0;False;1;COLOR;0
-Node;AmplifyShaderEditor.ColorNode;246;1560.503,-908.5312;Float;False;Property;_AlbedoColor;Albedo Color;6;0;Create;True;0;0;0;False;0;False;0.490566,0.490566,0.490566,0;0,0,0,0;False;0;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
-Node;AmplifyShaderEditor.RangedFloatNode;299;2921.714,-508.6087;Float;False;Property;_Smoothness;Smoothness;15;0;Create;True;0;0;0;False;0;False;0;0;0;1;0;1;FLOAT;0
+Node;AmplifyShaderEditor.ColorNode;246;1560.503,-908.5312;Float;False;Property;_AlbedoColor;Albedo Color;5;0;Create;True;0;0;0;False;0;False;0.490566,0.490566,0.490566,0;0,0,0,0;False;0;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+Node;AmplifyShaderEditor.RangedFloatNode;299;2921.714,-508.6087;Float;False;Property;_Smoothness;Smoothness;14;0;Create;True;0;0;0;False;0;False;0;0;0;1;0;1;FLOAT;0
 Node;AmplifyShaderEditor.ClampOpNode;284;3070.742,-111.8337;Inherit;False;3;0;COLOR;0,0,0,0;False;1;COLOR;0,0,0,0;False;2;COLOR;1,1,1,0;False;1;COLOR;0
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;247;2059.359,-672.8325;Inherit;False;2;2;0;COLOR;0,0,0,0;False;1;COLOR;0,0,0,0;False;1;COLOR;0
 Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;300;3235.687,-277.6361;Float;False;False;-1;2;UnityEditor.ShaderGraphLitGUI;0;1;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;ExtraPrePass;0;0;ExtraPrePass;5;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;0;False;;False;False;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;4;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;UniversalMaterialType=Lit;True;3;True;12;all;0;False;True;1;1;False;;0;False;;0;1;False;;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;True;True;True;True;True;0;False;;False;False;False;False;False;False;False;True;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;0;False;False;0;;0;0;Standard;0;False;0
@@ -3496,7 +3527,8 @@ WireConnection;296;1;297;0
 WireConnection;284;0;296;0
 WireConnection;247;0;246;0
 WireConnection;247;1;244;0
+WireConnection;301;0;247;0
 WireConnection;301;2;284;0
 WireConnection;301;4;299;0
 ASEEND*/
-//CHKSM=45969036DBCC96E283DDC3B16F55800DB3936639
+//CHKSM=4FD5BA7C5F1E8DC69E631A0FCC27C11EE300BDEE
