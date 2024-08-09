@@ -4,6 +4,7 @@ using R3.Triggers;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using VInspector;
+using AbubuResouse.Singleton;
 
 #region
 /*

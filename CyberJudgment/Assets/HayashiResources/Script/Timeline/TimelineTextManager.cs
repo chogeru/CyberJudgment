@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.Playables;
 using Cysharp.Threading.Tasks;
 using System.Threading;
+using AbubuResouse.Singleton;
 
 public class TimelineTextManager : MonoBehaviour
 {

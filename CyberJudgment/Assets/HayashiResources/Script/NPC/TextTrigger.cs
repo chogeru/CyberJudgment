@@ -2,8 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using VInspector;
-using AbubuResouse.UI;
 using AbubuResouse.Log;
+using AbubuResouse.Singleton;
 
 [System.Serializable]
 public class Dialogue

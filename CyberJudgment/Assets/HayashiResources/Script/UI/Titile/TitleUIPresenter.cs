@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using R3;
 using UnityEngine.UI;
+using AbubuResouse.Singleton;
 
 public class TitleUIPresenter : MonoBehaviour
 {

@@ -9,131 +9,134 @@ using AbubuResouse.Log;
 using UnityEngine.UI;
 using TMPro;
 
-public class SceneManager : SingletonMonoBehaviour<SceneManager>
+namespace AbubuResouse.Singleton
 {
-    private SQLiteConnection _connection;
-    private string _nextScene;
-    private bool isSceneLoading = false;
-
-    [SerializeField,Header("ロード時のキャンバス")]
-    private GameObject _loadingCanvas;
-    [SerializeField,Header("ロード進捗バー")]
-    private Image _loadingBar;
-    [SerializeField,Header("ロード時に差し替える画像")]
-    private Image _loadingSprite;
-    [SerializeField,Header("TipsのText")]
-    private TMP_Text _loadingDescription;
-    [SerializeField,Header("Mapの名前Text")] 
-    private TMP_Text _mapNameText;
-    [SerializeField,Header("各シーンのデータ")] 
-    private List<SceneLoadData> _sceneLoadDataList;
-
-    protected override void Awake()
+    public class SceneManager : SingletonMonoBehaviour<SceneManager>
     {
-        base.Awake();
-        var databasePath = System.IO.Path.Combine(Application.streamingAssetsPath, "scene_data.db").Replace("\\", "/");
-        _connection = new SQLiteConnection(databasePath, SQLiteOpenFlags.ReadOnly);
-        _loadingCanvas.SetActive(false);
-    }
+        private SQLiteConnection _connection;
+        private string _nextScene;
+        private bool isSceneLoading = false;
 
-    public void TriggerSceneLoad(string currentSceneName)
-    {
-        LoadNextSceneAsync(currentSceneName);
-    }
+        [SerializeField, Header("ロード時のキャンバス")]
+        private GameObject _loadingCanvas;
+        [SerializeField, Header("ロード進捗バー")]
+        private Image _loadingBar;
+        [SerializeField, Header("ロード時に差し替える画像")]
+        private Image _loadingSprite;
+        [SerializeField, Header("TipsのText")]
+        private TMP_Text _loadingDescription;
+        [SerializeField, Header("Mapの名前Text")]
+        private TMP_Text _mapNameText;
+        [SerializeField, Header("各シーンのデータ")]
+        private List<SceneLoadData> _sceneLoadDataList;
 
-    private async void LoadNextSceneAsync(string currentSceneName)
-    {
-        if (isSceneLoading)
+        protected override void Awake()
         {
-            DebugUtility.LogWarning("シーンがすでにロード中");
-            return;
-        }
-        isSceneLoading = true;
-        // 次のシーン名を非同期で取得
-        _nextScene = await GetNextSceneNameFromDBAsync(currentSceneName);
-
-        if (!string.IsNullOrEmpty(_nextScene))
-        {
-            UpdateLoadingScreen(_nextScene);
-            _loadingCanvas.SetActive(true);
-            await SceneTransitionAsync(_nextScene);
+            base.Awake();
+            var databasePath = System.IO.Path.Combine(Application.streamingAssetsPath, "scene_data.db").Replace("\\", "/");
+            _connection = new SQLiteConnection(databasePath, SQLiteOpenFlags.ReadOnly);
             _loadingCanvas.SetActive(false);
         }
-        else
+
+        public void TriggerSceneLoad(string currentSceneName)
         {
-            DebugUtility.LogError("次のシーン名が設定されていない");
+            LoadNextSceneAsync(currentSceneName);
         }
-        isSceneLoading = false;
-    }
-    private async UniTask<string> GetNextSceneNameFromDBAsync(string currentSceneName)
-    {
-        try
+
+        private async void LoadNextSceneAsync(string currentSceneName)
         {
-            return await UniTask.RunOnThreadPool(() =>
+            if (isSceneLoading)
             {
-                var query = _connection.Table<SceneTransition>()
-                                       .Where(x => x.CurrentScene == currentSceneName)
-                                       .FirstOrDefault();
-                return query?.NextScene;
-            });
+                DebugUtility.LogWarning("シーンがすでにロード中");
+                return;
+            }
+            isSceneLoading = true;
+            // 次のシーン名を非同期で取得
+            _nextScene = await GetNextSceneNameFromDBAsync(currentSceneName);
+
+            if (!string.IsNullOrEmpty(_nextScene))
+            {
+                UpdateLoadingScreen(_nextScene);
+                _loadingCanvas.SetActive(true);
+                await SceneTransitionAsync(_nextScene);
+                _loadingCanvas.SetActive(false);
+            }
+            else
+            {
+                DebugUtility.LogError("次のシーン名が設定されていない");
+            }
+            isSceneLoading = false;
         }
-        catch (System.Exception ex)
+        private async UniTask<string> GetNextSceneNameFromDBAsync(string currentSceneName)
         {
-            DebugUtility.LogError(ex.Message);
+            try
+            {
+                return await UniTask.RunOnThreadPool(() =>
+                {
+                    var query = _connection.Table<SceneTransition>()
+                                           .Where(x => x.CurrentScene == currentSceneName)
+                                           .FirstOrDefault();
+                    return query?.NextScene;
+                });
+            }
+            catch (System.Exception ex)
+            {
+                DebugUtility.LogError(ex.Message);
+            }
+
+            return null;
         }
 
-        return null;
-    }
 
-
-    private void UpdateLoadingScreen(string sceneName)
-    {
-        var sceneData = _sceneLoadDataList.Find(data => data.sceneName == sceneName);
-        if (sceneData != null)
+        private void UpdateLoadingScreen(string sceneName)
         {
-            _loadingSprite.sprite = sceneData.loadingSprite;
-            _loadingDescription.text = sceneData.loadingDescription;
-            _mapNameText.text = sceneData.mapName;
+            var sceneData = _sceneLoadDataList.Find(data => data.sceneName == sceneName);
+            if (sceneData != null)
+            {
+                _loadingSprite.sprite = sceneData.loadingSprite;
+                _loadingDescription.text = sceneData.loadingDescription;
+                _mapNameText.text = sceneData.mapName;
+            }
         }
-    }
 
-    /// <summary>
-    /// シーン読み込み用関数
-    /// </summary>
-    /// <param name="sceneName"></param>
-    /// <returns></returns>
-    public async UniTask SceneTransitionAsync(string sceneName)
-    {
-        _loadingBar.fillAmount = 0;
-        // シーンの非同期読み込みを開始
-        var asyncOperation = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneName); // シーンの読み込みが完了するまで待機
-        while (!asyncOperation.isDone)
+        /// <summary>
+        /// シーン読み込み用関数
+        /// </summary>
+        /// <param name="sceneName"></param>
+        /// <returns></returns>
+        public async UniTask SceneTransitionAsync(string sceneName)
         {
-            _loadingBar.fillAmount = asyncOperation.progress;
-            await UniTask.Yield();
+            _loadingBar.fillAmount = 0;
+            // シーンの非同期読み込みを開始
+            var asyncOperation = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneName); // シーンの読み込みが完了するまで待機
+            while (!asyncOperation.isDone)
+            {
+                _loadingBar.fillAmount = asyncOperation.progress;
+                await UniTask.Yield();
+            }
+            _loadingBar.fillAmount = 1f;
         }
-        _loadingBar.fillAmount = 1f;
-    }
-    public void ExitGame()
-    {
-        Application.Quit();
-    }
+        public void ExitGame()
+        {
+            Application.Quit();
+        }
 
-    [Serializable]
-    public class SceneLoadData
-    {
-        public string sceneName;
-        public Sprite loadingSprite;
-        [TextArea(3,10)]
-        public string loadingDescription;
-        public string mapName;
-    }
+        [Serializable]
+        public class SceneLoadData
+        {
+            public string sceneName;
+            public Sprite loadingSprite;
+            [TextArea(3, 10)]
+            public string loadingDescription;
+            public string mapName;
+        }
 
-    class SceneTransition
-    {
-        [PrimaryKey, AutoIncrement]
-        public int Id { get; set; }
-        public string CurrentScene { get; set; }
-        public string NextScene { get; set; }
+        class SceneTransition
+        {
+            [PrimaryKey, AutoIncrement]
+            public int Id { get; set; }
+            public string CurrentScene { get; set; }
+            public string NextScene { get; set; }
+        }
     }
 }

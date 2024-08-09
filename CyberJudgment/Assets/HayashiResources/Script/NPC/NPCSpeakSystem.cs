@@ -1,9 +1,10 @@
-using AbubuResouse.UI;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using Zenject.SpaceFighter;
+using AbubuResouse.Editor;
+using AbubuResouse.Singleton;
 
 public class NPCSpeakSystem : MonoBehaviour
 {

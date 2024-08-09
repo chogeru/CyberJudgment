@@ -1,4 +1,5 @@
 using UnityEngine;
+using AbubuResouse.Singleton;
 
 /// <summary>
 /// UIの戻るボタンがクリックされたときに設定画面を表示するためのクラス

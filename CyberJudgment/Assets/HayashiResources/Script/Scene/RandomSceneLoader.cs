@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System;
+using AbubuResouse.Singleton;
 
 public class RandomSceneLoader : MonoBehaviour
 {

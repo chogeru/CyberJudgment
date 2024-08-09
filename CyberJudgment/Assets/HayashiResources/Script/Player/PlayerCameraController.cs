@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Cysharp.Threading.Tasks;
 using System;
+using AbubuResouse.Singleton;
 
 public class PlayerCameraController : MonoBehaviour
 {

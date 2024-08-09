@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using AbubuResouse.Singleton;
 
 public class FootStep : MonoBehaviour
 {

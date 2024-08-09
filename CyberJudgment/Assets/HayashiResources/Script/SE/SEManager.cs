@@ -1,79 +1,43 @@
-using UnityEngine;
-using UnityEngine.SceneManagement;
-using SQLite4Unity3d;
-using Cysharp.Threading.Tasks;
-using System;
-using AbubuResouse.Log;
 using System.Linq;
-
-public class SEManager : SingletonMonoBehaviour<SEManager>
+using AbubuResouse.Log;
+namespace AbubuResouse.Singleton
 {
-    private AudioSource audioSource;
-    [SerializeField]
-    private SQLiteConnection connection;
-
-    // シングルトンパターン
-    protected override void Awake()
+    /// <summary>
+    /// SEの再生を管理するマネージャークラス
+    /// </summary>
+    public class SEManager : AudioManagerBase<SEManager>
     {
-        base.Awake();
-        audioSource = GetComponent<AudioSource>();
-        InitializeDatabase();
-    }
+        /// <summary>
+        /// データベース名として "se_data.db" を返す
+        /// </summary>
+        protected override string GetDatabaseName() => "se_data.db";
 
-    private void InitializeDatabase()
-    {
-        var databasePath = System.IO.Path.Combine(Application.streamingAssetsPath, "se_data.db").Replace("\\", "/");
-        try
+        /// <summary>
+        /// 指定されたSE名と同じレコードをデータベースから検索して、SEを再生する
+        /// </summary>
+        /// <param name="bgmName">BGM名</param>
+        /// <param name="volume">音量</param>
+        public override void PlaySound(string clipName, float volume)
         {
-            connection = new SQLiteConnection(databasePath, SQLiteOpenFlags.ReadOnly);
-            DebugUtility.Log("データベース接続に成功!パス: " + databasePath);
-        }
-        catch (Exception ex)
-        {
-            DebugUtility.LogError("データベースの接続に失敗しました: " + ex.Message);
-        }
-    }
-
-    public void PlaySound(string clipName, float volume)
-    {
-        var query = connection.Table<SoundClip>().FirstOrDefault(x => x.ClipName == clipName);
-        if (query != null)
-        {
-            DebugUtility.Log("サウンドクリップが見つかりました: " + query.ClipName);
-            LoadAndPlayClip(query.ClipPath, volume);
-        }
-        else
-        {
-            DebugUtility.Log("指定されたサウンドクリップ名に一致するレコードがデータベースに存在しない: " + clipName);
-        }
-    }
-
-    private void LoadAndPlayClip(string clipPath, float volume)
-    {
-        try
-        {
-            AudioClip clip = Resources.Load<AudioClip>("SE/" + clipPath);
-            if (clip != null)
+            var query = connection.Table<SoundClip>().FirstOrDefault(x => x.ClipName == clipName);
+            if (query != null)
             {
-                audioSource.PlayOneShot(clip);
-                audioSource.volume = volume;
+                LoadAndPlayClip($"SE/{query.ClipPath}", volume);
             }
             else
             {
-                DebugUtility.Log("サウンドファイルが見つからない: " + clipPath);
+                DebugUtility.Log($"指定されたサウンドクリップ名に一致するレコードがデータベースに存在しない: {clipName}");
             }
         }
-        catch (Exception ex)
-        {
-            DebugUtility.LogError("サウンドファイルのロード時にエラー発生: " + ex.Message);
-        }
-    }
 
-    private class SoundClip
-    {
-        [PrimaryKey, AutoIncrement] // 主キー、自動インクリメント
-        public int Id { get; set; }
-        public string ClipName { get; set; }  // サウンドクリップの名前
-        public string ClipPath { get; set; }  // サウンドクリップファイル名
+        /// <summary>
+        /// データベースのサウンドクリップテーブル
+        /// </summary>
+        private class SoundClip
+        {
+            public int Id { get; set; }
+            public string ClipName { get; set; }
+            public string ClipPath { get; set; }
+        }
     }
 }

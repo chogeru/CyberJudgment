@@ -1,31 +1,36 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using AbubuResouse.Singleton;
 
-public class SetVoice : MonoBehaviour
+namespace AbubuResouse
 {
-    [SerializeField,Header("ŠJn‚ÉÄ¶‚·‚éƒ{ƒCƒX–¼")]
-    private string _voiceName;
-
-    [SerializeField, Header("ƒ{ƒCƒX‰¹—Ê")]
-    private float _Volume;
-
-    [SerializeField ,Header("ŠJn‚É©“®Ä¶")]
-    private bool _StartOnPlay;
-
-    private void Start()
+    /// <summary>
+    /// æŒ‡å®šã•ã‚ŒãŸãƒœã‚¤ã‚¹ã‚’å†ç”Ÿã™ã‚‹ã‚¯ãƒ©ã‚¹
+    /// </summary>
+    public class SetVoice : MonoBehaviour
     {
-        if (_StartOnPlay)
+        [SerializeField, Header("é–‹å§‹æ™‚ã«å†ç”Ÿã™ã‚‹ãƒœã‚¤ã‚¹å")]
+        private string _voiceName;
+
+        [SerializeField, Header("ãƒœã‚¤ã‚¹éŸ³é‡")]
+        private float _Volume;
+
+        [SerializeField, Header("é–‹å§‹æ™‚ã«è‡ªå‹•å†ç”Ÿ")]
+        private bool _StartOnPlay;
+
+        private void Start()
+        {
+            if (_StartOnPlay)
+            {
+                VoiceManager.Instance.PlaySound(_voiceName, _Volume);
+            }
+        }
+
+        /// <summary>
+        /// ä»»æ„ã®ã‚¿ã‚¤ãƒŸãƒ³ã‚°ã§ãƒœã‚¤ã‚¹å†ç”Ÿç”¨é–¢æ•°
+        /// </summary>
+        public void PlayVoice()
         {
             VoiceManager.Instance.PlaySound(_voiceName, _Volume);
         }
-    }
-
-    /// <summary>
-    /// ”CˆÓ‚Ìƒ^ƒCƒ~ƒ“ƒO‚Åƒ{ƒCƒXÄ¶—pŠÖ”
-    /// </summary>
-    public void PlayVoice()
-    {
-        VoiceManager.Instance.PlaySound(_voiceName, _Volume);
     }
 }

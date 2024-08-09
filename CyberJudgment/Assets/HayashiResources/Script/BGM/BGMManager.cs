@@ -1,103 +1,78 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using SQLite4Unity3d;
+using System.Linq;
 using UnityEngine.SceneManagement;
 using AbubuResouse.Log;
-using System.Linq;
-using Cysharp.Threading.Tasks;
 
-public class BGMManager : SingletonMonoBehaviour<BGMManager>
+namespace AbubuResouse.Singleton
 {
-    private AudioSource m_AudioSource;
-    [SerializeField]
-    private SQLiteConnection m_Connection;
-
-    //シングルトンパターン
-    protected override void Awake()
+    /// <summary>
+    /// BGMの再生を管理するマネージャークラス
+    /// </summary>
+    public class BGMManager : AudioManagerBase<BGMManager>
     {
-        base.Awake();
 
-        m_AudioSource = GetComponent<AudioSource>();
-        InitializeDatabase();
-        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
-    }
+        /// <summary>
+        /// データベース名として "bgm_data.db" を返す
+        /// </summary>
+        protected override string GetDatabaseName() => "bgm_data.db";
 
-    private void InitializeDatabase()
-    {
-        var databasePath = System.IO.Path.Combine(Application.streamingAssetsPath, "bgm_data.db").Replace("\\", "/");
-
-        try
+        protected override void Awake()
         {
-            m_Connection = new SQLiteConnection(databasePath, SQLiteOpenFlags.ReadOnly);
-            DebugUtility.Log("データベース接続に成功!パス: " + databasePath);
+            base.Awake();
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
         }
-        catch (Exception ex)
-        {
-            DebugUtility.LogError("データベースの接続に失敗!!: " + ex.Message);
-        }
-    }
 
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode) => StopBGM();
+        /// <summary>
+        /// シーンがロードされた際にBGMを停止する
+        /// </summary>
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode) => StopBGM();
 
-    public void StopBGM()
-    {
-        if (m_AudioSource.isPlaying)
+        /// <summary>
+        /// 指定されたBGM名と同じレコードをデータベースから検索して、BGMを再生する
+        /// </summary>
+        /// <param name="bgmName">BGM名</param>
+        /// <param name="volume">音量</param>
+        public override void PlaySound(string bgmName, float volume)
         {
-            m_AudioSource.Stop();
-            m_AudioSource.clip = null;
-            DebugUtility.Log("BGM停止");
-        }
-    }
-
-    public async void PlayBGM(string bgmName, float volume)
-    {
-        var query = m_Connection.Table<BGM>().FirstOrDefault(x => x.BGMName == bgmName);
-        if (query != null)
-        {
-            DebugUtility.Log("BGMデータが見つかりました: " + query.BGMName);
-            await LoadAndPlayClipAsync(query.BGMFileName, volume);
-        }
-        else
-        {
-            DebugUtility.Log("指定されたBGM名に一致するレコードがデータベースに存在しない");
-        }
-    }
-
-    private async UniTask LoadAndPlayClipAsync(string fileName, float volume)
-    {
-        try
-        {
-            AudioClip clip = await Resources.LoadAsync<AudioClip>("BGM/" + fileName) as AudioClip;
-            if (clip != null)
+            var query = connection.Table<BGM>().FirstOrDefault(x => x.BGMName == bgmName);
+            if (query != null)
             {
-                m_AudioSource.clip = clip;
-                m_AudioSource.volume = volume;
-                m_AudioSource.Play();
-                DebugUtility.Log("BGMを再生中: " + fileName);
+                LoadAndPlayClip($"BGM/{query.BGMFileName}", volume);
             }
             else
             {
-                DebugUtility.Log("BGMファイルが見つからない: " + fileName);
+                DebugUtility.Log($"指定されたBGM名に一致するレコードがデータベースに存在しない: {bgmName}");
             }
         }
-        catch (Exception ex)
+
+        /// <summary>
+        /// 現在再生中のBGMを停止
+        /// </summary>
+        public void StopBGM()
         {
-            DebugUtility.LogError("BGMファイルのロード時にエラー発生: " + ex.Message);
+            if (audioSource.isPlaying)
+            {
+                audioSource.Stop();
+                audioSource.clip = null;
+                DebugUtility.Log("BGM停止");
+            }
         }
-    }
 
-    private void OnDestroy()
-    {
-        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
-    }
+        /// <summary>
+        /// シーンロードイベントを解除
+        /// </summary>
+        protected override void OnDestroy()
+        {
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
 
-    private class BGM
-    {
-        [PrimaryKey, AutoIncrement]
-        public int Id { get; set; }
-        public string BGMName { get; set; }
-        public string BGMFileName { get; set; }
+        /// <summary>
+        /// データベースのBGMテーブル
+        /// </summary>
+        private class BGM
+        {
+            public int Id { get; set; }
+            public string BGMName { get; set; }
+            public string BGMFileName { get; set; }
+        }
     }
 }
