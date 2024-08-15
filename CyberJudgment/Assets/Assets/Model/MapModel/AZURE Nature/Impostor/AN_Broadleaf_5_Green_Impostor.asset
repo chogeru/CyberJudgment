@@ -1,0 +1,286 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &-7774908101947091610
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: AN_Broadleaf_5_Green_Impostor
+  m_Shader: {fileID: 4800000, guid: 83dd8de9a5c14874884f9012def4fdcc, type: 3}
+  m_ValidKeywords: []
+  m_InvalidKeywords:
+  - _AI_ALPHATOCOVERAGE_ON
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 1
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _Albedo:
+        m_Texture: {fileID: 2800000, guid: c17d1930a56de6a44ab49c9c8e1209a8, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Emission:
+        m_Texture: {fileID: 2800000, guid: 64b8a256d521f694d85141981e255730, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Normals:
+        m_Texture: {fileID: 2800000, guid: 3b2755db27398ae4e8798eb247e2b0f5, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Specular:
+        m_Texture: {fileID: 2800000, guid: 0eddb31291adc7d4bbaed8c8df06389d, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AI_AlphaToCoverage: 1
+    - _AI_ShadowBias: 0.25
+    - _AI_ShadowView: 1
+    - _AlphaCutoff: 0.5
+    - _ClipMask: 0.5
+    - _DepthSize: 16.24535
+    - _EnvironmentReflections: 1
+    - _Frames: 16
+    - _Hemi: 0
+    - _Hue: 0
+    - _ImpostorSize: 16.314068
+    - _Parallax: 1
+    - _QueueControl: 0
+    - _QueueOffset: 0
+    - _ReceiveShadows: 1
+    - _SpecularHighlights: 1
+    - _TextureBias: -1
+    - __dirty: 0
+    m_Colors:
+    - _AI_SizeOffset: {r: 16.314068, g: 16.24535, b: 0, a: 0}
+    - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
+    - _HueVariation: {r: 0.060021162, g: 1, b: 0, a: 1}
+    - _Offset: {r: 0.14260626, g: 7.340036, b: -0.1117363, a: -0}
+  m_BuildTextureStacks: []
+--- !u!43 &-434209582683079831
+Mesh:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: AN_Broadleaf_5_Green_Impostor
+  serializedVersion: 10
+  m_SubMeshes:
+  - serializedVersion: 2
+    firstByte: 0
+    indexCount: 42
+    topology: 0
+    baseVertex: 0
+    firstVertex: 0
+    vertexCount: 16
+    localAABB:
+      m_Center: {x: -0.063776016, y: 0, z: 0}
+      m_Extent: {x: 7.0439253, y: 8.157034, z: 0}
+  m_Shapes:
+    vertices: []
+    shapes: []
+    channels: []
+    fullWeights: []
+  m_BindPose: []
+  m_BoneNameHashes: 
+  m_RootBoneNameHash: 0
+  m_BonesAABB: []
+  m_VariableBoneCountWeights:
+    m_Data: 
+  m_MeshCompression: 0
+  m_IsReadable: 1
+  m_KeepVertices: 1
+  m_KeepIndices: 1
+  m_IndexFormat: 0
+  m_IndexBuffer: 0f000b000700070003000f000f000d000b000b0009000700070005000300030001000f000f000e000d000d000c000b000b000a000900090008000700070006000500050004000300030002000100010000000f00
+  m_VertexData:
+    serializedVersion: 3
+    m_VertexCount: 16
+    m_Channels:
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 3
+    - stream: 0
+      offset: 12
+      format: 0
+      dimension: 3
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 24
+      format: 0
+      dimension: 2
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    m_DataSize: 512
+    _typelessdata: 4a72e3c0d8823ebf000000000000000000000000000080bf95ba833d02a5e83efaf1d6c036f832c0000000000000000000000000000080bf64c5b43de83ca83e07a7bbc058cc89c0000000000000000000000000ffff7fbf94eb0f3e8cb5713ec4e68dc0ee83b5c0000000000000000000000000000080bf26a9693e48f51b3e445fdbbe368302c1000000000000000000000000000080bf9e8df23e00000000021bdc3e368302c1000000000000000000000000000080bff2be063f000000002fb7a9400a669fc0000000000000000000000000ffff7fbf6239533f1057473e0838df40054213c0000000000000000000000000000080bff7756d3fdcc9b73e625ddf403be3953f000000000000000000000000000080bf48886d3f1160123f799dca40a4135440000000000000000000000000000080bf755b633f9dff333f9dcf98407b6bc340000000000000000000000000000080bf41ef4a3f31d45f3f9642b63f36830241000000000000000000000000000080bf0b58163f0000803f2520a8be36830241000000000000000000000000ffff7fbfc7b1f53e0000803fb1b701c099ba0041000000000000000000000000000080bfcd63c03e2d407e3f50e8a5c0100bab40000000000000000000000000000080bfad923a3e0de0533f917bd0c0f3f24240000000000000000000000000000080bfa31fce3d8bcc2f3f
+  m_CompressedMesh:
+    m_Vertices:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_UV:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Normals:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Tangents:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Weights:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_NormalSigns:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_TangentSigns:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_FloatColors:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_BoneIndices:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Triangles:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_UVInfo: 0
+  m_LocalAABB:
+    m_Center: {x: 0.14260626, y: 7.340036, z: -0.1117363}
+    m_Extent: {x: 6.4899826, y: 7.947745, z: 6.5020103}
+  m_MeshUsageFlags: 0
+  m_BakedConvexCollisionMesh: 
+  m_BakedTriangleCollisionMesh: 
+  m_MeshMetrics[0]: 1
+  m_MeshMetrics[1]: 1
+  m_MeshOptimizationFlags: 1
+  m_StreamData:
+    serializedVersion: 2
+    offset: 0
+    size: 0
+    path: 
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7ba7a43222473d4292f91ae936fe2cc, type: 3}
+  m_Name: AN_Broadleaf_5_Green_Impostor
+  m_EditorClassIdentifier: 
+  Material: {fileID: -7774908101947091610}
+  Mesh: {fileID: -434209582683079831}
+  Version: 9904
+  ImpostorType: 1
+  LockedSizes: 1
+  SelectedSize: 2048
+  TexSize: {x: 2048, y: 2048}
+  DecoupleAxisFrames: 0
+  HorizontalFrames: 16
+  VerticalFrames: 16
+  PixelPadding: 32
+  MaxVertices: 16
+  Tolerance: 0.15
+  NormalScale: 0.01
+  ShapePoints:
+  - {x: 0.06432072, y: 0.5456161}
+  - {x: 0.08826712, y: 0.6714103}
+  - {x: 0.1405471, y: 0.7639559}
+  - {x: 0.22818431, y: 0.84769714}
+  - {x: 0.4737367, y: 1}
+  - {x: 0.5263511, y: 1}
+  - {x: 0.82509434, y: 0.80533195}
+  - {x: 0.92758125, y: 0.64103806}
+  - {x: 0.92786074, y: 0.42822164}
+  - {x: 0.8881143, y: 0.2968809}
+  - {x: 0.7927132, y: 0.12566847}
+  - {x: 0.5872809, y: 0}
+  - {x: 0.47987196, y: 0}
+  - {x: 0.37576142, y: 0.0068332553}
+  - {x: 0.18220015, y: 0.1723625}
+  - {x: 0.10064628, y: 0.31328517}
+  Preset: {fileID: 11400000, guid: 0403878495ffa3c4e9d4bcb3eac9b559, type: 2}
+  OverrideOutput: []

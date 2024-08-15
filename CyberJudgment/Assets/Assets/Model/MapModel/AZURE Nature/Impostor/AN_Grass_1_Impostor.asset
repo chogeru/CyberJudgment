@@ -1,0 +1,266 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7ba7a43222473d4292f91ae936fe2cc, type: 3}
+  m_Name: AN_Grass_1_Impostor
+  m_EditorClassIdentifier: 
+  Material: {fileID: 1804083375048150047}
+  Mesh: {fileID: 7368672260180733608}
+  Version: 9904
+  ImpostorType: 2
+  LockedSizes: 1
+  SelectedSize: 2048
+  TexSize: {x: 2048, y: 2048}
+  DecoupleAxisFrames: 0
+  HorizontalFrames: 32
+  VerticalFrames: 32
+  PixelPadding: 32
+  MaxVertices: 15
+  Tolerance: 0.15
+  NormalScale: 0.01
+  ShapePoints:
+  - {x: 0, y: 0.581744}
+  - {x: 0.062257756, y: 0.77758944}
+  - {x: 0.20899439, y: 0.93149006}
+  - {x: 0.46276462, y: 1}
+  - {x: 0.7254645, y: 0.9758354}
+  - {x: 0.9249058, y: 0.79405993}
+  - {x: 1, y: 0.5917348}
+  - {x: 1, y: 0.36389774}
+  - {x: 0.9077581, y: 0.18697941}
+  - {x: 0.7932258, y: 0.06752193}
+  - {x: 0.5837067, y: 0}
+  - {x: 0.35583055, y: 0}
+  - {x: 0.15357828, y: 0.12618202}
+  - {x: 0.0486063, y: 0.24738085}
+  - {x: 0, y: 0.38766503}
+  Preset: {fileID: 11400000, guid: 0403878495ffa3c4e9d4bcb3eac9b559, type: 2}
+  OverrideOutput: []
+--- !u!21 &1804083375048150047
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: AN_Grass_1_Impostor
+  m_Shader: {fileID: 4800000, guid: 83dd8de9a5c14874884f9012def4fdcc, type: 3}
+  m_ValidKeywords:
+  - _HEMI_ON
+  m_InvalidKeywords:
+  - _AI_ALPHATOCOVERAGE_ON
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 1
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _Albedo:
+        m_Texture: {fileID: 2800000, guid: 212458b9958dd6e4c9c7683f6bbc510d, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Emission:
+        m_Texture: {fileID: 2800000, guid: 2c8ef279550168f4cbd9ed74c615bb52, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Normals:
+        m_Texture: {fileID: 2800000, guid: dbde22716068ba3428d5098e3f1e1bcb, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Specular:
+        m_Texture: {fileID: 2800000, guid: da69e4c6d4100ac469562dc52b842a78, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AI_AlphaToCoverage: 1
+    - _AI_ShadowBias: 0.25
+    - _AI_ShadowView: 1
+    - _ClipMask: 0.5
+    - _DepthSize: 2.6655765
+    - _Frames: 32
+    - _Hemi: 1
+    - _Hue: 0
+    - _ImpostorSize: 2.6421661
+    - _Parallax: 1
+    - _TextureBias: -1
+    m_Colors:
+    - _AI_SizeOffset: {r: 2.6421661, g: 2.6655765, b: 0, a: 0.00007891414}
+    - _HueVariation: {r: 0.1834397, g: 1, b: 0, a: 1}
+    - _Offset: {r: 0.02021569, g: 0.26063347, b: -0.020585418, a: -0.0025252525}
+  m_BuildTextureStacks: []
+--- !u!43 &7368672260180733608
+Mesh:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: AN_Grass_1_Impostor
+  serializedVersion: 10
+  m_SubMeshes:
+  - serializedVersion: 2
+    firstByte: 0
+    indexCount: 39
+    topology: 0
+    baseVertex: 0
+    firstVertex: 0
+    vertexCount: 15
+    localAABB:
+      m_Center: {x: 0, y: 0.006672144, z: 0}
+      m_Extent: {x: 1.3210831, y: 1.3210831, z: 0}
+  m_Shapes:
+    vertices: []
+    shapes: []
+    channels: []
+    fullWeights: []
+  m_BindPose: []
+  m_BoneNameHashes: 
+  m_RootBoneNameHash: 0
+  m_BonesAABB: []
+  m_VariableBoneCountWeights:
+    m_Data: 
+  m_MeshCompression: 0
+  m_IsReadable: 1
+  m_KeepVertices: 1
+  m_KeepIndices: 1
+  m_IndexFormat: 0
+  m_IndexBuffer: 0d0009000500050001000d000d000b00090009000700050005000300010001000e000d000d000c000b000b000a000900090008000700070006000500050004000300030002000100010000000e00
+  m_VertexData:
+    serializedVersion: 3
+    m_VertexCount: 15
+    m_Channels:
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 3
+    - stream: 0
+      offset: 12
+      format: 0
+      dimension: 3
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 24
+      format: 0
+      dimension: 2
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    m_DataSize: 480
+    _typelessdata: 4019a9bf225556be000000000000000000000000000080bf00000000a625d63e110b94bf4a0d3abf000000000000000000000000000080bffd017f3d98bf633ea9d544bf211391bf000000000000000000000000000080bfa002563ef04e8c3d887cc9bd9e3ea8bf000000000000000000000000000080bf7cefec3e00000000c380183f7b12a0bf000000000000000000000000000080bf0bb8393fe0f4c53cb4b38f3f453145bf000000000000000000000000000080bfa0c66c3ff4e1523e4019a93f0c5d71be000000000000000000000000000080bf0000803f2208d13e4019a93fa688bb3e000000000000000000000000000080bf0000803f99d7223f16e7893ff96e553f000000000000000000000000000080bfd662683f1e22503f1b56463fef1d933f000000000000000000000000000080bfd9104b3fe2b66e3f9779623ee2f3a93f000000000000000000000000000080bfcd6d153f0000803fe607c3bee2f3a93f000000000000000000000000000080bf6c2fb63e0000803f58516abf778e7e3f000000000000000000000000000080bfa0431d3e89b25f3ffda898bf0a942c3f000000000000000000000000000080bf6617473da6ab403f4019a9bfb4619b3e000000000000000000000000000080bf00000000fcc11c3f
+  m_CompressedMesh:
+    m_Vertices:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_UV:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Normals:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Tangents:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Weights:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_NormalSigns:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_TangentSigns:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_FloatColors:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_BoneIndices:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Triangles:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_UVInfo: 0
+  m_LocalAABB:
+    m_Center: {x: 0.02021569, y: 0.26063347, z: -0.020585418}
+    m_Extent: {x: 1.2052498, y: 0.2912706, z: 1.1997664}
+  m_MeshUsageFlags: 0
+  m_BakedConvexCollisionMesh: 
+  m_BakedTriangleCollisionMesh: 
+  m_MeshMetrics[0]: 1
+  m_MeshMetrics[1]: 1
+  m_MeshOptimizationFlags: 1
+  m_StreamData:
+    serializedVersion: 2
+    offset: 0
+    size: 0
+    path: 

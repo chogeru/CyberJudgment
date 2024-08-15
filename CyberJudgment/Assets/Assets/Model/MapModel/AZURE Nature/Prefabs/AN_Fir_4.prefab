@@ -263,6 +263,7 @@ GameObject:
   - component: {fileID: 6032649240743255710}
   - component: {fileID: 1640139618756613739}
   - component: {fileID: 1640139618756613748}
+  - component: {fileID: 9210284809794627056}
   m_Layer: 0
   m_Name: AN_Fir_4
   m_TagString: Untagged
@@ -329,3 +330,26 @@ LODGroup:
     renderers:
     - renderer: {fileID: 434408931293892023}
   m_Enabled: 1
+--- !u!114 &9210284809794627056
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7341746303021280397}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fadcc2d9a34a1a34f93d4962ec37e6e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_data: {fileID: 11400000, guid: 5ba26180d60c45a44b6b8a1e0f8c11ed, type: 2}
+  m_rootTransform: {fileID: 6032649240743255710}
+  m_lodGroup: {fileID: 1640139618756613748}
+  m_renderers:
+  - {fileID: 5434900689513036491}
+  m_lodReplacement: 2
+  m_renderPipelineInUse: 2
+  m_insertIndex: 2
+  m_lastImpostor: {fileID: 0}
+  m_folderPath: Assets/Assets/Model/MapModel/AZURE Nature/Impostor/
+  m_cutMode: 0
