@@ -109,6 +109,7 @@ namespace AmplifyShaderEditor
 			{ ( int )ASESRPBaseline.ASE_SRP_14, new ASESRPPackageDesc( ASESRPBaseline.ASE_SRP_14, "f6f268949ccf3f34fa4d18e92501ed82", "7a0bb33169d95ec499136d59cb25918b" ) },
 			{ ( int )ASESRPBaseline.ASE_SRP_15, new ASESRPPackageDesc( ASESRPBaseline.ASE_SRP_15, "69bc3229216b1504ea3e28b5820bbb0d", "641c955d37d2fac4f87e00ac5c9d9bd8" ) },
 			{ ( int )ASESRPBaseline.ASE_SRP_16, new ASESRPPackageDesc( ASESRPBaseline.ASE_SRP_16, "4f665a06c5a2aa5499fa1c79ac058999", "2690f45490c175045bbdc63395bf6278" ) },
+			{ ( int )ASESRPBaseline.ASE_SRP_17, new ASESRPPackageDesc( ASESRPBaseline.ASE_SRP_17, "47fc5ccecd261894994c1e9e827cf553", "f42c2bc4dab4723429b0d30b635c3035" ) },
 		};
 
 		private void OnEnable()
@@ -116,7 +117,7 @@ namespace AmplifyShaderEditor
 			rt = new RenderTexture( 16, 16, 0 );
 			rt.Create();
 
-			m_startup = (Preferences.ShowOption)EditorPrefs.GetInt( Preferences.PrefStartUp, 0 );
+			m_startup = (Preferences.ShowOption)EditorPrefs.GetInt( Preferences.User.Keys.StartUp, 0 );
 
 			if( textIcon == null )
 			{
@@ -386,7 +387,7 @@ namespace AmplifyShaderEditor
 				EditorGUIUtility.labelWidth = cache;
 				if( EditorGUI.EndChangeCheck() )
 				{
-					EditorPrefs.SetInt( Preferences.PrefStartUp, (int)m_startup );
+					EditorPrefs.SetInt( Preferences.User.Keys.StartUp, (int)m_startup );
 				}
 			}
 			EditorGUILayout.EndHorizontal();

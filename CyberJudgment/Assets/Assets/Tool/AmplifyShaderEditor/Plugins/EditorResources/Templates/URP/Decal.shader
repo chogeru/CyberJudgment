@@ -76,7 +76,7 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
             "RenderPipeline"="UniversalPipeline"
             "PreviewType"="Plane"
             "ShaderGraphShader"="true"
-            "ShaderGraphTargetId"=""
+			"ShaderGraphTargetId" = ""
         }
 
 		HLSLINCLUDE
@@ -121,12 +121,7 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Texture.hlsl"
 
             #define HAVE_MESH_MODIFICATION
-
             #define SHADERPASS SHADERPASS_DBUFFER_PROJECTOR
-
-			#ifdef SCENEPICKINGPASS
-			float4 _SelectionID;
-			#endif
 
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Texture.hlsl"
@@ -157,7 +152,7 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 			{
 				float3 positionOS : POSITION;
 				/*ase_vdata:p=p*/
-				UNITY_VERTEX_INPUT_INSTANCE_ID	
+				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
 			struct PackedVaryings
@@ -174,16 +169,14 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 			float _DecalMeshDepthBias;
 			float _DecalMeshViewBias;
 			#if defined(DECAL_ANGLE_FADE)
-				float _DecalAngleFadeSupported;
+			float _DecalAngleFadeSupported;
 			#endif
 			CBUFFER_END
 
-			// Property used by ScenePickingPass
             #ifdef SCENEPICKINGPASS
 				float4 _SelectionID;
             #endif
 
-			// Properties used by SceneSelectionPass
             #ifdef SCENESELECTIONPASS
 				int _ObjectId;
 				int _PassValue;
@@ -229,30 +222,30 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 				#endif
             }
 
-			#define DECAL_PROJECTOR
-			#define DECAL_DBUFFER
+            #define DECAL_PROJECTOR
+            #define DECAL_DBUFFER
 
-			#if ((!defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_ALBEDO)) || (defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_NORMAL_BLEND))) && (defined(DECAL_SCREEN_SPACE) || defined(DECAL_GBUFFER))
-				#define DECAL_RECONSTRUCT_NORMAL
-			#elif defined(DECAL_ANGLE_FADE)
-				#define DECAL_LOAD_NORMAL
-			#endif
+            #if ((!defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_ALBEDO)) || (defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_NORMAL_BLEND))) && (defined(DECAL_SCREEN_SPACE) || defined(DECAL_GBUFFER))
+            #define DECAL_RECONSTRUCT_NORMAL
+            #elif defined(DECAL_ANGLE_FADE)
+            #define DECAL_LOAD_NORMAL
+            #endif
 
-			#if defined(DECAL_LOAD_NORMAL)
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
-			#endif
+            #if defined(DECAL_LOAD_NORMAL)
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
+            #endif
 
-			#if defined(DECAL_PROJECTOR) || defined(DECAL_RECONSTRUCT_NORMAL)
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
-			#endif
+            #if defined(DECAL_PROJECTOR) || defined(DECAL_RECONSTRUCT_NORMAL)
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
+            #endif
 
-			#ifdef DECAL_MESH
-				#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/DecalMeshBiasTypeEnum.cs.hlsl"
-			#endif
+            #ifdef DECAL_MESH
+            #include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/DecalMeshBiasTypeEnum.cs.hlsl"
+            #endif
 
-			#ifdef DECAL_RECONSTRUCT_NORMAL
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/NormalReconstruction.hlsl"
-			#endif
+            #ifdef DECAL_RECONSTRUCT_NORMAL
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/NormalReconstruction.hlsl"
+            #endif
 
 			PackedVaryings Vert(Attributes inputMesh /*ase_vert_input*/ )
 			{
@@ -389,10 +382,6 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 
             #define SHADERPASS SHADERPASS_FORWARD_EMISSIVE_PROJECTOR
 
-			#ifdef SCENEPICKINGPASS
-			float4 _SelectionID;
-			#endif
-
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Texture.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
@@ -433,20 +422,18 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 			float _DecalMeshDepthBias;
 			float _DecalMeshViewBias;
 			#if defined(DECAL_ANGLE_FADE)
-				float _DecalAngleFadeSupported;
+			float _DecalAngleFadeSupported;
 			#endif
 			CBUFFER_END
 
-			// Property used by ScenePickingPass
             #ifdef SCENEPICKINGPASS
 				float4 _SelectionID;
             #endif
 
-			// Properties used by SceneSelectionPass
             #ifdef SCENESELECTIONPASS
 				int _ObjectId;
 				int _PassValue;
-            #endif
+			#endif
 
 			/*ase_globals*/
 
@@ -476,30 +463,30 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
                 surfaceData.baseColor.w = half(surfaceDescription.Alpha * fadeFactor);
             }
 
-			#define DECAL_PROJECTOR
-			#define DECAL_FORWARD_EMISSIVE
+            #define DECAL_PROJECTOR
+            #define DECAL_FORWARD_EMISSIVE
 
-			#if ((!defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_ALBEDO)) || (defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_NORMAL_BLEND))) && (defined(DECAL_SCREEN_SPACE) || defined(DECAL_GBUFFER))
-				#define DECAL_RECONSTRUCT_NORMAL
-			#elif defined(DECAL_ANGLE_FADE)
-				#define DECAL_LOAD_NORMAL
-			#endif
+            #if ((!defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_ALBEDO)) || (defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_NORMAL_BLEND))) && (defined(DECAL_SCREEN_SPACE) || defined(DECAL_GBUFFER))
+            #define DECAL_RECONSTRUCT_NORMAL
+            #elif defined(DECAL_ANGLE_FADE)
+            #define DECAL_LOAD_NORMAL
+            #endif
 
-			#if defined(DECAL_LOAD_NORMAL)
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
-			#endif
+            #if defined(DECAL_LOAD_NORMAL)
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
+            #endif
 
-			#if defined(DECAL_PROJECTOR) || defined(DECAL_RECONSTRUCT_NORMAL)
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
-			#endif
+            #if defined(DECAL_PROJECTOR) || defined(DECAL_RECONSTRUCT_NORMAL)
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
+            #endif
 
-			#ifdef DECAL_MESH
-				#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/DecalMeshBiasTypeEnum.cs.hlsl"
-			#endif
+            #ifdef DECAL_MESH
+            #include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/DecalMeshBiasTypeEnum.cs.hlsl"
+            #endif
 
-			#ifdef DECAL_RECONSTRUCT_NORMAL
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/NormalReconstruction.hlsl"
-			#endif
+            #ifdef DECAL_RECONSTRUCT_NORMAL
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/NormalReconstruction.hlsl"
+            #endif
 
 			PackedVaryings Vert(Attributes inputMesh /*ase_vert_input*/ )
 			{
@@ -509,7 +496,7 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 				UNITY_SETUP_INSTANCE_ID(inputMesh);
 				UNITY_TRANSFER_INSTANCE_ID(inputMesh, packedOutput);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(packedOutput);
-				
+
 				/*ase_vert_code:inputMesh=Attributes;packedOutput=PackedVaryings*/
 
 				VertexPositionInputs vertexInput = GetVertexPositionInputs(inputMesh.positionOS.xyz);
@@ -627,7 +614,7 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 			#pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
 			#pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
 			#pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
-			#pragma multi_compile_fragment _ _SHADOWS_SOFT
+            #pragma multi_compile_fragment _ _SHADOWS_SOFT
 			#pragma multi_compile _ _CLUSTERED_RENDERING
 			#pragma multi_compile _DECAL_NORMAL_BLEND_LOW _DECAL_NORMAL_BLEND_MEDIUM _DECAL_NORMAL_BLEND_HIGH
 
@@ -645,10 +632,6 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
             #define HAVE_MESH_MODIFICATION
 
             #define SHADERPASS SHADERPASS_DECAL_SCREEN_SPACE_PROJECTOR
-
-			#ifdef SCENEPICKINGPASS
-			float4 _SelectionID;
-			#endif
 
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Texture.hlsl"
@@ -703,16 +686,14 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 			float _DecalMeshDepthBias;
 			float _DecalMeshViewBias;
 			#if defined(DECAL_ANGLE_FADE)
-				float _DecalAngleFadeSupported;
+			float _DecalAngleFadeSupported;
 			#endif
 			CBUFFER_END
 
-			// Property used by ScenePickingPass
             #ifdef SCENEPICKINGPASS
 				float4 _SelectionID;
             #endif
 
-			// Properties used by SceneSelectionPass
             #ifdef SCENESELECTIONPASS
 				int _ObjectId;
 				int _PassValue;
@@ -762,32 +743,32 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 				#endif
             }
 
-			#define DECAL_PROJECTOR
-			#define DECAL_SCREEN_SPACE
+            #define DECAL_PROJECTOR
+            #define DECAL_SCREEN_SPACE
 
-			#if ((!defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_ALBEDO)) || (defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_NORMAL_BLEND))) && (defined(DECAL_SCREEN_SPACE) || defined(DECAL_GBUFFER))
-				#define DECAL_RECONSTRUCT_NORMAL
-			#elif defined(DECAL_ANGLE_FADE)
-				#define DECAL_LOAD_NORMAL
-			#endif
+            #if ((!defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_ALBEDO)) || (defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_NORMAL_BLEND))) && (defined(DECAL_SCREEN_SPACE) || defined(DECAL_GBUFFER))
+            #define DECAL_RECONSTRUCT_NORMAL
+            #elif defined(DECAL_ANGLE_FADE)
+            #define DECAL_LOAD_NORMAL
+            #endif
 
-			#if defined(DECAL_LOAD_NORMAL)
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
-			#endif
+            #if defined(DECAL_LOAD_NORMAL)
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
+            #endif
 
-			#if defined(DECAL_PROJECTOR) || defined(DECAL_RECONSTRUCT_NORMAL)
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
-			#endif
+            #if defined(DECAL_PROJECTOR) || defined(DECAL_RECONSTRUCT_NORMAL)
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
+            #endif
 
-			#ifdef DECAL_MESH
-				#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/DecalMeshBiasTypeEnum.cs.hlsl"
-			#endif
+            #ifdef DECAL_MESH
+            #include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/DecalMeshBiasTypeEnum.cs.hlsl"
+            #endif
 
-			#ifdef DECAL_RECONSTRUCT_NORMAL
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/NormalReconstruction.hlsl"
-			#endif
+            #ifdef DECAL_RECONSTRUCT_NORMAL
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/NormalReconstruction.hlsl"
+            #endif
 
-			void InitializeInputData( PackedVaryings input, float3 positionWS, half3 normalWS, half3 viewDirectionWS, out InputData inputData)
+			void InitializeInputData(PackedVaryings input, float3 positionWS, half3 normalWS, half3 viewDirectionWS, out InputData inputData)
 			{
 				inputData = (InputData)0;
 
@@ -1013,7 +994,7 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 			#pragma editor_sync_compilation
 
 			#pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
-			#pragma multi_compile_fragment _ _SHADOWS_SOFT
+            #pragma multi_compile_fragment _ _SHADOWS_SOFT
 			#pragma multi_compile _DECAL_NORMAL_BLEND_LOW _DECAL_NORMAL_BLEND_MEDIUM _DECAL_NORMAL_BLEND_HIGH
 			#pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
 
@@ -1021,7 +1002,7 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Texture.hlsl"
 
             #define ATTRIBUTES_NEED_NORMAL
-            #define VARYINGS_NEED_NORMAL_WS
+			#define VARYINGS_NEED_NORMAL_WS
             #define VARYINGS_NEED_VIEWDIRECTION_WS
             #define VARYINGS_NEED_SH
             #define VARYINGS_NEED_STATIC_LIGHTMAP_UV
@@ -1030,10 +1011,6 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
             #define HAVE_MESH_MODIFICATION
 
             #define SHADERPASS SHADERPASS_DECAL_GBUFFER_PROJECTOR
-
-			#ifdef SCENEPICKINGPASS
-			float4 _SelectionID;
-			#endif
 
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Texture.hlsl"
@@ -1088,16 +1065,14 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 			float _DecalMeshDepthBias;
 			float _DecalMeshViewBias;
 			#if defined(DECAL_ANGLE_FADE)
-				float _DecalAngleFadeSupported;
+			float _DecalAngleFadeSupported;
 			#endif
 			CBUFFER_END
 
-			// Property used by ScenePickingPass
             #ifdef SCENEPICKINGPASS
 				float4 _SelectionID;
             #endif
 
-			// Properties used by SceneSelectionPass
             #ifdef SCENESELECTIONPASS
 				int _ObjectId;
 				int _PassValue;
@@ -1147,30 +1122,30 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 				#endif
             }
 
-			#define DECAL_PROJECTOR
-			#define DECAL_GBUFFER
+            #define DECAL_PROJECTOR
+            #define DECAL_GBUFFER
 
-			#if ((!defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_ALBEDO)) || (defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_NORMAL_BLEND))) && (defined(DECAL_SCREEN_SPACE) || defined(DECAL_GBUFFER))
-				#define DECAL_RECONSTRUCT_NORMAL
-			#elif defined(DECAL_ANGLE_FADE)
-				#define DECAL_LOAD_NORMAL
-			#endif
+            #if ((!defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_ALBEDO)) || (defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_NORMAL_BLEND))) && (defined(DECAL_SCREEN_SPACE) || defined(DECAL_GBUFFER))
+            #define DECAL_RECONSTRUCT_NORMAL
+            #elif defined(DECAL_ANGLE_FADE)
+            #define DECAL_LOAD_NORMAL
+            #endif
 
-			#if defined(DECAL_LOAD_NORMAL)
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
-			#endif
+            #if defined(DECAL_LOAD_NORMAL)
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
+            #endif
 
-			#if defined(DECAL_PROJECTOR) || defined(DECAL_RECONSTRUCT_NORMAL)
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
-			#endif
+            #if defined(DECAL_PROJECTOR) || defined(DECAL_RECONSTRUCT_NORMAL)
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
+            #endif
 
-			#ifdef DECAL_MESH
-				#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/DecalMeshBiasTypeEnum.cs.hlsl"
-			#endif
+            #ifdef DECAL_MESH
+            #include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/DecalMeshBiasTypeEnum.cs.hlsl"
+            #endif
 
-			#ifdef DECAL_RECONSTRUCT_NORMAL
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/NormalReconstruction.hlsl"
-			#endif
+            #ifdef DECAL_RECONSTRUCT_NORMAL
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/NormalReconstruction.hlsl"
+            #endif
 
 			void InitializeInputData(PackedVaryings input, float3 positionWS, half3 normalWS, half3 viewDirectionWS, out InputData inputData)
 			{
@@ -1424,10 +1399,6 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 
             #define SHADERPASS SHADERPASS_DBUFFER_MESH
 
-			#ifdef SCENEPICKINGPASS
-			float4 _SelectionID;
-			#endif
-
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Texture.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
@@ -1484,16 +1455,14 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 			float _DecalMeshDepthBias;
 			float _DecalMeshViewBias;
 			#if defined(DECAL_ANGLE_FADE)
-				float _DecalAngleFadeSupported;
+			float _DecalAngleFadeSupported;
 			#endif
 			CBUFFER_END
 
-			// Property used by ScenePickingPass
             #ifdef SCENEPICKINGPASS
 				float4 _SelectionID;
             #endif
 
-			// Properties used by SceneSelectionPass
             #ifdef SCENESELECTIONPASS
 				int _ObjectId;
 				int _PassValue;
@@ -1544,36 +1513,38 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 				#endif
             }
 
-			#define DECAL_MESH
-			#define DECAL_DBUFFER
+            #define DECAL_MESH
+            #define DECAL_DBUFFER
 
-			#if ((!defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_ALBEDO)) || (defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_NORMAL_BLEND))) && (defined(DECAL_SCREEN_SPACE) || defined(DECAL_GBUFFER))
-				#define DECAL_RECONSTRUCT_NORMAL
-			#elif defined(DECAL_ANGLE_FADE)
-				#define DECAL_LOAD_NORMAL
-			#endif
+            #if ((!defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_ALBEDO)) || (defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_NORMAL_BLEND))) && (defined(DECAL_SCREEN_SPACE) || defined(DECAL_GBUFFER))
+            #define DECAL_RECONSTRUCT_NORMAL
+            #elif defined(DECAL_ANGLE_FADE)
+            #define DECAL_LOAD_NORMAL
+            #endif
 
-			#if defined(DECAL_LOAD_NORMAL)
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
-			#endif
+            #if defined(DECAL_LOAD_NORMAL)
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
+            #endif
 
-			#if defined(DECAL_PROJECTOR) || defined(DECAL_RECONSTRUCT_NORMAL)
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
-			#endif
+            #if defined(DECAL_PROJECTOR) || defined(DECAL_RECONSTRUCT_NORMAL)
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
+            #endif
 
-			#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/DecalMeshBiasTypeEnum.cs.hlsl"
+            #ifdef DECAL_MESH
+            #include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/DecalMeshBiasTypeEnum.cs.hlsl"
+            #endif
 
-			#ifdef DECAL_RECONSTRUCT_NORMAL
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/NormalReconstruction.hlsl"
-			#endif
+            #ifdef DECAL_RECONSTRUCT_NORMAL
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/NormalReconstruction.hlsl"
+            #endif
 
 			void MeshDecalsPositionZBias(inout PackedVaryings input)
 			{
-				#if UNITY_REVERSED_Z
-					input.positionCS.z -= _DecalMeshDepthBias;
-				#else
-					input.positionCS.z += _DecalMeshDepthBias;
-				#endif
+            #if UNITY_REVERSED_Z
+				input.positionCS.z -= _DecalMeshDepthBias;
+            #else
+				input.positionCS.z += _DecalMeshDepthBias;
+            #endif
 			}
 
 			PackedVaryings Vert(Attributes inputMesh /*ase_vert_input*/ )
@@ -1702,10 +1673,6 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 
             #define SHADERPASS SHADERPASS_FORWARD_EMISSIVE_MESH
 
-			#ifdef SCENEPICKINGPASS
-			float4 _SelectionID;
-			#endif
-
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Texture.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
@@ -1763,21 +1730,18 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 			float _DecalMeshDepthBias;
 			float _DecalMeshViewBias;
 			#if defined(DECAL_ANGLE_FADE)
-				float _DecalAngleFadeSupported;
+			float _DecalAngleFadeSupported;
 			#endif
 			CBUFFER_END
 
-			// Property used by ScenePickingPass
             #ifdef SCENEPICKINGPASS
 				float4 _SelectionID;
             #endif
 
-			// Properties used by SceneSelectionPass
             #ifdef SCENESELECTIONPASS
 				int _ObjectId;
 				int _PassValue;
             #endif
-
 
 			/*ase_globals*/
 
@@ -1818,38 +1782,38 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 				#endif
             }
 
-			#define DECAL_MESH
-			#define DECAL_FORWARD_EMISSIVE
+           #define DECAL_MESH
+            #define DECAL_FORWARD_EMISSIVE
 
-			#if ((!defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_ALBEDO)) || (defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_NORMAL_BLEND))) && (defined(DECAL_SCREEN_SPACE) || defined(DECAL_GBUFFER))
-				#define DECAL_RECONSTRUCT_NORMAL
-			#elif defined(DECAL_ANGLE_FADE)
-				#define DECAL_LOAD_NORMAL
-			#endif
+            #if ((!defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_ALBEDO)) || (defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_NORMAL_BLEND))) && (defined(DECAL_SCREEN_SPACE) || defined(DECAL_GBUFFER))
+            #define DECAL_RECONSTRUCT_NORMAL
+            #elif defined(DECAL_ANGLE_FADE)
+            #define DECAL_LOAD_NORMAL
+            #endif
 
-			#if defined(DECAL_LOAD_NORMAL)
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
-			#endif
+            #if defined(DECAL_LOAD_NORMAL)
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
+            #endif
 
-			#if defined(DECAL_PROJECTOR) || defined(DECAL_RECONSTRUCT_NORMAL)
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
-			#endif
+            #if defined(DECAL_PROJECTOR) || defined(DECAL_RECONSTRUCT_NORMAL)
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
+            #endif
 
-			#ifdef DECAL_MESH
-				#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/DecalMeshBiasTypeEnum.cs.hlsl"
-			#endif
+            #ifdef DECAL_MESH
+            #include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/DecalMeshBiasTypeEnum.cs.hlsl"
+            #endif
 
-			#ifdef DECAL_RECONSTRUCT_NORMAL
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/NormalReconstruction.hlsl"
-			#endif
+            #ifdef DECAL_RECONSTRUCT_NORMAL
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/NormalReconstruction.hlsl"
+            #endif
 
 			void MeshDecalsPositionZBias(inout PackedVaryings input)
 			{
-				#if UNITY_REVERSED_Z
-					input.positionCS.z -= _DecalMeshDepthBias;
-				#else
-					input.positionCS.z += _DecalMeshDepthBias;
-				#endif
+			#if UNITY_REVERSED_Z
+				input.positionCS.z -= _DecalMeshDepthBias;
+			#else
+				input.positionCS.z += _DecalMeshDepthBias;
+			#endif
 			}
 
 			PackedVaryings Vert(Attributes inputMesh /*ase_vert_input*/ )
@@ -1882,7 +1846,7 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 					MeshDecalsPositionZBias(packedOutput);
 				}
 
-				packedOutput.positionWS.xyz =  positionWS;
+				packedOutput.positionWS.xyz = positionWS;
 				packedOutput.normalWS.xyz =  normalWS;
 				packedOutput.tangentWS.xyzw =  tangentWS;
 				packedOutput.texCoord0.xyzw =  inputMesh.uv0;
@@ -1973,7 +1937,7 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 			#pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
 			#pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
 			#pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
-			#pragma multi_compile_fragment _ _SHADOWS_SOFT
+            #pragma multi_compile_fragment _ _SHADOWS_SOFT
 			#pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
 			#pragma multi_compile _ SHADOWS_SHADOWMASK
 			#pragma multi_compile _ _CLUSTERED_RENDERING
@@ -2000,10 +1964,6 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
             #define HAVE_MESH_MODIFICATION
 
             #define SHADERPASS SHADERPASS_DECAL_SCREEN_SPACE_MESH
-
-			#ifdef SCENEPICKINGPASS
-			float4 _SelectionID;
-			#endif
 
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Texture.hlsl"
@@ -2066,16 +2026,14 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 			float _DecalMeshDepthBias;
 			float _DecalMeshViewBias;
 			#if defined(DECAL_ANGLE_FADE)
-				float _DecalAngleFadeSupported;
+			float _DecalAngleFadeSupported;
 			#endif
 			CBUFFER_END
 
-			// Property used by ScenePickingPass
             #ifdef SCENEPICKINGPASS
 				float4 _SelectionID;
             #endif
 
-			// Properties used by SceneSelectionPass
             #ifdef SCENESELECTIONPASS
 				int _ObjectId;
 				int _PassValue;
@@ -2131,41 +2089,41 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
             }
 
 
-			#define DECAL_MESH
-			#define DECAL_SCREEN_SPACE
+            #define DECAL_MESH
+            #define DECAL_SCREEN_SPACE
 
-			#if ((!defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_ALBEDO)) || (defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_NORMAL_BLEND))) && (defined(DECAL_SCREEN_SPACE) || defined(DECAL_GBUFFER))
-				#define DECAL_RECONSTRUCT_NORMAL
-			#elif defined(DECAL_ANGLE_FADE)
-				#define DECAL_LOAD_NORMAL
-			#endif
+            #if ((!defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_ALBEDO)) || (defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_NORMAL_BLEND))) && (defined(DECAL_SCREEN_SPACE) || defined(DECAL_GBUFFER))
+            #define DECAL_RECONSTRUCT_NORMAL
+            #elif defined(DECAL_ANGLE_FADE)
+            #define DECAL_LOAD_NORMAL
+            #endif
 
-			#if defined(DECAL_LOAD_NORMAL)
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
-			#endif
+            #if defined(DECAL_LOAD_NORMAL)
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
+            #endif
 
-			#if defined(DECAL_PROJECTOR) || defined(DECAL_RECONSTRUCT_NORMAL)
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
-			#endif
+            #if defined(DECAL_PROJECTOR) || defined(DECAL_RECONSTRUCT_NORMAL)
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
+            #endif
 
-			#ifdef DECAL_MESH
-				#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/DecalMeshBiasTypeEnum.cs.hlsl"
-			#endif
+            #ifdef DECAL_MESH
+            #include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/DecalMeshBiasTypeEnum.cs.hlsl"
+            #endif
 
-			#ifdef DECAL_RECONSTRUCT_NORMAL
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/NormalReconstruction.hlsl"
-			#endif
+            #ifdef DECAL_RECONSTRUCT_NORMAL
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/NormalReconstruction.hlsl"
+            #endif
 
 			void MeshDecalsPositionZBias(inout PackedVaryings input)
 			{
-				#if UNITY_REVERSED_Z
-					input.positionCS.z -= _DecalMeshDepthBias;
-				#else
-					input.positionCS.z += _DecalMeshDepthBias;
-				#endif
+			#if UNITY_REVERSED_Z
+				input.positionCS.z -= _DecalMeshDepthBias;
+			#else
+				input.positionCS.z += _DecalMeshDepthBias;
+			#endif
 			}
 
-			void InitializeInputData( PackedVaryings input, float3 positionWS, half3 normalWS, half3 viewDirectionWS, out InputData inputData)
+			void InitializeInputData(PackedVaryings input, float3 positionWS, half3 normalWS, half3 viewDirectionWS, out InputData inputData)
 			{
 				inputData = (InputData)0;
 
@@ -2373,7 +2331,7 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 			#pragma multi_compile _ DYNAMICLIGHTMAP_ON
 			#pragma multi_compile _ DIRLIGHTMAP_COMBINED
 			#pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
-			#pragma multi_compile_fragment _ _SHADOWS_SOFT
+            #pragma multi_compile_fragment _ _SHADOWS_SOFT
 			#pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
 			#pragma multi_compile _ _MIXED_LIGHTING_SUBTRACTIVE
 			#pragma multi_compile _DECAL_NORMAL_BLEND_LOW _DECAL_NORMAL_BLEND_MEDIUM _DECAL_NORMAL_BLEND_HIGH
@@ -2400,10 +2358,6 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
             #define HAVE_MESH_MODIFICATION
 
             #define SHADERPASS SHADERPASS_DECAL_GBUFFER_MESH
-
-			#ifdef SCENEPICKINGPASS
-			float4 _SelectionID;
-			#endif
 
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Texture.hlsl"
@@ -2467,16 +2421,14 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 			float _DecalMeshDepthBias;
 			float _DecalMeshViewBias;
 			#if defined(DECAL_ANGLE_FADE)
-				float _DecalAngleFadeSupported;
+			float _DecalAngleFadeSupported;
 			#endif
 			CBUFFER_END
 
-			// Property used by ScenePickingPass
             #ifdef SCENEPICKINGPASS
 				float4 _SelectionID;
             #endif
 
-			// Properties used by SceneSelectionPass
             #ifdef SCENESELECTIONPASS
 				int _ObjectId;
 				int _PassValue;
@@ -2531,38 +2483,38 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 				#endif
             }
 
-			#define DECAL_MESH
-			#define DECAL_GBUFFER
+            #define DECAL_MESH
+            #define DECAL_GBUFFER
 
-			#if ((!defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_ALBEDO)) || (defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_NORMAL_BLEND))) && (defined(DECAL_SCREEN_SPACE) || defined(DECAL_GBUFFER))
-				#define DECAL_RECONSTRUCT_NORMAL
-			#elif defined(DECAL_ANGLE_FADE)
-				#define DECAL_LOAD_NORMAL
-			#endif
+            #if ((!defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_ALBEDO)) || (defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_NORMAL_BLEND))) && (defined(DECAL_SCREEN_SPACE) || defined(DECAL_GBUFFER))
+            #define DECAL_RECONSTRUCT_NORMAL
+            #elif defined(DECAL_ANGLE_FADE)
+            #define DECAL_LOAD_NORMAL
+            #endif
 
-			#if defined(DECAL_LOAD_NORMAL)
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
-			#endif
+            #if defined(DECAL_LOAD_NORMAL)
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
+            #endif
 
-			#if defined(DECAL_PROJECTOR) || defined(DECAL_RECONSTRUCT_NORMAL)
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
-			#endif
+            #if defined(DECAL_PROJECTOR) || defined(DECAL_RECONSTRUCT_NORMAL)
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
+            #endif
 
-			#ifdef DECAL_MESH
-				#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/DecalMeshBiasTypeEnum.cs.hlsl"
-			#endif
+            #ifdef DECAL_MESH
+            #include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/DecalMeshBiasTypeEnum.cs.hlsl"
+            #endif
 
-			#ifdef DECAL_RECONSTRUCT_NORMAL
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/NormalReconstruction.hlsl"
-			#endif
+            #ifdef DECAL_RECONSTRUCT_NORMAL
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/NormalReconstruction.hlsl"
+            #endif
 
 			void MeshDecalsPositionZBias(inout PackedVaryings input)
 			{
-				#if UNITY_REVERSED_Z
-					input.positionCS.z -= _DecalMeshDepthBias;
-				#else
-					input.positionCS.z += _DecalMeshDepthBias;
-				#endif
+			#if UNITY_REVERSED_Z
+				input.positionCS.z -= _DecalMeshDepthBias;
+			#else
+				input.positionCS.z += _DecalMeshDepthBias;
+			#endif
 			}
 
 			void InitializeInputData(PackedVaryings input, float3 positionWS, half3 normalWS, half3 viewDirectionWS, out InputData inputData)
@@ -2645,7 +2597,7 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 					MeshDecalsPositionZBias(packedOutput);
 				}
 
-				packedOutput.positionWS.xyz =  positionWS;
+				packedOutput.positionWS.xyz = positionWS;
 				packedOutput.normalWS.xyz =  normalWS;
 				packedOutput.tangentWS.xyzw =  tangentWS;
 				packedOutput.texCoord0.xyzw =  inputMesh.uv0;
@@ -2684,17 +2636,17 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 
 				half angleFadeFactor = 1.0;
 
-				#if defined(DECAL_RECONSTRUCT_NORMAL)
-					#if defined(_DECAL_NORMAL_BLEND_HIGH)
-						half3 normalWS = half3(ReconstructNormalTap9(packedInput.positionCS.xy));
-					#elif defined(_DECAL_NORMAL_BLEND_MEDIUM)
-						half3 normalWS = half3(ReconstructNormalTap5(packedInput.positionCS.xy));
-					#else
-						half3 normalWS = half3(ReconstructNormalDerivative(packedInput.positionCS.xy));
-					#endif
-				#elif defined(DECAL_LOAD_NORMAL)
-					half3 normalWS = half3(LoadSceneNormals(packedInput.positionCS.xy));
+			#if defined(DECAL_RECONSTRUCT_NORMAL)
+				#if defined(_DECAL_NORMAL_BLEND_HIGH)
+					half3 normalWS = half3(ReconstructNormalTap9(packedInput.positionCS.xy));
+				#elif defined(_DECAL_NORMAL_BLEND_MEDIUM)
+					half3 normalWS = half3(ReconstructNormalTap5(packedInput.positionCS.xy));
+				#else
+					half3 normalWS = half3(ReconstructNormalDerivative(packedInput.positionCS.xy));
 				#endif
+			#elif defined(DECAL_LOAD_NORMAL)
+				half3 normalWS = half3(LoadSceneNormals(packedInput.positionCS.xy));
+			#endif
 
 				float2 positionSS = packedInput.positionCS.xy * _ScreenSize.zw;
 				float3 positionWS = packedInput.positionWS.xyz;
@@ -2787,10 +2739,6 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
             #define SHADERPASS SHADERPASS_DEPTHONLY
 			#define SCENEPICKINGPASS 1
 
-			#ifdef SCENEPICKINGPASS
-			float4 _SelectionID;
-			#endif
-
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Texture.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
@@ -2824,35 +2772,44 @@ Shader  /*ase_name*/"Hidden/Universal/Decal"/*end*/
 			float _DecalMeshDepthBias;
 			float _DecalMeshViewBias;
 			#if defined(DECAL_ANGLE_FADE)
-				float _DecalAngleFadeSupported;
+			float _DecalAngleFadeSupported;
 			#endif
 			CBUFFER_END
+
+            #ifdef SCENEPICKINGPASS
+				float4 _SelectionID;
+            #endif
+
+            #ifdef SCENESELECTIONPASS
+				int _ObjectId;
+				int _PassValue;
+            #endif
 
 			/*ase_globals*/
 
 			/*ase_funcs*/
 
-			#if ((!defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_ALBEDO)) || (defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_NORMAL_BLEND))) && (defined(DECAL_SCREEN_SPACE) || defined(DECAL_GBUFFER))
-				#define DECAL_RECONSTRUCT_NORMAL
-			#elif defined(DECAL_ANGLE_FADE)
-				#define DECAL_LOAD_NORMAL
-			#endif
+            #if ((!defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_ALBEDO)) || (defined(_MATERIAL_AFFECTS_NORMAL) && defined(_MATERIAL_AFFECTS_NORMAL_BLEND))) && (defined(DECAL_SCREEN_SPACE) || defined(DECAL_GBUFFER))
+            #define DECAL_RECONSTRUCT_NORMAL
+            #elif defined(DECAL_ANGLE_FADE)
+            #define DECAL_LOAD_NORMAL
+            #endif
 
-			#if defined(DECAL_LOAD_NORMAL)
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
-			#endif
+            #if defined(DECAL_LOAD_NORMAL)
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
+            #endif
 
-			#if defined(DECAL_PROJECTOR) || defined(DECAL_RECONSTRUCT_NORMAL)
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
-			#endif
+            #if defined(DECAL_PROJECTOR) || defined(DECAL_RECONSTRUCT_NORMAL)
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
+            #endif
 
-			#ifdef DECAL_MESH
-				#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/DecalMeshBiasTypeEnum.cs.hlsl"
-			#endif
+            #ifdef DECAL_MESH
+            #include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/DecalMeshBiasTypeEnum.cs.hlsl"
+            #endif
 
-			#ifdef DECAL_RECONSTRUCT_NORMAL
-				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/NormalReconstruction.hlsl"
-			#endif
+            #ifdef DECAL_RECONSTRUCT_NORMAL
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/NormalReconstruction.hlsl"
+            #endif
 
 			PackedVaryings Vert(Attributes inputMesh /*ase_vert_input*/ )
 			{
