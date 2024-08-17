@@ -55,8 +55,9 @@ public class PlayerController : MonoBehaviour
     private Rigidbody m_Rigidbody;
     [SerializeField, Header("プレイヤーのカプセルコライダ")]
     private CapsuleCollider m_CapsuleCollider;
-    [SerializeField, Header("アニメ-ター")]
-    private Animator m_Animator;
+    private PlayerManager playerManager;
+
+
     [EndTab]
     #endregion
 
@@ -73,28 +74,23 @@ public class PlayerController : MonoBehaviour
     #endregion
 
     private bool isGrounded;
+    private bool canMove = true;
 
-    //プレイヤーの行動状態を表すReactiveProperty
-    private ReactiveProperty<bool> isIdle = new ReactiveProperty<bool>(true);
-    private ReactiveProperty<bool> isWalk = new ReactiveProperty<bool>(false);
-    private ReactiveProperty<bool> isRun = new ReactiveProperty<bool>(false);
-
-    // ローカルプレイヤーが開始した時に呼び出されるメソッド
-    public void Start()
+    private void Start()
     {
-        //各コンポーネントの所得
+        playerManager = GetComponent<PlayerManager>();
+
         m_Rigidbody = GetComponent<Rigidbody>();
         m_CapsuleCollider = GetComponent<CapsuleCollider>();
-        //衝突検出を連続的に設定
         m_Rigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-        //動きを非同期に初期化
-        InitializeMovement().Forget();
-        //アニメーションのバインド
-        BindAnimations();
 
+        InitializeMovement().Forget();
     }
 
-    // プレイヤーの動きを非同期的に初期化(現在メニュー画面と同期)
+    /// <summary>
+    /// プレイヤーの動きを非同期的に初期化
+    /// </summary>
+    /// <returns></returns>
     private async UniTaskVoid InitializeMovement()
     {
 
@@ -130,6 +126,9 @@ public class PlayerController : MonoBehaviour
         TryStepUp();
     }
 
+    /// <summary>
+    /// 重力の適応
+    /// </summary>
     private void UseGravity()
     {
         // 重力の追加
@@ -144,6 +143,10 @@ public class PlayerController : MonoBehaviour
         // 地面に触れているかどうかを更新
         isGrounded = IsGrounded();
     }
+
+    /// <summary>
+    /// プレイヤーの段差乗り越える処理
+    /// </summary>
     void TryStepUp()
     {
         if (m_Rigidbody.velocity.magnitude < 0.1f)
@@ -167,103 +170,119 @@ public class PlayerController : MonoBehaviour
 #endif
     }
 
-    //アニメーションの状態をバインドするメソッド
-    private void BindAnimations()
-    {
-        //ReactivePropertyを使ってアニメータの各状態を購読し、変化があるたびにAnimatorへ反映
-        isIdle.Subscribe(idle => m_Animator.SetBool("Idle", idle)).AddTo(this);//待機
-        isWalk.Subscribe(walk => m_Animator.SetBool("Walk", walk)).AddTo(this);//歩行
-        isRun.Subscribe(run => m_Animator.SetBool("Run", run)).AddTo(this);//走り
-
-        //入力軸に基づくアニメーション変数もリアクティブに更新
-        this.UpdateAsObservable()
-            .Select(_ => Input.GetAxis("Horizontal"))
-            .Subscribe(horizontal =>
-            {
-                m_Animator.SetFloat("左右", horizontal);
-                m_Animator.SetFloat("走り左右", horizontal);
-            }).AddTo(this);
-
-        this.UpdateAsObservable()
-            .Select(_ => Input.GetAxis("Vertical"))
-            .Subscribe(vertical =>
-            {
-                m_Animator.SetFloat("前後", vertical);
-                m_Animator.SetFloat("走り前後", vertical);
-            }).AddTo(this);
-    }
-    // プレイヤーを指定の速度で移動
+    /// <summary>
+    /// プレイヤーの移動処理
+    /// </summary>
+    /// <param name="movement">移動方向</param>
+    /// <param name="speed">移動速度</param>
     public void Move(Vector3 movement, float speed)
     {
-        if (StopManager.Instance.IsStopped)
+        if (!canMove)
         {
-            //強制的にidleに
-            UpdateState(true, false, false);
             return;
-
         }
 
-        // 地面に触れているときのみ移動
+        if (StopManager.Instance.IsStopped)
+        {
+            playerManager.UpdatePlayerState(PlayerState.Idle);
+            return;
+        }
+
         if (isGrounded)
         {
-            // カメラの前方方向を取得し、それを地面の平面にフラットにする
-            Vector3 forward = m_CameraTransform.forward;
-            forward.y = 0;
-            forward.Normalize();
+            HandleMovement(movement, speed);
+            HandleRotation(movement);
 
-            // カメラの前方方向に基づいて右方向を計算する
-            Vector3 right = Vector3.Cross(Vector3.up, forward);
-
-            // カメラの水平回転に基づく相対的な移動方向を計算する
-            Vector3 relativeMovement = movement.z * forward + movement.x * right;
-
-            //移動している場合
-            if (movement != Vector3.zero)
+            if (movement == Vector3.zero)
             {
-                //ターゲットの回転を計算
-                Quaternion targetRotation = Quaternion.LookRotation(relativeMovement, Vector3.up);
-                //プレイヤーの現在の回転とターゲットの回転を補完
-                transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * 10);
-                // 移動時の状態
-                UpdateState(false, !isRun.Value, isRun.Value);
+                playerManager.UpdatePlayerState(PlayerState.Idle);
             }
             else
             {
-                //Idle状態に更新
-                UpdateState(true, false, false);
+                playerManager.UpdatePlayerState(speed == m_RunSpeed ? PlayerState.Run : PlayerState.Walk);
             }
-
-            // 斜面や階段を登るための処理を追加
-            Vector3 velocity = relativeMovement * speed;
-            Vector3 start = transform.position + Vector3.up * 0.1f;
-            Vector3 end = start + relativeMovement.normalized * 0.5f;
-
-            if (Physics.Raycast(start, relativeMovement, out RaycastHit hit, 0.5f, m_LayerMask))
-            {
-                // ヒットした場合、斜面の角度を計算
-                float slopeAngle = Vector3.Angle(Vector3.up, hit.normal);
-                if (slopeAngle <= m_MaxStepHeight)
-                {
-                    // 斜面の角度が最大値以下なら、その方向に沿って上に移動
-                    velocity.y = Mathf.Tan(slopeAngle * Mathf.Deg2Rad) * speed;
-                }
-            }
-
-            //指定の方向に移動
-            m_Rigidbody.velocity = velocity;
         }
     }
 
-
-    // プレイヤーの状態を更新するメソッド
-    private void UpdateState(bool idle, bool walk, bool run)
+    /// <summary>
+    /// 移動処理
+    /// </summary>
+    /// <param name="movement">移動方向</param>
+    /// <param name="speed">移動速度</param>
+    private void HandleMovement(Vector3 movement, float speed)
     {
-        isIdle.Value = idle;
-        isWalk.Value = walk;
-        isRun.Value = run;
+        Vector3 forward = m_CameraTransform.forward;
+        forward.y = 0;
+        forward.Normalize();
+
+        Vector3 right = Vector3.Cross(Vector3.up, forward);
+        Vector3 relativeMovement = movement.z * forward + movement.x * right;
+
+        Vector3 velocity = relativeMovement * speed;
+        ApplySlopeAdjustment(ref velocity, relativeMovement);
+
+        m_Rigidbody.velocity = velocity;
     }
 
-    // 地面に触れているかどうかを確認するメソッド
+    /// <summary>
+    /// プレイヤーの回転処理
+    /// </summary>
+    /// <param name="movement">回転方向</param>
+    private void HandleRotation(Vector3 movement)
+    {
+        if (movement != Vector3.zero)
+        {
+            // カメラの方向を考慮した移動方向を計算
+            Vector3 forward = m_CameraTransform.forward;
+            forward.y = 0; // 水平方向に限定
+            forward.Normalize();
+
+            Vector3 right = Vector3.Cross(Vector3.up, forward);
+            Vector3 desiredDirection = movement.z * forward + movement.x * right;
+
+            // 目標の回転を計算
+            Quaternion targetRotation = Quaternion.LookRotation(desiredDirection, Vector3.up);
+
+            // プレイヤーを目標の回転に補間して回転
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * 120);
+        }
+    }
+
+    /// <summary>
+    /// 斜面移動の処理
+    /// </summary>
+    /// <param name="velocity"></param>
+    /// <param name="relativeMovement"></param>
+    private void ApplySlopeAdjustment(ref Vector3 velocity, Vector3 relativeMovement)
+    {
+        Vector3 start = transform.position + Vector3.up * 0.1f;
+        if (Physics.Raycast(start, relativeMovement, out RaycastHit hit, 0.5f, m_LayerMask))
+        {
+            float slopeAngle = Vector3.Angle(Vector3.up, hit.normal);
+            if (slopeAngle <= m_MaxStepHeight)
+            {
+                velocity.y = Mathf.Tan(slopeAngle * Mathf.Deg2Rad) * m_WalkSpeed;
+            }
+        }
+    }
+
+    /// <summary>
+    /// プレイヤーの状態を更新するメソッド
+    /// </summary>
+    /// <param name="state"></param>
+    private void UpdateState(PlayerState state)
+    {
+        playerManager.UpdatePlayerState(state);
+    }
+
+    public void SetMovementEnabled(bool enabled)
+    {
+        canMove = enabled;
+    }
+    /// <summary>
+    /// 地面に触れているかどうかを確認するメソッド
+    /// </summary>
+    /// <returns></returns>
     bool IsGrounded()
     {
         //レイキャストの開始地点をプレイヤーの少し上に設定
@@ -281,6 +300,9 @@ public class PlayerController : MonoBehaviour
     // コマンドパターンを定義するインターフェース
     private interface ICommand
     {
+        // コマンドが実行可能かどうかを判定するメソッド
+        bool CanExecute();
+        // コマンドが実行可能かどうかを判定するメソッド
         void Execute();
     }
     // 歩行を管理するコマンドクラス
@@ -297,10 +319,10 @@ public class PlayerController : MonoBehaviour
             this.m_Player = player;
             this.m_Direction = direction;
         }
-
+        public bool CanExecute() => m_Direction != Vector3.zero;
         public void Execute()
         {
-            m_Player.UpdateState(false, true, false);
+            m_Player.UpdateState(PlayerState.Walk);
             m_Player.Move(m_Direction, m_Player.m_WalkSpeed);
         }
     }
@@ -318,9 +340,11 @@ public class PlayerController : MonoBehaviour
             this.m_Direction = direction;
         }
 
+        public bool CanExecute() => m_Direction != Vector3.zero;
+
         public void Execute()
         {
-            m_Player.UpdateState(false, false, true);
+            m_Player.UpdateState(PlayerState.Run);
             m_Player.Move(m_Direction, m_Player.m_RunSpeed);
         }
     }
