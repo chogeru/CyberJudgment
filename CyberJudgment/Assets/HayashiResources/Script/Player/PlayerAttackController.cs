@@ -66,13 +66,31 @@ public class PlayerAttackController : MonoBehaviour
         if (m_Animator.GetCurrentAnimatorStateInfo(0).IsName("NormalAttack") ||
             m_Animator.GetCurrentAnimatorStateInfo(0).IsName("StrongAttack"))
         {
-            m_Animator.Play("Idle");
+            // 攻撃をキャンセルしてIdleに移行
+            m_Animator.CrossFade("Idle", 0.05f);
             isAttack = true;
 
             // プレイヤーの状態をIdleに更新
             var playerManager = GetComponent<PlayerManager>();
             playerManager.UpdatePlayerState(PlayerState.Idle);
             playerManager.SetAttacking(false);
+
+            // 移動キーが押されているかを確認し、対応するアニメーションとステートを更新
+            Vector3 movement = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+            bool isRunning = Input.GetKey(KeyCode.LeftShift);
+
+            if (movement != Vector3.zero)
+            {
+                // 走りか歩きの状態に遷移
+                playerManager.UpdatePlayerState(isRunning ? PlayerState.Run : PlayerState.Walk);
+                m_Animator.SetBool("Run", isRunning);
+                m_Animator.SetBool("Walk", !isRunning);
+            }
+            else
+            {
+                // Idleに戻る
+                playerManager.UpdatePlayerState(PlayerState.Idle);
+            }
         }
     }
 
