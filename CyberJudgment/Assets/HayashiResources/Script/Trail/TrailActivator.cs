@@ -15,6 +15,10 @@ public class TrailActivator : MonoBehaviour
     private void Start()
     {
         m_Trail.enabled = false;
+
+        // AnimationEventManagerのイベントに登録
+        AttackEventManager.OnEvent += ActivateTrail;
+        AttackEventManager.OffEvent += DeactivateTrail;
     }
 
     private void Update()
@@ -32,13 +36,8 @@ public class TrailActivator : MonoBehaviour
         // アニメーションステートが変更された場合
         if (currentState.fullPathHash != previousState.fullPathHash)
         {
-            // 攻撃アニメーションが再生された瞬間
-            if (currentState.IsName("NormalAttack") || currentState.IsName("StrongAttack"))
-            {
-                ActivateTrail();
-            }
             // 攻撃アニメーションが終了した瞬間
-            else if (previousState.IsName("NormalAttack") || previousState.IsName("StrongAttack"))
+            if (previousState.IsName("NormalAttack") || previousState.IsName("StrongAttack"))
             {
                 DeactivateTrail();
             }
@@ -61,5 +60,12 @@ public class TrailActivator : MonoBehaviour
     private void DeactivateTrail()
     {
         m_Trail.enabled = false;
+    }
+
+    private void OnDestroy()
+    {
+        // AnimationEventManagerのイベントから解除
+        AttackEventManager.OnEvent -= ActivateTrail;
+        AttackEventManager.OffEvent -= DeactivateTrail;
     }
 }

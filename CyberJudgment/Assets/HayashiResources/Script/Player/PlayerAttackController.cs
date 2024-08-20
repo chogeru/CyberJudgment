@@ -9,6 +9,9 @@ using UnityEngine.Rendering;
 
 public class PlayerAttackController : MonoBehaviour
 {
+    [SerializeField]
+    private PlayerManager playerManager;
+
     [SerializeField, Header("アニメーター")]
     private Animator m_Animator;
 
@@ -71,7 +74,6 @@ public class PlayerAttackController : MonoBehaviour
     /// <param name="animationTrigger">再生するアニメーションのトリガー名</param>
     private void ExecuteAttack(string animationTrigger, string voiceClipName, string attackSEClipName)
     {
-        var playerManager = GetComponent<PlayerManager>();
         playerManager.SetAttacking(true);
 
         m_Animator.Play(animationTrigger);
@@ -121,7 +123,6 @@ public class PlayerAttackController : MonoBehaviour
         isAttack = true;
 
         // プレイヤーの状態をIdleに更新
-        var playerManager = GetComponent<PlayerManager>();
         playerManager.UpdatePlayerState(PlayerState.Idle);
         playerManager.SetAttacking(false);
 
