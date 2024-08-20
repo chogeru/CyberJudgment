@@ -26,6 +26,7 @@ public class WeponPointChanger : MonoBehaviour
 
     private void Start()
     {
+        //最初にストックしておくエフェクトの数
         SharedGameObjectPool.Prewarm(m_EffectPrefab, 5);
         UpdatePointPosition();
     }

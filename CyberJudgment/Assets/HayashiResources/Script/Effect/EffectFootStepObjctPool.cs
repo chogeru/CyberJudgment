@@ -6,10 +6,8 @@ namespace AbubuResouse.Singleton
 {
     public class EffectFootStepObjctPool : SingletonMonoBehaviour<EffectFootStepObjctPool>
     {
+/*
 
-        public GameObject effectPrefab; // エフェクトのPrefab
-
-        public int poolSize = 20; // オブジェクトプールのサイズ
 
         private List<GameObject> pooledObjects = new List<GameObject>();
 
@@ -59,5 +57,6 @@ namespace AbubuResouse.Singleton
         {
             obj.SetActive(false);
         }
+*/
     }
 }

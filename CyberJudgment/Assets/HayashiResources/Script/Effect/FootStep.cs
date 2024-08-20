@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using AbubuResouse.Singleton;
+using uPools;
+using UnityEngine.UIElements;
+using Cysharp.Threading.Tasks;
 
 public class FootStep : MonoBehaviour
 {
@@ -10,6 +13,13 @@ public class FootStep : MonoBehaviour
     private float m_FootStepTIme=0.05f;
     //経過時間
     private float m_ElapsedTime;
+
+    public GameObject m_EffectPrefab;
+
+    private void Start()
+    {
+        SharedGameObjectPool.Prewarm(m_EffectPrefab, 20);
+    }
 
     private void Update()
     {
@@ -24,17 +34,28 @@ public class FootStep : MonoBehaviour
         }
     }
 
-
     void GenerateFootstep()
     {
         SEManager.Instance.PlaySound("FootStep",0.1f);
-        GameObject hitEffect = EffectFootStepObjctPool.Instance.GetPooledObject();
-        hitEffect.transform.position = transform.position;
-        hitEffect.transform.rotation = Quaternion.identity;
-        hitEffect.SetActive(true);
 
-        Vector3 forward = transform.forward;
-        forward.y = 0; // y軸方向の回転を無効にする
-        hitEffect.transform.rotation = Quaternion.LookRotation(forward);
+        // uPoolsを使用してエフェクトを生成
+        GameObject effect = SharedGameObjectPool.Rent(
+            m_EffectPrefab,
+            transform.position,
+            Quaternion.identity);
+        // 一定時間後にエフェクトを返却
+        ReturnEffectAfterDelay(effect, 0.5f).Forget();
+        
+    }
+
+    /// <summary>
+    /// エフェクトを指定された時間後に返却する
+    /// </summary>
+    /// <param name="effect">返却するエフェクト</param>
+    /// <param name="delay">返却までの遅延時間</param>
+    private async UniTaskVoid ReturnEffectAfterDelay(GameObject effect, float delay)
+    {
+        await UniTask.Delay((int)(delay * 1000));
+        SharedGameObjectPool.Return(effect);
     }
 }
