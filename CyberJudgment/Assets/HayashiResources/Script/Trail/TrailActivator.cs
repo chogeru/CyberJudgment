@@ -1,71 +1,30 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TrailActivator : MonoBehaviour
+public class TrailActivator : ActivatorBase
 {
-    [SerializeField, Header("アニメーター")]
-    private Animator m_Animator;
+    [SerializeField, Header("トレイルリスト")]
+    private List<TrailRenderer> trailRenderers;
 
-    [SerializeField, Header("トレイルエフェクト")]
-    private TrailRenderer m_Trail;
-
-    private AnimatorStateInfo previousState;
-
-    private void Start()
+    protected override void ActivateItems()
     {
-        m_Trail.enabled = false;
-
-        // AnimationEventManagerのイベントに登録
-        AttackEventManager.OnEvent += ActivateTrail;
-        AttackEventManager.OffEvent += DeactivateTrail;
-    }
-
-    private void Update()
-    {
-        UpdateTrailState();
-    }
-
-    /// <summary>
-    /// 現在のアニメーションに応じてトレイルの状態を更新
-    /// </summary>
-    private void UpdateTrailState()
-    {
-        AnimatorStateInfo currentState = m_Animator.GetCurrentAnimatorStateInfo(0);
-
-        // アニメーションステートが変更された場合
-        if (currentState.fullPathHash != previousState.fullPathHash)
+        foreach (var trail in trailRenderers)
         {
-            // 攻撃アニメーションが終了した瞬間
-            if (previousState.IsName("NormalAttack") || previousState.IsName("StrongAttack"))
+            if (trail != null)
             {
-                DeactivateTrail();
+                trail.enabled = true;
             }
         }
-
-        previousState = currentState;
     }
 
-    /// <summary>
-    /// トレイルをアクティブにする
-    /// </summary>
-    private void ActivateTrail()
+    protected override void DeactivateItems()
     {
-        m_Trail.enabled = true;
-    }
-
-    /// <summary>
-    /// トレイルを非アクティブにする
-    /// </summary>
-    private void DeactivateTrail()
-    {
-        m_Trail.enabled = false;
-    }
-
-    private void OnDestroy()
-    {
-        // AnimationEventManagerのイベントから解除
-        AttackEventManager.OnEvent -= ActivateTrail;
-        AttackEventManager.OffEvent -= DeactivateTrail;
+        foreach (var trail in trailRenderers)
+        {
+            if (trail != null)
+            {
+                trail.enabled = false;
+            }
+        }
     }
 }

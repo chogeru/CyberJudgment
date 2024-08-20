@@ -19,6 +19,9 @@ public abstract class EnemyBase : MonoBehaviour
     public Animator _animator { get; private set; }
 
     private IEnemyState _currentState;
+    [SerializeField]
+    private float _currentHealth;
+
 
     /// <summary>
     /// 敵の初期設定
@@ -98,6 +101,39 @@ public abstract class EnemyBase : MonoBehaviour
         Vector3 direction = (targetPosition - transform.position).normalized;
         Quaternion rotation = Quaternion.LookRotation(direction);
         _rb.MoveRotation(Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * 360f));
+    }
+
+    /// <summary>
+    /// ダメージを受けた時の処理
+    /// </summary>
+    /// <param name="damage">受けるダメージ量</param>
+    public virtual void TakeDamage(float damage)
+    {
+        _currentHealth -= damage;
+
+        if (_currentHealth <= 0)
+        {
+            Die();
+        }
+        else
+        {
+            // ダメージを受けた際のアニメーションやリアクションをここに追加
+            _animator.SetBool("TakeDamage",true);
+        }
+    }
+
+    /// <summary>
+    /// 敵が死亡した際の処理
+    /// </summary>
+    protected virtual void Die()
+    {
+        // 死亡アニメーション再生
+        _animator.SetTrigger("Die");
+    }
+
+    protected virtual void DieEnd()
+    {
+        Destroy(this.gameObject);
     }
 
     /// <summary>

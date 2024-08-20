@@ -1,18 +1,22 @@
 using UnityEngine;
+using VInspector;
 
 [CreateAssetMenu(fileName = "NewWepon", menuName = "武器/武器データ作成")]
 public class WeaponData : ScriptableObject
 {
+    [Tab("詳細")]
     [SerializeField,Header("武器Id")]
     public int _weaponID;
     [SerializeField,Header("武器の名前")]
     public string _weaponName;
+    [Tab("ステータス")]
     [SerializeField, Header("攻撃力")]
     public float _attackPower;
     [SerializeField, Header("攻撃速度")]
     public float _attackSpeed;
     [SerializeField, Header("武器重量")]
     public float _weaponWeight;
+    [Tab("その他")]
     [SerializeField,Header("武器のタイプ")]
     public WeaponType _weaponType;
     [SerializeField,Header("武器の属性")]
