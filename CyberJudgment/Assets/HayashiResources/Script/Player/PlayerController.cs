@@ -79,7 +79,7 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         playerManager = GetComponent<PlayerManager>();
-
+        playerManager.UpdatePlayerState(PlayerState.Idle);
         m_Rigidbody = GetComponent<Rigidbody>();
         m_CapsuleCollider = GetComponent<CapsuleCollider>();
         m_Rigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;

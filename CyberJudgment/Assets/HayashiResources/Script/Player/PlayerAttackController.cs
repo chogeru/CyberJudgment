@@ -35,6 +35,13 @@ public class PlayerAttackController : MonoBehaviour
 
     [SerializeField, Header("‰¹—Ê")]
     private float m_Volume;
+
+    [SerializeField, Header("“G‚ğ’T‚·”¼Œa")]
+    private float searchRadius = 5f;
+
+    private bool enableRootMotion = false;
+    private Transform nearestEnemy = null;
+
     private void Start()
     {
         BindAttackInput();
@@ -43,6 +50,14 @@ public class PlayerAttackController : MonoBehaviour
     private void Update()
     {
         CheckAttackAnimationEnd();
+    }
+
+    private void FixedUpdate()
+    {
+        if (enableRootMotion)
+        {
+            TrackNearestEnemy();
+        }
     }
 
     /// <summary>
@@ -75,7 +90,8 @@ public class PlayerAttackController : MonoBehaviour
     private void ExecuteAttack(string animationTrigger, string voiceClipName, string attackSEClipName)
     {
         playerManager.SetAttacking(true);
-
+        enableRootMotion = true;
+        nearestEnemy = FindNearestEnemy();
         m_Animator.Play(animationTrigger);
 
         VoiceManager.Instance.PlaySound(voiceClipName, m_Volume);
@@ -84,7 +100,6 @@ public class PlayerAttackController : MonoBehaviour
         isAttack = false;
         ResetAttackCooldown().Forget();
     }
-
 
     /// <summary>
     /// UŒ‚ƒAƒjƒ[ƒVƒ‡ƒ“‚ªI—¹‚µ‚½‚çIdleó‘Ô‚ÉˆÚs
@@ -98,7 +113,6 @@ public class PlayerAttackController : MonoBehaviour
             TransitionToIdle();
         }
     }
-
 
     /// <summary>
     /// UŒ‚‚ğƒLƒƒƒ“ƒZƒ‹‚µ‚ÄIdleó‘Ô‚ÉˆÚs
@@ -114,9 +128,11 @@ public class PlayerAttackController : MonoBehaviour
         }
     }
 
-
     private void TransitionToIdle()
     {
+        enableRootMotion = false;
+        nearestEnemy = null;
+
         m_Animator.ResetTrigger("NormalAttack");
         m_Animator.ResetTrigger("StrongAttack");
         m_Animator.CrossFade("Idle", 0.01f);
@@ -148,5 +164,60 @@ public class PlayerAttackController : MonoBehaviour
         await UniTask.Delay((int)(m_AttackCoolDown * 1000));
         isAttack = true;
     }
-}
 
+    private void OnAnimatorMove()
+    {
+        if (enableRootMotion)
+        {
+            transform.position += m_Animator.deltaPosition;
+        }
+    }
+
+    /// <summary>
+    /// 5mˆÈ“à‚ÌÅ‚à‹ß‚¢“G‚ğ’T‚·
+    /// </summary>
+    /// <returns></returns>
+    private Transform FindNearestEnemy()
+    {
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, searchRadius, LayerMask.GetMask("Enemy"));
+        Transform nearest = null;
+        float minDistance = float.MaxValue;
+
+        foreach (var hitCollider in hitColliders)
+        {
+            float distance = Vector3.Distance(transform.position, hitCollider.transform.position);
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                nearest = hitCollider.transform;
+            }
+        }
+
+        return nearest;
+    }
+
+    /// <summary>
+    /// Å‚à‹ß‚¢“G‚Ì•ûŒü‚É‰ñ“]‚µAÚG‚µ‚Ä‚¢‚éê‡‚Íƒ‹[ƒgƒ‚[ƒVƒ‡ƒ“‚ğ–³Œø‚É‚·‚é
+    /// </summary>
+    private void TrackNearestEnemy()
+    {
+        if (nearestEnemy != null)
+        {
+            // “G‚Ì•ûŒü‚É‰ñ“]
+            Vector3 direction = (nearestEnemy.position - transform.position).normalized;
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
+
+            // “G‚ÆÚG‚µ‚Ä‚¢‚é‚©Šm”F
+            float distanceToEnemy = Vector3.Distance(transform.position, nearestEnemy.position);
+            if (distanceToEnemy <= 1.0f) 
+            {
+                enableRootMotion = false;
+            }
+            else
+            {
+                enableRootMotion = true;
+            }
+        }
+    }
+}

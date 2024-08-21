@@ -30,6 +30,9 @@ public abstract class EnemyBase : MonoBehaviour
     [SerializeField, Header("音量")]
     private float _volume;
 
+    [SerializeField, Header("死亡時エフェクト")]
+    private GameObject _dieEffect;
+
     private bool isDie=false;
 
     /// <summary>
@@ -150,6 +153,7 @@ public abstract class EnemyBase : MonoBehaviour
 
     protected virtual void DieEnd()
     {
+        Instantiate(_dieEffect, transform.position, Quaternion.identity);
         Destroy(this.gameObject);
     }
 
