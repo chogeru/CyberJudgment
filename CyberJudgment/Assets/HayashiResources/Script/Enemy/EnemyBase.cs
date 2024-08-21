@@ -28,6 +28,7 @@ public abstract class EnemyBase : MonoBehaviour
     /// </summary>
     protected virtual void Start()
     {
+        _currentHealth = enemyData.health;
         _player = GameObject.FindGameObjectWithTag("Player").transform;
         _rb = GetComponent<Rigidbody>();
         _animator = GetComponent<Animator>();
@@ -122,13 +123,17 @@ public abstract class EnemyBase : MonoBehaviour
         }
     }
 
+    protected virtual void HitEnd()
+    {
+        _animator.SetBool("TakeDamage", false);
+    }
     /// <summary>
     /// “G‚ª€–S‚µ‚½Û‚Ìˆ—
     /// </summary>
     protected virtual void Die()
     {
         // €–SƒAƒjƒ[ƒVƒ‡ƒ“Ä¶
-        _animator.SetTrigger("Die");
+        _animator.CrossFade("Die",0.05f);
     }
 
     protected virtual void DieEnd()
