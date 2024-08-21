@@ -13,15 +13,18 @@ public class WeaponController : MonoBehaviour
     [SerializeField,Header("攻撃時のエフェクト")]
     private GameObject _effect;
 
+    [SerializeField, Header("攻撃サウンド")]
+    private List<string> _attackSounds;
+    [SerializeField, Header("音量")]
+    private float _volume;
+
     private void Start()
     {
         SharedGameObjectPool.Prewarm(_effect, 10);
     }
 
-    void GenerateFootstep()
+    void GenerateAttackEffect()
     {
-        SEManager.Instance.PlaySound("FootStep", 0.1f);
-
         // uPoolsを使用してエフェクトを生成
         GameObject effect = SharedGameObjectPool.Rent(
             _effect,
@@ -41,7 +44,9 @@ public class WeaponController : MonoBehaviour
             EnemyBase enemy = other.GetComponent<EnemyBase>();
             if (enemy != null)
             {
-                // 武器データの攻撃力でダメージを与える
+                string randomSound = _attackSounds[Random.Range(0,_attackSounds.Count)];
+                SEManager.Instance.PlaySound(randomSound, _volume);
+                GenerateAttackEffect();
                 enemy.TakeDamage(_weaponData._attackPower);
             }
         }
