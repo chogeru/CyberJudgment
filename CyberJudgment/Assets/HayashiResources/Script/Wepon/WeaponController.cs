@@ -20,6 +20,8 @@ public class WeaponController : MonoBehaviour
 
     void GenerateFootstep()
     {
+        SEManager.Instance.PlaySound("FootStep", 0.1f);
+
         // uPoolsを使用してエフェクトを生成
         GameObject effect = SharedGameObjectPool.Rent(
             _effect,
@@ -41,11 +43,9 @@ public class WeaponController : MonoBehaviour
             {
                 // 武器データの攻撃力でダメージを与える
                 enemy.TakeDamage(_weaponData._attackPower);
-                GenerateFootstep();
             }
         }
     }
-
     /// <summary>
     /// エフェクトを指定された時間後に返却する
     /// </summary>

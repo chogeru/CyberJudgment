@@ -1,3 +1,4 @@
+using AbubuResouse.Singleton;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.IO.LowLevel.Unsafe;
@@ -19,9 +20,17 @@ public abstract class EnemyBase : MonoBehaviour
     public Animator _animator { get; private set; }
 
     private IEnemyState _currentState;
-    [SerializeField]
+    [SerializeField,Header("現在のHp")]
     private float _currentHealth;
 
+    [SerializeField, Header("被ダメージ時のVoice")]
+    private string _getHitVoiceSE;
+    [SerializeField,Header("死亡時Voice")]
+    private string _dieVoiceSE;
+    [SerializeField, Header("音量")]
+    private float _volume;
+
+    private bool isDie=false;
 
     /// <summary>
     /// 敵の初期設定
@@ -110,15 +119,17 @@ public abstract class EnemyBase : MonoBehaviour
     /// <param name="damage">受けるダメージ量</param>
     public virtual void TakeDamage(float damage)
     {
+        if(isDie)
+        { return; }
         _currentHealth -= damage;
-
+        
         if (_currentHealth <= 0)
         {
             Die();
         }
         else
         {
-            // ダメージを受けた際のアニメーションやリアクションをここに追加
+            SEManager.Instance.PlaySound(_getHitVoiceSE, _volume);
             _animator.SetBool("TakeDamage",true);
         }
     }
@@ -132,7 +143,8 @@ public abstract class EnemyBase : MonoBehaviour
     /// </summary>
     protected virtual void Die()
     {
-        // 死亡アニメーション再生
+        isDie = true;
+        SEManager.Instance.PlaySound(_dieVoiceSE, _volume);
         _animator.CrossFade("Die",0.05f);
     }
 

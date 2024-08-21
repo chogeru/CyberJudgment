@@ -55,7 +55,7 @@ namespace AbubuResouse.Singleton
         /// </summary>
         /// <param name="resourcePath">リソースパス</param>
         /// <param name="volume">音量</param>
-        protected void LoadAndPlayClip(string resourcePath, float volume)
+        protected virtual void LoadAndPlayClip(string resourcePath, float volume)
         {
             try
             {
