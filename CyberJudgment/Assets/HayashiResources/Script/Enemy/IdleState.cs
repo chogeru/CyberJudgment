@@ -5,6 +5,7 @@ using UnityEngine;
 /// </summary>
 public class IdleState : IEnemyState
 {
+    private System.Random random = new System.Random();
 
     /// <summary>
     /// 待機状態に入る時に呼び出されるメソッド
@@ -14,6 +15,7 @@ public class IdleState : IEnemyState
     {
         enemy._animator.SetBool("isMoving", false);
         enemy._animator.SetBool("Attack", false);
+        enemy._animator.SetBool("StrongAttack", false);
     }
 
     /// <summary>
@@ -24,13 +26,22 @@ public class IdleState : IEnemyState
     {
         if (Vector3.Distance(enemy.transform.position, enemy._player.position) <= enemy.enemyData.attackRange)
         {
-            enemy.TransitionToState(new AttackState());
+            // 50%の確率で通常攻撃か強攻撃を選ぶ
+            if (random.Next(0, 2) == 0)
+            {
+                enemy.TransitionToState(new AttackState());
+            }
+            else
+            {
+                enemy.TransitionToState(new StrongAttackState());
+            }
         }
         if (enemy.isPlayerInSight)
         {
             enemy.TransitionToState(new ChaseState());
         }
     }
+
 
     /// <summary>
     /// 待機状態を退出する時に呼び出されるメソッド

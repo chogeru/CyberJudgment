@@ -33,6 +33,7 @@ public abstract class EnemyBase : MonoBehaviour
     [SerializeField, Header("死亡時エフェクト")]
     private GameObject _dieEffect;
 
+    private bool isAttacking = false;
     private bool isDie=false;
 
     /// <summary>
@@ -50,7 +51,10 @@ public abstract class EnemyBase : MonoBehaviour
 
     protected virtual void Update()
     {
-        _currentState.UpdateState(this);
+        if (!isDie) 
+        {
+            _currentState.UpdateState(this);
+        }
         DetectPlayer();
     }
 
@@ -115,7 +119,22 @@ public abstract class EnemyBase : MonoBehaviour
         Quaternion rotation = Quaternion.LookRotation(direction);
         _rb.MoveRotation(Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * 360f));
     }
+    public void SetIsAttacking(bool value)
+    {
+        isAttacking = value;
+    }
 
+    public bool GetIsAttacking()
+    {
+        return isAttacking;
+    }
+
+    // 攻撃状態を制御するための関数
+    public void AttackFinished()
+    {
+        SetIsAttacking(false);
+        TransitionToState(new IdleState());
+    }
     /// <summary>
     /// ダメージを受けた時の処理
     /// </summary>
@@ -134,6 +153,10 @@ public abstract class EnemyBase : MonoBehaviour
         {
             SEManager.Instance.PlaySound(_getHitVoiceSE, _volume);
             _animator.SetBool("TakeDamage",true);
+
+            SetIsAttacking(false);
+            _animator.SetBool("Attack", false);
+            _animator.SetBool("StrongAttack", false);
         }
     }
 
@@ -162,6 +185,8 @@ public abstract class EnemyBase : MonoBehaviour
     /// </summary>
     public void EndAnimation()
     {
-        TransitionToState(new IdleState());
+        SetIsAttacking(false);
+        _animator.SetBool("Attack", false);
+        _animator.SetBool("StrongAttack", false);
     }
 }

@@ -1,13 +1,13 @@
 using UnityEngine;
 
 /// <summary>
-/// 敵がプレイヤーを攻撃する状態
+/// 敵がプレイヤーを強攻撃する状態
 /// </summary>
-public class AttackState : IEnemyState
+public class StrongAttackState : IEnemyState
 {
 
     /// <summary>
-    /// 攻撃状態に入る時に呼び出されるメソッド
+    /// 強攻撃状態に入る時に呼び出されるメソッド
     /// </summary>
     /// <param name="enemy">この状態に入る敵</param>
     public void EnterState(EnemyBase enemy)
@@ -15,12 +15,12 @@ public class AttackState : IEnemyState
         if (!enemy.GetIsAttacking())
         {
             enemy.SetIsAttacking(true);
-            enemy._animator.SetBool("Attack", true);
+            enemy._animator.SetBool("StrongAttack", true);
         }
     }
 
     /// <summary>
-    /// 攻撃状態を更新するために呼び出されるメソッド
+    /// 強攻撃状態を更新するために呼び出されるメソッド
     /// </summary>
     /// <param name="enemy">この状態にある敵</param>
     public void UpdateState(EnemyBase enemy)
@@ -36,7 +36,7 @@ public class AttackState : IEnemyState
     }
 
     /// <summary>
-    /// 攻撃状態を退出する時に呼び出されるメソッド
+    /// 強攻撃状態を退出する時に呼び出されるメソッド
     /// </summary>
     /// <param name="enemy">この状態を退出する敵</param>
     public void ExitState(EnemyBase enemy)

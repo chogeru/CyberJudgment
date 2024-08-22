@@ -5,6 +5,7 @@ using UnityEngine;
 /// </summary>
 public class ChaseState : IEnemyState
 {
+    private System.Random random = new System.Random();
 
     /// <summary>
     /// 追跡状態に入る時に呼び出されるメソッド
@@ -22,17 +23,27 @@ public class ChaseState : IEnemyState
     public void UpdateState(EnemyBase enemy)
     {
         //攻撃アニメーションが再生されていなければ追跡する
-        if (!enemy._animator.GetBool("Attack"))
+        if (!enemy._animator.GetBool("Attack") && !enemy._animator.GetBool("StrongAttack"))
         {
             enemy.MoveTowards(enemy._player.position);
             enemy.RotateTowards(enemy._player.position);
         }
-        //プレイヤーが攻撃範囲内であれば攻撃ステートに
+
+        // プレイヤーが攻撃範囲内であれば攻撃ステートに遷移
         if (Vector3.Distance(enemy.transform.position, enemy._player.position) <= enemy.enemyData.attackRange)
         {
-            enemy.TransitionToState(new AttackState());
+            // 50%の確率で通常攻撃か強攻撃を選ぶ
+            if (random.Next(0, 2) == 0)
+            {
+                enemy.TransitionToState(new AttackState());
+            }
+            else
+            {
+                enemy.TransitionToState(new StrongAttackState());
+            }
         }
-        //プレイヤーが居なければIdleに
+
+        // プレイヤーが視界に入っていなければIdleに遷移
         if (!enemy.isPlayerInSight)
         {
             enemy.TransitionToState(new IdleState());
