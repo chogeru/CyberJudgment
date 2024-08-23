@@ -23,7 +23,7 @@ public class ChaseState : IEnemyState
     public void UpdateState(EnemyBase enemy)
     {
         //攻撃アニメーションが再生されていなければ追跡する
-        if (!enemy._animator.GetBool("Attack") && !enemy._animator.GetBool("StrongAttack"))
+        if (!enemy.GetIsAttacking())
         {
             enemy.MoveTowards(enemy._player.position);
             enemy.RotateTowards(enemy._player.position);
@@ -42,7 +42,6 @@ public class ChaseState : IEnemyState
                 enemy.TransitionToState(new StrongAttackState());
             }
         }
-
         // プレイヤーが視界に入っていなければIdleに遷移
         if (!enemy.isPlayerInSight)
         {

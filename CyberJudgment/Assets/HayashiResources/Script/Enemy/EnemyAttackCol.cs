@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using uPools;
+using static JBooth.MicroVerseCore.Ambient;
 
 public class EnemyAttackCol : MonoBehaviour
 {
@@ -13,11 +14,11 @@ public class EnemyAttackCol : MonoBehaviour
         Strong,
     }
 
-    [SerializeField,Header("攻撃コライダーのタイプ")]
+    [SerializeField, Header("攻撃コライダーのタイプ")]
     private AttackColType _type;
 
     [SerializeField, Header("武器のステータスデータ")]
-    private WeaponData _weaponData;
+    private EnemyData _enemyData;
 
     [SerializeField, Header("攻撃時のエフェクト")]
     private GameObject _effect;
@@ -27,9 +28,20 @@ public class EnemyAttackCol : MonoBehaviour
     [SerializeField, Header("音量")]
     private float _volume;
 
+    [SerializeField, Header("攻撃力")]
+    private int _attackPower;
 
     private void Start()
     {
+        switch (_type)
+        {
+            case AttackColType.Nomal:
+                _attackPower = _enemyData.meleeAttackPower;
+                break;
+            case AttackColType.Strong:
+                _attackPower *= _enemyData.meleeStringAttackpower;
+                break;
+        }
         SharedGameObjectPool.Prewarm(_effect, 10);
     }
 
@@ -51,16 +63,23 @@ public class EnemyAttackCol : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             // EnemyBase クラスを持っているか確認してダメージを与える
-            EnemyBase enemy = other.GetComponent<EnemyBase>();
+            PlayerController enemy = other.GetComponent<PlayerController>();
             if (enemy != null)
             {
                 string randomSound = _attackSounds[Random.Range(0, _attackSounds.Count)];
-                SEManager.Instance.PlaySound(randomSound, _volume);
                 GenerateAttackEffect();
-                enemy.TakeDamage(_weaponData._attackPower);
+                SEManager.Instance.PlaySound(randomSound, _volume);
+                //enemy.TakeDamage(_attackPower);
             }
         }
+        if(other.CompareTag("Ground"))
+        {
+            string randomSound = _attackSounds[Random.Range(0, _attackSounds.Count)];
+            GenerateAttackEffect();
+            SEManager.Instance.PlaySound(randomSound, _volume);
+        }
     }
+
     /// <summary>
     /// エフェクトを指定された時間後に返却する
     /// </summary>

@@ -5,7 +5,7 @@ using UnityEngine;
 /// </summary>
 public class AttackState : IEnemyState
 {
-
+    private System.Random random = new System.Random();
     /// <summary>
     /// 攻撃状態に入る時に呼び出されるメソッド
     /// </summary>
@@ -31,7 +31,14 @@ public class AttackState : IEnemyState
         }
         else if (enemy.isPlayerInSight && !enemy.GetIsAttacking())
         {
-            enemy.TransitionToState(new IdleState());
+            if (random.Next(0, 2) == 0)
+            {
+                enemy.TransitionToState(new AttackState());
+            }
+            else
+            {
+                enemy.TransitionToState(new StrongAttackState());
+            }
         }
     }
 

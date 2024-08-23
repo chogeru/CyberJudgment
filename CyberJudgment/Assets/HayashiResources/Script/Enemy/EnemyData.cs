@@ -54,10 +54,10 @@ public class EnemyData : ScriptableObject
     public WeaponType weaponType;
 
     [SerializeField, Header("‹ßÚ’ÊíUŒ‚—Í")]
-    public float meleeAttackPower;
+    public int meleeAttackPower;
 
     [SerializeField, Header("‹ßÚ‹­UŒ‚UŒ‚—Í")]
-    public float meleeStringAttackpower;
+    public int meleeStringAttackpower;
 
     [Tab("‰“‹——£UŒ‚")]
     [SerializeField, Header("’e‘¬")]

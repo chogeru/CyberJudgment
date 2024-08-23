@@ -2,15 +2,26 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using AbubuResouse.Log;
+using System.Diagnostics;
 
 public class EnemySetCol : MonoBehaviour
 {
+    [SerializeField,Header("アニメーター")]
+    private Animator _animator;
+
     [SerializeField, Header("EnemyData")]
     private EnemyData _enemyData;
 
     [SerializeField,Header("攻撃時にアクティブにするコライダー")]
     private Collider[] _attackColliders;
 
+    private void Update()
+    {
+        if (!_animator.GetBool("Attack") && !_animator.GetBool("StrongAttack"))
+        {
+            DeactivateCollider();
+        }
+    }
     /// <summary>
     /// 指定した数のコライダーをアクティブにする関数
     /// </summary>
@@ -34,9 +45,6 @@ public class EnemySetCol : MonoBehaviour
     /// <param name="index">番号</param>
     public void ActivateColliderByIndex(int index)
     {
-        // すべてのコライダーをまず非アクティブにする
-        DeactivateCollider();
-
         // 指定されたインデックスが有効な範囲内かチェック
         if (index >= 0 && index < _attackColliders.Length)
         {

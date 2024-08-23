@@ -33,6 +33,7 @@ public abstract class EnemyBase : MonoBehaviour
     [SerializeField, Header("死亡時エフェクト")]
     private GameObject _dieEffect;
 
+    [SerializeField]
     private bool isAttacking = false;
     private bool isDie=false;
 
@@ -54,6 +55,11 @@ public abstract class EnemyBase : MonoBehaviour
         if (!isDie) 
         {
             _currentState.UpdateState(this);
+        }
+        if (!_animator.GetCurrentAnimatorStateInfo(0).IsName("Attack") &&
+          !_animator.GetCurrentAnimatorStateInfo(0).IsName("StrongAttack"))
+        {
+            SetIsAttacking(false);
         }
         DetectPlayer();
     }
@@ -188,5 +194,6 @@ public abstract class EnemyBase : MonoBehaviour
         SetIsAttacking(false);
         _animator.SetBool("Attack", false);
         _animator.SetBool("StrongAttack", false);
+        TransitionToState(new IdleState());
     }
 }
