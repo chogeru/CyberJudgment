@@ -1,14 +1,17 @@
 using UnityEngine;
+using VInspector;
 
 [CreateAssetMenu(fileName = "NewEnemy", menuName = "敵/敵データ作成")]
 public class EnemyData : ScriptableObject
 {
+    [Tab("基本情報")]
     [SerializeField, Header("敵ID")]
     public int enemyID;
 
     [SerializeField, Header("敵の名前")]
     public string enemyName;
 
+    [Tab("ステータス")]
     [SerializeField, Header("体力")]
     public float health;
 
@@ -30,12 +33,14 @@ public class EnemyData : ScriptableObject
     [SerializeField, Header("攻撃間隔")]
     public float attackCooldown = 2f;
 
+    [Tab("ドロップ情報")]
     [SerializeField, Header("ドロップアイテムのプレハブ")]
     public GameObject dropItemPrefab;
 
     [SerializeField, Header("ドロップアイテムの数")]
     public int dropItemCount;
 
+    [Tab("戦闘設定")]
     [SerializeField, Header("行動タイプ")]
     public BehaviorType behaviorType;
 
@@ -48,9 +53,13 @@ public class EnemyData : ScriptableObject
     [SerializeField, Header("戦闘武器種類")]
     public WeaponType weaponType;
 
-    [SerializeField, Header("近接攻撃力")]
+    [SerializeField, Header("近接通常攻撃力")]
     public float meleeAttackPower;
 
+    [SerializeField, Header("近接強攻撃攻撃力")]
+    public float meleeStringAttackpower;
+
+    [Tab("遠距離攻撃")]
     [SerializeField, Header("弾速")]
     public float projectileSpeed;
 
@@ -60,6 +69,7 @@ public class EnemyData : ScriptableObject
     [SerializeField, Header("弾数")]
     public int projectileCount;
 
+    [Tab("遠距離攻撃")]
     [SerializeField, Header("魔力")]
     public float magicPower;
 
