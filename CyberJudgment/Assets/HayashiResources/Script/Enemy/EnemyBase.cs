@@ -111,6 +111,11 @@ public abstract class EnemyBase : MonoBehaviour
     /// <param name="targetPosition">目標地点の座標</param>
     public void MoveTowards(Vector3 targetPosition)
     {
+        if (GetIsAttacking())
+        {
+            return;
+        }
+
         Vector3 direction = (targetPosition - transform.position).normalized;
         _rb.MovePosition(transform.position + direction * enemyData.moveSpeed * Time.deltaTime);
     }
@@ -121,6 +126,10 @@ public abstract class EnemyBase : MonoBehaviour
     /// <param name="targetPosition">目標地点の座標</param>
     public void RotateTowards(Vector3 targetPosition)
     {
+        if (GetIsAttacking())
+        {
+            return;
+        }
         Vector3 direction = (targetPosition - transform.position).normalized;
         Quaternion rotation = Quaternion.LookRotation(direction);
         _rb.MoveRotation(Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * 360f));
