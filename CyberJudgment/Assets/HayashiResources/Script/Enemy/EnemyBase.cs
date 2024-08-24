@@ -1,8 +1,9 @@
 using AbubuResouse.Singleton;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.IO.LowLevel.Unsafe;
 using UnityEngine;
+using uPools;
+
 
 /// <summary>
 /// 敵の基本動作を定義する抽象クラス
@@ -204,5 +205,15 @@ public abstract class EnemyBase : MonoBehaviour
         _animator.SetBool("Attack", false);
         _animator.SetBool("StrongAttack", false);
         TransitionToState(new IdleState());
+    }
+
+    protected virtual void DropItem()
+    {
+
+    }
+
+    private void OnAnimatorMove()
+    {
+        
     }
 }

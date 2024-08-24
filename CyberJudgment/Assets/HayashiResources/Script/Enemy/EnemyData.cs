@@ -35,7 +35,7 @@ public class EnemyData : ScriptableObject
 
     [Tab("ドロップ情報")]
     [SerializeField, Header("ドロップアイテムのプレハブ")]
-    public GameObject dropItemPrefab;
+    public GameObject[] dropItemPrefab;
 
     [SerializeField, Header("ドロップアイテムの数")]
     public int dropItemCount;
