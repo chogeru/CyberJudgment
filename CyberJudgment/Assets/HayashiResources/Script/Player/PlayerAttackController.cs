@@ -49,6 +49,11 @@ public class PlayerAttackController : MonoBehaviour
 
     private void Update()
     {
+        if (StopManager.Instance.IsStopped)
+        {
+            CancelAttack();
+            return;
+        }
         CheckAttackAnimationEnd();
     }
 
@@ -67,12 +72,14 @@ public class PlayerAttackController : MonoBehaviour
     {
         // 左クリックによる通常攻撃
         this.UpdateAsObservable()
+            .Where(_ => !StopManager.Instance.IsStopped)
             .Where(_ => Input.GetMouseButtonDown(0))
             .Where(_ => isAttack)
             .Subscribe(_ => ExecuteAttack("NormalAttack", m_NomalAttackVoiceClipName, m_NomalAttackSE));
 
         // 右クリックによる強攻撃
         this.UpdateAsObservable()
+            .Where(_ => !StopManager.Instance.IsStopped)
             .Where(_ => Input.GetMouseButtonDown(1))
             .Where(_ => isAttack)
             .Subscribe(_ => ExecuteAttack("StrongAttack", m_StringAttackVoiceClipName, m_StringAttackSE));
@@ -100,6 +107,8 @@ public class PlayerAttackController : MonoBehaviour
         isAttack = false;
         ResetAttackCooldown().Forget();
     }
+
+
 
     /// <summary>
     /// 攻撃アニメーションが終了したらIdle状態に移行
@@ -210,7 +219,7 @@ public class PlayerAttackController : MonoBehaviour
 
             // 敵と接触しているか確認
             float distanceToEnemy = Vector3.Distance(transform.position, nearestEnemy.position);
-            if (distanceToEnemy <= 1.0f) 
+            if (distanceToEnemy <= 1.0f)
             {
                 enableRootMotion = false;
             }
