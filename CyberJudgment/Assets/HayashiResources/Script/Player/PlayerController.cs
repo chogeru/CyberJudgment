@@ -196,6 +196,7 @@ public class PlayerController : MonoBehaviour
             if (movement == Vector3.zero)
             {
                 playerManager.UpdatePlayerState(PlayerState.Idle);
+                GetComponentInChildren<PlayerCameraController>().OnActionEnd();
             }
             else
             {
@@ -323,6 +324,7 @@ public class PlayerController : MonoBehaviour
         public void Execute()
         {
             m_Player.UpdateState(PlayerState.Walk);
+            m_Player.GetComponentInChildren<PlayerCameraController>().OnActionEnd();
             m_Player.Move(m_Direction, m_Player.m_WalkSpeed);
         }
     }
@@ -345,6 +347,7 @@ public class PlayerController : MonoBehaviour
         public void Execute()
         {
             m_Player.UpdateState(PlayerState.Run);
+            m_Player.GetComponentInChildren<PlayerCameraController>().OnRunStart();
             m_Player.Move(m_Direction, m_Player.m_RunSpeed);
         }
     }

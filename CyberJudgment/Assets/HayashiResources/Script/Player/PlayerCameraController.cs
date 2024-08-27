@@ -12,6 +12,8 @@ using VInspector;
 /// </summary>
 public class PlayerCameraController : MonoBehaviour
 {
+    [SerializeField, Header("走行時のカメラオフセット")]
+    private float m_RunCameraOffsetMultiplier = 1.5f;
 
     #region プレイヤー関連の設定
     [Tab("プレイヤー関連設定")]
@@ -60,13 +62,6 @@ public class PlayerCameraController : MonoBehaviour
     [EndTab]
     #endregion
 
-    [SerializeField, Header("歩行時のカメラオフセット調整")]
-    private float m_WalkCameraOffset = 1.0f;
-
-    [SerializeField, Header("走行時のカメラオフセット調整")]
-    private float m_RunCameraOffset = 2.0f;
-
-
     #region UI時のカメラ設定
     [Tab("UI時設定")]
     [SerializeField, Header("UI開閉時のカメラ目標位置")]
@@ -85,10 +80,10 @@ public class PlayerCameraController : MonoBehaviour
     private float m_CurrentDistance;
 
     private UIPresenter _uiPresenter;
-    private PlayerManager playerManager;
 
     private Vector3 m_OriginalPosition;
     private Quaternion m_OriginalRotation;
+    private float m_OriginalCameraOffsetMagnitude;
     private bool m_IsUIOpen = false;
     private bool m_IsCameraMoving = false;
 
@@ -110,8 +105,8 @@ public class PlayerCameraController : MonoBehaviour
         _uiPresenter = UIPresenter.Instance;
         m_OriginalPosition = transform.position;
         m_OriginalRotation = transform.rotation;
+        m_OriginalCameraOffsetMagnitude = m_Offset.magnitude;
     }
-
 
     /// <summary>
     /// カメラの回転操作を監視し、毎フレーム入力に応じたカメラの更新を行う。
@@ -162,16 +157,24 @@ public class PlayerCameraController : MonoBehaviour
             return;
 
         UpdateRotation(mouseX, mouseY);
-
-        // プレイヤーの状態に応じてオフセットを調整
-        float offsetMultiplier = playerManager.CurrentState == PlayerState.Run ? m_RunCameraOffset : m_WalkCameraOffset;
-        Vector3 targetPosition = CalculateCameraTargetPosition(offsetMultiplier);
+        Vector3 targetPosition = CalculateCameraTargetPosition();
         ApplyObstacleAvoidance(ref targetPosition);
 
         m_MainCamera.transform.position = targetPosition;
         m_MainCamera.transform.rotation = CalculateCameraRotation();
 
         await UniTask.Yield(PlayerLoopTiming.Update);
+    }
+
+    public void OnRunStart()
+    {
+        SmoothMoveToRunOffset().Forget();
+    }
+
+    public void OnActionEnd()
+    {
+        SmoothMoveToDefaultOffset().Forget();
+
     }
 
 
@@ -194,16 +197,15 @@ public class PlayerCameraController : MonoBehaviour
     /// カメラの目標位置を計算する。プレイヤーの位置と回転に基づいてカメラの位置を決定。
     /// </summary>
     /// <returns>カメラの目標位置</returns>
-    private Vector3 CalculateCameraTargetPosition(float offsetMultiplier)
+    private Vector3 CalculateCameraTargetPosition()
     {
         Quaternion horizontalRotation = Quaternion.Euler(0f, m_CurrentHorizontalRotation, 0f);
         Quaternion verticalRotation = Quaternion.Euler(m_CurrentVerticalRotation, 0f, 0f);
         Quaternion totalRotation = horizontalRotation * verticalRotation;
 
-        m_Offset = totalRotation * Vector3.back * m_CurrentDistance * offsetMultiplier; // オフセットを調整
-        return m_Player.position + m_Offset;
+        Vector3 offset = totalRotation * Vector3.back * m_CurrentDistance;
+        return m_Player.position + offset;
     }
-
 
     /// <summary>
     /// カメラの回転を計算する。プレイヤーの回転に基づいてカメラの回転を決定。
@@ -332,4 +334,37 @@ public class PlayerCameraController : MonoBehaviour
         transform.position = m_PlayerTransfrom.TransformPoint(targetLocalOffset);
         transform.rotation = targetRotation;
     }
+
+    private async UniTask SmoothMoveToRunOffset()
+    {
+        float elapsedTime = 0f;
+        float startDistance = m_CurrentDistance;
+        float targetDistance = m_OriginalCameraOffsetMagnitude * m_RunCameraOffsetMultiplier;
+
+        while (elapsedTime < m_UIMoveDuration)
+        {
+            m_CurrentDistance = Mathf.Lerp(startDistance, targetDistance, elapsedTime / m_UIMoveDuration);
+            elapsedTime += Time.deltaTime;
+            await UniTask.Yield(PlayerLoopTiming.Update);
+        }
+
+        m_CurrentDistance = targetDistance;
+    }
+
+    private async UniTask SmoothMoveToDefaultOffset()
+    {
+        float elapsedTime = 0f;
+        float startDistance = m_CurrentDistance;
+        float targetDistance = m_OriginalCameraOffsetMagnitude;
+
+        while (elapsedTime < m_UIMoveDuration)
+        {
+            m_CurrentDistance = Mathf.Lerp(startDistance, targetDistance, elapsedTime / m_UIMoveDuration);
+            elapsedTime += Time.deltaTime;
+            await UniTask.Yield(PlayerLoopTiming.Update);
+        }
+
+        m_CurrentDistance = targetDistance;
+    }
+
 }
