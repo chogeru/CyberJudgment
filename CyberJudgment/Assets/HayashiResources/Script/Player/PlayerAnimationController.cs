@@ -1,3 +1,4 @@
+using AbubuResouse.Singleton;
 using R3;
 using R3.Triggers;
 using System.Collections;
@@ -12,14 +13,21 @@ public class PlayerAnimationController : MonoBehaviour
 
     private readonly ReactiveProperty<PlayerState> playerState = new ReactiveProperty<PlayerState>(PlayerState.Idle);
 
+    private UIPresenter _uiPresenter;
+    private bool isUIOpen = false;
+
     private void Start()
     {
+        _uiPresenter = UIPresenter.Instance;
+
         playerState
             .DistinctUntilChanged()
+            .Where(_ => !isUIOpen) // UIが開いていないときのみ状態に応じたアニメーションを更新
             .Subscribe(UpdateAnimator)
             .AddTo(this);
 
         BindAnimations();
+        ObserveUIState();
     }
 
     /// <summary>
@@ -31,6 +39,48 @@ public class PlayerAnimationController : MonoBehaviour
         m_Animator.SetBool("Idle", state == PlayerState.Idle);
         m_Animator.SetBool("Walk", state == PlayerState.Walk);
         m_Animator.SetBool("Run", state == PlayerState.Run);
+    }
+
+    /// <summary>
+    /// UIの開閉状態を監視し、専用アニメーションの再生を管理する
+    /// </summary>
+    private void ObserveUIState()
+    {
+        Observable.EveryUpdate()
+            .Where(_ => _uiPresenter.IsMenuOpen != isUIOpen)
+            .Subscribe(_ => ToggleUIAnimation(_uiPresenter.IsMenuOpen))
+            .AddTo(this);
+    }
+
+    /// <summary>
+    /// UIの開閉に応じた専用アニメーションの再生
+    /// </summary>
+    /// <param name="isUIOpen">UIが開いているかどうか</param>
+    private void ToggleUIAnimation(bool isUIOpen)
+    {
+        this.isUIOpen = isUIOpen;
+
+        if (isUIOpen)
+        {
+            // UIが開いている間は専用のアニメーションを再生
+            m_Animator.CrossFade("UIOpen",0.2f);
+        }
+        else
+        {
+            // UIが閉じたら現在のプレイヤー状態に基づいたアニメーションに遷移
+            if (playerState.Value == PlayerState.Idle)
+            {
+                m_Animator.CrossFade("Idle", 0.2f);
+            }
+            else if (playerState.Value == PlayerState.Walk)
+            {
+                m_Animator.CrossFade("Walk", 0.05f);
+            }
+            else if (playerState.Value == PlayerState.Run)
+            {
+                m_Animator.CrossFade("Run", 0.05f);
+            }
+        }
     }
 
     /// <summary>

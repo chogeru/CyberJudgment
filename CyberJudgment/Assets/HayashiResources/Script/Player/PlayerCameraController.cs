@@ -60,6 +60,13 @@ public class PlayerCameraController : MonoBehaviour
     [EndTab]
     #endregion
 
+    [SerializeField, Header("歩行時のカメラオフセット調整")]
+    private float m_WalkCameraOffset = 1.0f;
+
+    [SerializeField, Header("走行時のカメラオフセット調整")]
+    private float m_RunCameraOffset = 2.0f;
+
+
     #region UI時のカメラ設定
     [Tab("UI時設定")]
     [SerializeField, Header("UI開閉時のカメラ目標位置")]
@@ -78,6 +85,7 @@ public class PlayerCameraController : MonoBehaviour
     private float m_CurrentDistance;
 
     private UIPresenter _uiPresenter;
+    private PlayerManager playerManager;
 
     private Vector3 m_OriginalPosition;
     private Quaternion m_OriginalRotation;
@@ -154,7 +162,10 @@ public class PlayerCameraController : MonoBehaviour
             return;
 
         UpdateRotation(mouseX, mouseY);
-        Vector3 targetPosition = CalculateCameraTargetPosition();
+
+        // プレイヤーの状態に応じてオフセットを調整
+        float offsetMultiplier = playerManager.CurrentState == PlayerState.Run ? m_RunCameraOffset : m_WalkCameraOffset;
+        Vector3 targetPosition = CalculateCameraTargetPosition(offsetMultiplier);
         ApplyObstacleAvoidance(ref targetPosition);
 
         m_MainCamera.transform.position = targetPosition;
@@ -162,6 +173,7 @@ public class PlayerCameraController : MonoBehaviour
 
         await UniTask.Yield(PlayerLoopTiming.Update);
     }
+
 
     /// <summary>
     /// カメラの回転を入力に基づいて更新する。
@@ -182,15 +194,16 @@ public class PlayerCameraController : MonoBehaviour
     /// カメラの目標位置を計算する。プレイヤーの位置と回転に基づいてカメラの位置を決定。
     /// </summary>
     /// <returns>カメラの目標位置</returns>
-    private Vector3 CalculateCameraTargetPosition()
+    private Vector3 CalculateCameraTargetPosition(float offsetMultiplier)
     {
         Quaternion horizontalRotation = Quaternion.Euler(0f, m_CurrentHorizontalRotation, 0f);
         Quaternion verticalRotation = Quaternion.Euler(m_CurrentVerticalRotation, 0f, 0f);
         Quaternion totalRotation = horizontalRotation * verticalRotation;
 
-        m_Offset = totalRotation * Vector3.back * m_CurrentDistance;
+        m_Offset = totalRotation * Vector3.back * m_CurrentDistance * offsetMultiplier; // オフセットを調整
         return m_Player.position + m_Offset;
     }
+
 
     /// <summary>
     /// カメラの回転を計算する。プレイヤーの回転に基づいてカメラの回転を決定。

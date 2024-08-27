@@ -7,6 +7,7 @@ public class PlayerManager : MonoBehaviour
     public PlayerAttackController PlayerAttackController { get; private set; }
 
     private bool isAttacking;
+    private PlayerState currentState;
 
     private void Awake()
     {
@@ -23,6 +24,11 @@ public class PlayerManager : MonoBehaviour
     {
         PlayerAnimationController.UpdateState(state);
     }
+
+    /// <summary>
+    /// プレイヤーの現在の状態を取得
+    /// </summary>
+    public PlayerState CurrentState => currentState;
 
     /// <summary>
     /// 攻撃中フラグの設定
