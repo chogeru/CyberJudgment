@@ -21,69 +21,86 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: M_RoadConcrete01
-  m_Shader: {fileID: -6465566751694194690, guid: 9e268ef03d430f64d94641ec1f51f2d7,
-    type: 3}
-  m_ValidKeywords:
-  - _DISABLE_SSR_TRANSPARENT
-  m_InvalidKeywords: []
+  m_Shader: {fileID: 4800000, guid: 6e8477c0c2805c34795b2febcceba3e0, type: 3}
+  m_ValidKeywords: []
+  m_InvalidKeywords:
+  - _NORMALMAP
+  - _SPECGLOSSMAP
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2225
-  stringTagMap:
-    MotionVector: User
-    RenderType: Opaque
-  disabledShaderPasses:
-  - TransparentDepthPrepass
-  - TransparentDepthPostpass
-  - TransparentBackface
-  - RayTracingPrepass
-  - MOTIONVECTORS
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
-    - Texture2D_2A1A8040:
-        m_Texture: {fileID: 2800000, guid: 8f7e9562e64ae824e9b8a191de2485ef, type: 3}
+    - _Albedo:
+        m_Texture: {fileID: 2800000, guid: b67543e8bba938e4da41346958f7186f, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - Texture2D_2B72368E:
+    - _BumpMap:
+        m_Texture: {fileID: 2800000, guid: b2fad7585e6abb744bca7aaf0dbe577a, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailAlbedoMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 4, y: 4}
+        m_Offset: {x: 0, y: 0}
+    - _DetailMask:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - Texture2D_51834A2:
+    - _DetailNormalMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - Texture2D_6155178:
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 4, y: 4}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: b67543e8bba938e4da41346958f7186f, type: 3}
+        m_Scale: {x: 4, y: 4}
+        m_Offset: {x: 0, y: 0}
+    - _MetallicGlossMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - Texture2D_7CA01AE2:
+    - _Normalmap:
+        m_Texture: {fileID: 2800000, guid: b2fad7585e6abb744bca7aaf0dbe577a, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OcclusionMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - Texture2D_7EA392D1:
-        m_Texture: {fileID: 2800000, guid: ee9dabd38276d864e9bae5ac2ca89230, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - Texture2D_8959f2a8eaa646fbbcdc6b15fb06005f:
-        m_Texture: {fileID: 2800000, guid: c16295e899c9dbb488b7c198724cdc27, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - Texture2D_8AFFD424:
+    - _ParallaxMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - Texture2D_B955310A:
-        m_Texture: {fileID: 2800000, guid: 3e9edc6461ed5784eb5eadcbccb6a820, type: 3}
+    - _RainDropsNormal:
+        m_Texture: {fileID: 2800000, guid: fd09dc3c530e8654dacba5a7ee36cb20, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - Texture2D_EF84DF67:
+    - _RoadSymbols:
+        m_Texture: {fileID: 2800000, guid: 9b5b74151dc00fe4983a96ea38e99959, type: 3}
+        m_Scale: {x: 0, y: 0}
+        m_Offset: {x: 0, y: 0}
+    - _SpecGlossMap:
+        m_Texture: {fileID: 2800000, guid: f5ed7d77f70eeae4eaeb40330f0f50af, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SpecularSmoothness:
+        m_Texture: {fileID: 2800000, guid: f5ed7d77f70eeae4eaeb40330f0f50af, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _WaveNormal:
+        m_Texture: {fileID: 2800000, guid: 20e16ccd543ebdf4fbc4a9bcb13374b1, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _texcoord:
         m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _SampleTexture2D_0ca1e1aac9c34349a9cc48778dec2026_Texture_1:
-        m_Texture: {fileID: 2800000, guid: 655c3769aadc5d8429777c5f971d6a6e, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
@@ -100,123 +117,42 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - Boolean_353edd87f208456eb98d877c64b709c0: 1
-    - Boolean_45d01aaa754144d78eabc90c7050ee1e: 0
-    - Boolean_783DA2B0: 0
-    - Boolean_D670D602: 1
-    - Boolean_ECEFBEC0: 0
-    - Boolean_d085fda90b1947349720bbc4f8ec8902: 0
-    - Boolean_d085fda90b1947349720bbc4f8ec8902_1: 0
-    - Boolean_d6564e6d0cbe4e1194d4c4a23260af1f: 0
-    - Vector1_119DBA34: 1
-    - Vector1_12fe0cb484434e1bb9fbb72624870f7b: 1
-    - Vector1_1ecf8adf107543b697e04962611a6572: 2
-    - Vector1_3d93f9a0aa3c4be2ba3dec68934e9a7e: 0
-    - Vector1_4B28F8D1: 1
-    - Vector1_AF65C65C: 0
-    - Vector1_BDF4927C: 0.05
-    - Vector1_D39B6A9D: 1
-    - Vector1_ED619312: 3
-    - Vector1_df308df77fb1465d88917f755a5df14a: 1
-    - Vector1_e44edfc2f5b444f890d1ea79d66e4764: 0.2
-    - Vector1_eb681cc57c3e46829a9e2c40614de15c: 0.5
-    - Vector1_eed1c06dc017411fbfc5b918c8207a51: 0
-    - Vector1_f199065f0f8b437e87fe45c011048e10: 0
-    - _AddPrecomputedVelocity: 0
-    - _AlphaClip: 0
-    - _AlphaCutoffEnable: 0
-    - _AlphaDstBlend: 0
-    - _AlphaSrcBlend: 1
-    - _AlphaToMask: 0
-    - _AlphaToMaskInspectorValue: 0
-    - _BUILTIN_AlphaClip: 0
-    - _BUILTIN_Blend: 0
-    - _BUILTIN_CullMode: 2
-    - _BUILTIN_DstBlend: 0
-    - _BUILTIN_QueueControl: 1
-    - _BUILTIN_QueueOffset: 0
-    - _BUILTIN_SrcBlend: 1
-    - _BUILTIN_Surface: 0
-    - _BUILTIN_ZTest: 4
-    - _BUILTIN_ZWrite: 1
-    - _BUILTIN_ZWriteControl: 0
-    - _Blend: 0
-    - _BlendMode: 0
-    - _CastShadows: 1
-    - _ConservativeDepthOffsetEnable: 0
-    - _Cull: 2
-    - _CullMode: 2
-    - _CullModeForward: 2
-    - _DepthOffsetEnable: 0
-    - _DoubleSidedEnable: 0
-    - _DoubleSidedGIMode: 0
-    - _DoubleSidedNormalMode: 2
+    - _AlphaCutoff: 0.5
+    - _BumpScale: 1
+    - _Cutoff: 0.5
+    - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _EnableBlendModePreserveSpecularLighting: 1
-    - _EnableFogOnTransparent: 1
-    - _Hue: 1
-    - _Min_Opacity: 0
-    - _OpacityInt: 1
-    - _OpaqueCullMode: 2
-    - _QueueControl: 1
+    - _EnvironmentReflections: 1
+    - _GlossMapScale: 1
+    - _Glossiness: 0.5
+    - _GlossyReflections: 1
+    - _Metallic: 0
+    - _Mode: 0
+    - _OcclusionStrength: 1
+    - _Parallax: 0.02
+    - _QueueControl: 0
     - _QueueOffset: 0
-    - _RayTracing: 0
+    - _RainMask: 0.6
+    - _RainSpeed: 33
+    - _RaindropsUVTile: 0.4
+    - _Raindropsint: 0.22
     - _ReceiveShadows: 1
-    - _ReceivesSSR: 1
-    - _ReceivesSSRTransparent: 0
-    - _RefractionModel: 0
-    - _RenderQueueType: 1
-    - _RequireSplitLighting: 0
-    - _SecondaryTextureTiling: 1
-    - _Speed: 5
+    - _Smoothness: 0.9
+    - _SmoothnessTextureChannel: 0
+    - _Specular: 0.5
+    - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _StencilRef: 0
-    - _StencilRefDepth: 8
-    - _StencilRefDistortionVec: 4
-    - _StencilRefGBuffer: 10
-    - _StencilRefMV: 40
-    - _StencilWriteMask: 6
-    - _StencilWriteMaskDepth: 8
-    - _StencilWriteMaskDistortionVec: 4
-    - _StencilWriteMaskGBuffer: 14
-    - _StencilWriteMaskMV: 40
-    - _Strips_Tiling: 1
-    - _SupportDecals: 1
-    - _Surface: 0
-    - _SurfaceType: 0
-    - _TransparentBackfaceEnable: 0
-    - _TransparentCullMode: 2
-    - _TransparentDepthPostpassEnable: 0
-    - _TransparentDepthPrepassEnable: 0
-    - _TransparentSortPriority: 0
-    - _TransparentWritingMotionVec: 0
-    - _TransparentZWrite: 0
-    - _UseShadowThreshold: 0
-    - _UseTiming: 0
-    - _Use_Flicker: 0
-    - _Use_Stripes: 0
-    - _Use_World_Align: 1
-    - _WorkflowMode: 1
-    - _WorldAlignTile: 8
-    - _ZTest: 4
-    - _ZTestDepthEqualForOpaque: 3
-    - _ZTestGBuffer: 4
-    - _ZTestTransparent: 4
+    - _UVSec: 0
+    - _UVTiling: 0.06
+    - _WaveNormalint: 0.11
+    - _WaveSpeed: 0.2
+    - _WaveUVTile: 0.1
     - _ZWrite: 1
-    - _ZWriteControl: 0
+    - __dirty: 0
     m_Colors:
-    - Color_9999a74f96034bfd8f70d82adf6bdcbd: {r: 0, g: 0.38447738, b: 1, a: 1}
-    - Color_A7DF1144: {r: 0, g: 0, b: 0, a: 0}
-    - Color_AF14EE56: {r: 1, g: 1, b: 1, a: 0}
-    - Color_f6973748622e48d389fed870a51f8d37: {r: 1, g: 0.21176472, b: 0, a: 0}
-    - Vector2_a2eabf39adb94f15b288ca76d631bb9d: {r: 0, g: 0, b: 0, a: 0}
-    - _DoubleSidedConstants: {r: 1, g: 1, b: -1, a: 0}
-    - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
-    - _MaskedColor: {r: 0.6132076, g: 0.6132076, b: 0.6132076, a: 0}
-    - _UVOffset: {r: 1, g: 1, b: 0, a: 0}
-    - _UVScale: {r: 1, g: 1, b: 0, a: 0}
-    - _UVoffset: {r: 1, g: 1, b: 1, a: 1}
-    - _UVscale: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
   m_BuildTextureStacks: []
 --- !u!114 &4853825098431373978
 MonoBehaviour:
