@@ -17,26 +17,30 @@ namespace MagicaCloth2
         public MagicaCloth cloth { get; internal set; }
 
         /// <summary>
-        /// 同期中クロス
+        /// 同期中の参照クロス。これは同期階層の最上位のクロスを指す
         /// </summary>
-        public MagicaCloth SyncCloth { get; internal set; }
+        public MagicaCloth SyncTopCloth { get; internal set; }
 
         /// <summary>
         /// 状態フラグ(0 ~ 31)
         /// </summary>
         public const int State_Valid = 0;
         public const int State_Enable = 1;
-        public const int State_ParameterDirty = 2;
+        //public const int State_ParameterDirty = 2;
         public const int State_InitSuccess = 3;
         public const int State_InitComplete = 4;
         public const int State_Build = 5;
         public const int State_Running = 6;
         public const int State_DisableAutoBuild = 7;
-        public const int State_CullingInvisible = 8; // チームデータの同フラグのコピー
-        public const int State_CullingKeep = 9; // チームデータの同フラグのコピー
+        public const int State_CameraCullingInvisible = 8; // チームデータの同フラグのコピー
+        public const int State_CameraCullingKeep = 9; // チームデータの同フラグのコピー
         public const int State_SkipWriting = 10; // 書き込み停止（ストップモーション用）
-        public const int State_SkipWritingDirty = 11; // 書き込み停止フラグ更新サイン
+        //public const int State_SkipWritingDirty = 11; // 書き込み停止フラグ更新サイン
         public const int State_UsePreBuild = 12; // PreBuildを利用
+        public const int State_DistanceCullingInvisible = 13; // チームデータの同フラグのコピー
+        public const int State_UpdateTangent = 14; // 接線の更新
+        public const int State_Component = 15; // コンポーネントの有効状態
+        public const int State_Verification = 16; // 検証結果による有効状態
 
         /// <summary>
         /// 現在の状態
@@ -52,7 +56,7 @@ namespace MagicaCloth2
         /// レンダー情報へのハンドル
         /// （レンダラーのセットアップデータ）
         /// </summary>
-        List<int> renderHandleList = new List<int>();
+        internal List<int> renderHandleList = new List<int>();
 
         /// <summary>
         /// BoneClothのセットアップデータ
@@ -102,6 +106,11 @@ namespace MagicaCloth2
         /// </summary>
         internal ResultCode result;
         public ResultCode Result => result;
+
+        /// <summary>
+        /// 初期化データ参照結果
+        /// </summary>
+        public ResultCode InitDataResult { get; internal set; }
 
         /// <summary>
         /// Cloth Type
@@ -174,18 +183,39 @@ namespace MagicaCloth2
         /// </summary>
         internal List<Renderer> interlockingAnimatorRenderers = new List<Renderer>();
 
+        /// <summary>
+        /// 現在アンカーとして設定されているTransformのインスタンスID
+        /// </summary>
+        internal int anchorTransformId = 0;
+
+        /// <summary>
+        /// 現在距離カリングの参照として設定されているオブジェクトのインスタンスID
+        /// </summary>
+        internal int distanceReferenceObjectId = 0;
+
+        /// <summary>
+        /// コンポーネントの登録TransformIndex
+        /// tdata.componentTransformIndexのコピー
+        /// </summary>
+        //internal int componentTransformIndex = 0;
+
+        internal Animator cameraCullingAnimator = null;
+        internal List<Renderer> cameraCullingRenderers = null;
+        internal CullingSettings.CameraCullingMode cameraCullingMode;
+        internal bool cameraCullingOldInvisible = false;
+
         //=========================================================================================
         /// <summary>
         /// キャンセルトークン
         /// </summary>
         CancellationTokenSource cts = new CancellationTokenSource();
         volatile object lockObject = new object();
-        volatile object lockState = new object();
+        //volatile object lockState = new object();
 
         /// <summary>
         /// 初期化待機カウンター
         /// </summary>
-        volatile int suspendCounter = 0;
+        //volatile int suspendCounter = 0;
 
         /// <summary>
         /// 破棄フラグ
@@ -204,7 +234,7 @@ namespace MagicaCloth2
 
         public BitField32 GetStateFlag()
         {
-            lock (lockState)
+            //lock (lockState)
             {
                 // copy
                 var state = stateFlag;
@@ -214,7 +244,7 @@ namespace MagicaCloth2
 
         public bool IsState(int state)
         {
-            lock (lockState)
+            //lock (lockState)
             {
                 return stateFlag.IsSet(state);
             }
@@ -222,16 +252,19 @@ namespace MagicaCloth2
 
         public void SetState(int state, bool sw)
         {
-            lock (lockState)
+            //lock (lockState)
             {
                 stateFlag.SetBits(state, sw);
             }
         }
 
         public bool IsValid() => IsState(State_Valid);
-        public bool IsCullingInvisible() => IsState(State_CullingInvisible);
-        public bool IsCullingKeep() => IsState(State_CullingKeep);
+        public bool IsRunning() => IsState(State_Running);
+        public bool IsCameraCullingInvisible() => IsState(State_CameraCullingInvisible);
+        public bool IsCameraCullingKeep() => IsState(State_CameraCullingKeep);
+        public bool IsDistanceCullingInvisible() => IsState(State_DistanceCullingInvisible);
         public bool IsSkipWriting() => IsState(State_SkipWriting);
+        public bool IsUpdateTangent() => IsState(State_UpdateTangent);
 
         public bool IsEnable
         {
@@ -330,7 +363,13 @@ namespace MagicaCloth2
                 // PreBuildデータ解除
                 MagicaManager.PreBuild?.UnregisterPreBuildData(cloth?.GetSerializeData2()?.preBuildData.GetSharePreBuildData());
 
-                SyncCloth = null;
+                // 作業バッファ破棄
+                SyncTopCloth = null;
+                int compId = cloth.GetInstanceID();
+                MagicaManager.Team.comp2SuspendCounterMap.Remove(compId);
+                MagicaManager.Team.comp2TeamIdMap.Remove(compId);
+                MagicaManager.Team.comp2SyncPartnerCompMap.Remove(compId);
+                MagicaManager.Team.comp2SyncTopCompMap.Remove(compId);
 
                 // 完全破棄フラグ
                 isDestoryInternal = true;
@@ -343,23 +382,44 @@ namespace MagicaCloth2
 
         internal void IncrementSuspendCounter()
         {
-            lock (lockObject)
+            //suspendCounter++;
+            var tm = MagicaManager.Team;
+            int compId = cloth.GetInstanceID();
+            if (tm.comp2SuspendCounterMap.TryGetValue(compId, out int cnt))
             {
-                suspendCounter++;
+                cnt++;
+                //tm.comp2SuspendCounterMap.Add(compId, cnt);
+                tm.comp2SuspendCounterMap[compId] = cnt;
             }
+            else
+                tm.comp2SuspendCounterMap.Add(compId, 1);
         }
 
         internal void DecrementSuspendCounter()
         {
-            lock (lockObject)
+            //suspendCounter--;
+            var tm = MagicaManager.Team;
+            int compId = cloth.GetInstanceID();
+            if (tm.comp2SuspendCounterMap.TryGetValue(compId, out int cnt))
             {
-                suspendCounter--;
+                cnt--;
+                if (cnt > 0)
+                    //tm.comp2SuspendCounterMap.Add(compId, cnt);
+                    tm.comp2SuspendCounterMap[compId] = cnt;
+                else
+                    tm.comp2SuspendCounterMap.Remove(compId);
             }
         }
 
         internal int GetSuspendCounter()
         {
-            return suspendCounter;
+            //return suspendCounter;
+            var tm = MagicaManager.Team;
+            int compId = cloth.GetInstanceID();
+            if (tm.comp2SuspendCounterMap.TryGetValue(compId, out int cnt))
+                return cnt;
+            else
+                return 0;
         }
 
         public RenderMeshInfo GetRenderMeshInfo(int index)
@@ -402,7 +462,8 @@ namespace MagicaCloth2
             // ここではフラグのみ更新する
             // 実際の更新はチームのAlwaysTeamUpdate()で行われる
             SetState(State_SkipWriting, sw);
-            SetState(State_SkipWritingDirty, true);
+            //SetState(State_SkipWritingDirty, true);
+            MagicaManager.Team.skipWritingDirtyList.Add(this);
         }
 
         internal ClothUpdateMode GetClothUpdateMode()

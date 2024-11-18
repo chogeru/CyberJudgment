@@ -15,7 +15,7 @@ namespace MagicaCloth2
     public class ClothManager : IManager, IValid
     {
         // すべて
-        internal HashSet<ClothProcess> clothSet = new HashSet<ClothProcess>();
+        internal HashSet<ClothProcess> clothSet = new HashSet<ClothProcess>(256);
 
         // BoneCloth,BoneSpring
         internal HashSet<ClothProcess> boneClothSet = new HashSet<ClothProcess>();
@@ -118,6 +118,9 @@ namespace MagicaCloth2
                     break;
             }
 
+            // チームマネージャの作業バッファへ登録
+            MagicaManager.Team.comp2TeamIdMap.Add(cprocess.cloth.GetInstanceID(), teamId);
+
             return teamId;
         }
 
@@ -140,11 +143,15 @@ namespace MagicaCloth2
         /// </summary>
         void OnEarlyClothUpdate()
         {
-            if (MagicaManager.Team.ActiveTeamCount > 0)
+            //Debug.Log($"OnEarlyClothUpdate. F:{Time.frameCount}");
+            if (MagicaManager.Team.TrueTeamCount > 0) // カリング判定があるのでDisableチームもまわす必要がある
             {
-                //Debug.Log($"TransformRestoreUpdate. F:{Time.frameCount}");
-                // チームカリング更新
-                MagicaManager.Team.TeamCullingUpdate();
+                // カメラカリング更新
+                if (MagicaManager.Team.ActiveTeamCount > 0)
+                {
+                    // この更新は次のTransform復元の前に行う必要がある
+                    MagicaManager.Team.CameraCullingPostProcess();
+                }
 
                 // BoneClothのTransform復元更新
                 ClearMasterJob();
@@ -166,7 +173,9 @@ namespace MagicaCloth2
         }
 
         //=========================================================================================
-        static readonly ProfilerMarker startClothUpdateMainProfiler = new ProfilerMarker("StartClothUpdate.Main");
+        static readonly ProfilerMarker startClothUpdateTimeProfiler = new ProfilerMarker("StartClothUpdate.Time");
+        static readonly ProfilerMarker startClothUpdateTeamProfiler = new ProfilerMarker("StartClothUpdate.Team");
+        static readonly ProfilerMarker startClothUpdatePrePareProfiler = new ProfilerMarker("StartClothUpdate.Prepare");
         static readonly ProfilerMarker startClothUpdateScheduleProfiler = new ProfilerMarker("StartClothUpdate.Schedule");
 
         /// <summary>
@@ -192,22 +201,26 @@ namespace MagicaCloth2
             //Develop.DebugLog($"StartClothUpdate. F:{Time.frameCount}, dtime:{Time.deltaTime}, stime:{Time.smoothDeltaTime}");
 
             //-----------------------------------------------------------------
-            startClothUpdateMainProfiler.Begin();
             // ■時間マネージャ更新
+            startClothUpdateTimeProfiler.Begin();
             MagicaManager.Time.FrameUpdate();
+            startClothUpdateTimeProfiler.End();
 
             // ■常に実行するチーム更新
+            startClothUpdateTeamProfiler.Begin();
             tm.AlwaysTeamUpdate();
+            startClothUpdateTeamProfiler.End();
 
             // ■ここで実行チーム数が０ならば終了
             if (tm.ActiveTeamCount == 0)
             {
-                startClothUpdateMainProfiler.End();
                 return;
             }
 
             int maxUpdateCount = tm.maxUpdateCount.Value;
             //Debug.Log($"maxUpdateCount:{maxUpdateCount}");
+
+            startClothUpdatePrePareProfiler.Begin();
 
             // ■常に実行する風ゾーン更新
             wm.AlwaysWindUpdate();
@@ -215,7 +228,7 @@ namespace MagicaCloth2
             // ■作業バッファ更新
             sm.WorkBufferUpdate();
 
-            startClothUpdateMainProfiler.End();
+            startClothUpdatePrePareProfiler.End();
 
             //-----------------------------------------------------------------
 #if true
@@ -273,7 +286,7 @@ namespace MagicaCloth2
                         continue;
 
                     // カリングによる非表示中ならば書き込まない
-                    if (cprocess.IsCullingInvisible())
+                    if (cprocess.IsCameraCullingInvisible() || cprocess.IsDistanceCullingInvisible())
                         continue;
 
                     int cnt = cprocess.renderMeshInfoList.Count;
@@ -283,7 +296,7 @@ namespace MagicaCloth2
                         var renderData = MagicaManager.Render.GetRendererData(info.renderHandle);
 
                         // Position/Normal書き込み
-                        masterJob = renderData.UpdatePositionNormal(info.mappingChunk, masterJob);
+                        masterJob = renderData.UpdatePositionNormal(cprocess.IsUpdateTangent(), info.mappingChunk, masterJob);
 
                         // BoneWeight書き込み
                         if (renderData.UseCustomMesh)
@@ -310,6 +323,11 @@ namespace MagicaCloth2
             //-----------------------------------------------------------------
             // ジョブを即実行
             //JobHandle.ScheduleBatchedJobs();
+
+            //-----------------------------------------------------------------
+            // ■ジョブ完了待ちの間に行う処理
+            // カメラカリングの準備
+            tm.CameraCullingPreProcess();
 
             //-----------------------------------------------------------------
             // ■現在は即時実行のためここでジョブの完了待ちを行う

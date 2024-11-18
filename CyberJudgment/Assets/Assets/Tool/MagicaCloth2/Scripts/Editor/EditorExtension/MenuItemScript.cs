@@ -96,15 +96,11 @@ namespace MagicaCloth2
 
         //=========================================================================================
         [MenuItem("Tools/Magica Cloth2/Manager information", false)]
-        static void DispClothManagerInfo()
+        static async void DispClothManagerInfo()
         {
-            if (MagicaManager.IsPlaying() == false)
-            {
-                Debug.Log("This feature is run-time only.");
-                return;
-            }
-
             StringBuilder allsb = new StringBuilder();
+
+            await ClothEditorManager.InformationLog(allsb);
 
             var timeManager = MagicaManager.Time;
             if (timeManager == null)
@@ -196,9 +192,6 @@ namespace MagicaCloth2
                 preBuildManager.InformationLog(allsb);
             }
 
-            // clipboard
-            //GUIUtility.systemCopyBuffer = allsb.ToString();
-
             // file
             DateTime dt = DateTime.Now;
             var filename = dt.ToString("yyyy-MM-dd-HHmm-ss");
@@ -206,6 +199,25 @@ namespace MagicaCloth2
             sw.WriteLine(allsb.ToString());
             sw.Flush();
             sw.Close();
+        }
+
+        //=========================================================================================
+        // インスペクターのコンテキストメニュー
+        [MenuItem("CONTEXT/MagicaCloth/Rebuild InitData")]
+        private static void SampleMenu(MenuCommand menuCommand)
+        {
+            // 初期化データをクリアして再構築する
+            var cloth = menuCommand.context as MagicaCloth;
+            if (cloth)
+            {
+                cloth.GetSerializeData2().initData.Clear();
+                EditorUtility.SetDirty(cloth);
+
+                // 編集用メッシュの再構築
+                ClothEditorManager.RegisterComponent(cloth, GizmoType.Active, true); // 強制更新
+
+                Develop.Log($"[{cloth.name}] Initialization data rebuilt.");
+            }
         }
     }
 }

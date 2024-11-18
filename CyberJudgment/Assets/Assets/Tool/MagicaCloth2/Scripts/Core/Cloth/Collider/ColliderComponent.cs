@@ -52,25 +52,29 @@ namespace MagicaCloth2
         /// 
         /// </summary>
         /// <returns></returns>
-        public virtual Vector3 GetSize()
-        {
-            return size;
-        }
+        public virtual Vector3 GetSize() => size;
 
-        public void SetSize(Vector3 size)
-        {
-            this.size = size;
-        }
+        public void SetSize(Vector3 size) => this.size = size;
+
+        public void SetSizeX(float size) => this.size.x = size;
+        public void SetSizeY(float size) => this.size.y = size;
+        public void SetSizeZ(float size) => this.size.z = size;
 
         /// <summary>
         /// スケール値を取得
         /// </summary>
         /// <returns></returns>
-        public float GetScale()
+        public virtual float GetScale()
         {
             // X軸のみを見る
             return transform.lossyScale.x;
         }
+
+        /// <summary>
+        /// 方向の逆転（基本的にカプセルコライダー用）
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool IsReverseDirection() => false;
 
         /// <summary>
         /// チームへのコライダー登録通知

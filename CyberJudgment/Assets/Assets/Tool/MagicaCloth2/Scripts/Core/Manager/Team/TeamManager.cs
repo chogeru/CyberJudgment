@@ -21,23 +21,24 @@ namespace MagicaCloth2
         public const int Flag_Enable = 1; // 動作状態
         public const int Flag_Reset = 2; // 姿勢リセット
         public const int Flag_TimeReset = 3; // 時間リセット
-        public const int Flag_Suspend = 4; // 一時停止
+        public const int Flag_SyncSuspend = 4; // 同期待ち一時停止
         public const int Flag_Running = 5; // 今回のフレームでシミュレーションが実行されたかどうか
-        //public const int Flag_CustomSkinning = 6; // カスタムスキニングを使用(未使用)
-        //public const int Flag_NormalAdjustment = 9; // 法線調整(未使用)
         public const int Flag_Synchronization = 6; // 同期中
         public const int Flag_StepRunning = 7; // ステップ実行中
         public const int Flag_Exit = 8; // 存在消滅時
         public const int Flag_KeepTeleport = 9; // 姿勢保持テレポート
         public const int Flag_InertiaShift = 10; // 慣性全体シフト
-        public const int Flag_CullingInvisible = 11; // カリングによる非表示状態
-        public const int Flag_CullingKeep = 12; // カリング時に姿勢を保つ
+        public const int Flag_CameraCullingInvisible = 11; // カメラカリングによる非表示状態
+        public const int Flag_CameraCullingKeep = 12; // カメラカリング時に姿勢を保つ
         public const int Flag_Spring = 13; // Spring利用
         public const int Flag_SkipWriting = 14; // 書き込み停止（ストップモーション用）
         public const int Flag_Anchor = 15; // Inertia anchorを利用中
         public const int Flag_AnchorReset = 16; // Inertia anchorの座標リセット
         public const int Flag_NegativeScale = 17; // マイナススケールの有無
         public const int Flag_NegativeScaleTeleport = 18; // マイナススケールによるテレポート
+        public const int Flag_DistanceCullingInvisible = 19; // 距離カリングによる非表示状態
+        public const int Flag_RestoreTransformOnlyOnec = 20; // Transform復元を一度のみ実行する(BoneClothのDisable時)
+        public const int Flag_Tangent = 21; // 接線を計算する
 
         // 以下セルフコリジョン
         // !これ以降の順番を変えないこと
@@ -75,7 +76,12 @@ namespace MagicaCloth2
             public BitField64 flag;
 
             /// <summary>
-            /// 更新モード
+            /// 更新モード(オリジナル)
+            /// </summary>
+            public ClothUpdateMode originalUpdateMode;
+
+            /// <summary>
+            /// 更新モード(最終結果)
             /// </summary>
             public ClothUpdateMode updateMode;
 
@@ -167,7 +173,17 @@ namespace MagicaCloth2
             /// <summary>
             /// アンカーとして設定されているTransformのインスタンスID(0=なし)
             /// </summary>
-            public int anchorTransformId;
+            //public int anchorTransformId;
+
+            /// <summary>
+            /// 距離カリングの測定オブジェクトID(0=メインカメラ)
+            /// </summary>
+            public int distanceReferenceObjectId;
+
+            /// <summary>
+            /// コンポーネント用のTransformインデックス
+            /// </summary>
+            public int componentTransformIndex;
 
             /// <summary>
             /// チームスケール
@@ -185,6 +201,11 @@ namespace MagicaCloth2
             public float4 negativeScaleQuaternionValue; // クォータニオン反転用
 
             /// <summary>
+            /// MagicaClothコンポーネントのインスタンスID
+            /// </summary>
+            public int componentId;
+
+            /// <summary>
             /// 同期チームID(0=なし)
             /// </summary>
             public int syncTeamId;
@@ -200,6 +221,11 @@ namespace MagicaCloth2
             public int syncCenterTransformIndex;
 
             /// <summary>
+            /// 連動するAnimatorのインスタンスID(0=なし)
+            /// </summary>
+            public int interlockingAnimatorId;
+
+            /// <summary>
             /// 初期姿勢とアニメーション姿勢のブレンド率（制約で利用）
             /// </summary>
             public float animationPoseRatio;
@@ -210,7 +236,12 @@ namespace MagicaCloth2
             public float velocityWeight;
 
             /// <summary>
-            /// シミュレーション結果ブレンド割合(0.0 ~ 1.0)
+            /// 距離カリングによるブレンド割合(0.0 ~ 1.0)
+            /// </summary>
+            public float distanceWeight;
+
+            /// <summary>
+            /// 最終シミュレーション結果ブレンド割合(0.0 ~ 1.0)
             /// </summary>
             public float blendWeight;
 
@@ -406,7 +437,8 @@ namespace MagicaCloth2
             /// <summary>
             /// 処理状態
             /// </summary>
-            public bool IsProcess => flag.IsSet(Flag_Enable) && flag.IsSet(Flag_Suspend) == false && flag.IsSet(Flag_CullingInvisible) == false;
+            public bool IsProcess => IsEnable && flag.IsSet(Flag_SyncSuspend) == false && IsCullingInvisible == false;
+            //public bool IsProcess => IsEnable && flag.IsSet(Flag_SyncSuspend) == false && flag.IsSet(Flag_CameraCullingInvisible) == false;
 
             /// <summary>
             /// 姿勢リセット有無
@@ -433,11 +465,14 @@ namespace MagicaCloth2
             /// </summary>
             public bool IsStepRunning => flag.IsSet(Flag_StepRunning);
 
-            public bool IsCullingInvisible => flag.IsSet(Flag_CullingInvisible);
-            public bool IsCullingKeep => flag.IsSet(Flag_CullingKeep);
+            public bool IsCameraCullingInvisible => flag.IsSet(Flag_CameraCullingInvisible);
+            public bool IsCameraCullingKeep => flag.IsSet(Flag_CameraCullingKeep);
+            public bool IsDistanceCullingInvisible => flag.IsSet(Flag_DistanceCullingInvisible);
+            public bool IsCullingInvisible => IsCameraCullingInvisible || IsDistanceCullingInvisible;
             public bool IsSpring => flag.IsSet(Flag_Spring);
             public bool IsNegativeScale => flag.IsSet(Flag_NegativeScale);
             public bool IsNegativeScaleTeleport => flag.IsSet(Flag_NegativeScaleTeleport);
+            public bool IsTangent => flag.IsSet(Flag_Tangent);
             public int ParticleCount => particleChunk.dataLength;
 
             /// <summary>
@@ -451,7 +486,7 @@ namespace MagicaCloth2
             //public int MappingCount => mappingDataIndexSet.Length;
 
             /// <summary>
-            /// 初期スケール（ｘ軸のみで判定、均等スケールしか認めていない）
+            /// 初期スケール（ｘ軸のみで判定、一様スケールしか認めていない）
             /// </summary>
             public float InitScale => initScale.x;
         }
@@ -556,24 +591,6 @@ namespace MagicaCloth2
         Dictionary<int, ClothProcess> clothProcessDict = new Dictionary<int, ClothProcess>();
 
         //=========================================================================================
-        bool isValid;
-
-        /// <summary>
-        /// グローバルタイムスケール(0.0 ~ 1.0)
-        /// </summary>
-        //internal float globalTimeScale = 1.0f;
-
-        /// <summary>
-        /// フレームのFixedUpdate回数
-        /// </summary>
-        //int fixedUpdateCount = 0;
-
-        /// <summary>
-        /// エッジコライダーコリジョンのエッジ数合計
-        /// </summary>
-        internal int edgeColliderCollisionCount;
-
-        //=========================================================================================
         /// <summary>
         /// 登録されているチーム数（グローバルチームを含む。そのため０にはならない）
         /// </summary>
@@ -588,6 +605,38 @@ namespace MagicaCloth2
         /// 実行状態にあるチーム数
         /// </summary>
         public int ActiveTeamCount => enableTeamSet.Count;
+
+        //=========================================================================================
+        // ■作業データ
+        bool isValid;
+
+        /// <summary>
+        /// エッジコライダーコリジョンのエッジ数合計
+        /// </summary>
+        internal int edgeColliderCollisionCount;
+
+        internal NativeReference<int> edgeColliderCollisionCountBuff;
+        internal NativeParallelHashMap<int, int> comp2SuspendCounterMap;
+        internal NativeParallelHashMap<int, int> comp2TeamIdMap;
+        internal NativeParallelHashMap<int, int> comp2SyncPartnerCompMap;
+        internal NativeParallelHashMap<int, int> comp2SyncTopCompMap;
+
+        //internal NativeParallelHashSet<int> comp2ParameterDirtySet;
+        //internal NativeParallelHashSet<int> comp2SkipWritingDirtySet;
+        internal List<ClothProcess> parameterDirtyList;
+        internal List<ClothProcess> skipWritingDirtyList;
+        internal NativeList<int> cullingDirtyList;
+        //internal NativeList<int> selfCollisionUpdateList;
+        internal NativeParallelHashSet<int> selfCollisionUpdateSet;
+        internal NativeParallelHashMap<int, int> animatorUpdateModeMap;
+
+        //internal NativeParallelHashMap<int, float3> distanceReferenceObjectPositionMap;
+        internal ExSimpleNativeArray<int> teamAnchorTransformIndexArray;
+        internal ExSimpleNativeArray<int> teamDistanceTransformIndexArray;
+        internal NativeParallelHashMap<int, float3> transformPositionMap;
+        internal NativeParallelHashMap<int, quaternion> transformRotationMap;
+
+        internal HashSet<MagicaCloth> cameraCullingClothSet = new HashSet<MagicaCloth>(256);
 
         //=========================================================================================
         public void Dispose()
@@ -616,6 +665,29 @@ namespace MagicaCloth2
 
             enableTeamSet.Clear();
             clothProcessDict.Clear();
+
+            if (edgeColliderCollisionCountBuff.IsCreated)
+                edgeColliderCollisionCountBuff.Dispose();
+            comp2SuspendCounterMap.MC2DisposeSafe();
+            comp2TeamIdMap.MC2DisposeSafe();
+            comp2SyncPartnerCompMap.MC2DisposeSafe();
+            comp2SyncTopCompMap.MC2DisposeSafe();
+
+            parameterDirtyList?.Clear();
+            skipWritingDirtyList?.Clear();
+            if (cullingDirtyList.IsCreated)
+                cullingDirtyList.Dispose();
+            if (selfCollisionUpdateSet.IsCreated)
+                selfCollisionUpdateSet.Dispose();
+            animatorUpdateModeMap.MC2DisposeSafe();
+            //distanceReferenceObjectPositionMap.MC2DisposeSafe();
+
+            teamAnchorTransformIndexArray?.Dispose();
+            teamDistanceTransformIndexArray?.Dispose();
+            transformPositionMap.MC2DisposeSafe();
+            transformRotationMap.MC2DisposeSafe();
+
+            cameraCullingClothSet.Clear();
 
             //globalTimeScale = 1.0f;
             //fixedUpdateCount = 0;
@@ -654,6 +726,26 @@ namespace MagicaCloth2
             //globalTimeScale = 1.0f;
             //fixedUpdateCount = 0;
 
+            // 作業用
+            edgeColliderCollisionCountBuff = new NativeReference<int>(Allocator.Persistent);
+            comp2SuspendCounterMap = new NativeParallelHashMap<int, int>(256, Allocator.Persistent);
+            comp2TeamIdMap = new NativeParallelHashMap<int, int>(256, Allocator.Persistent);
+            comp2SyncPartnerCompMap = new NativeParallelHashMap<int, int>(256, Allocator.Persistent);
+            comp2SyncTopCompMap = new NativeParallelHashMap<int, int>(256, Allocator.Persistent);
+
+            parameterDirtyList = new List<ClothProcess>(128);
+            skipWritingDirtyList = new List<ClothProcess>(128);
+            cullingDirtyList = new NativeList<int>(128, Allocator.Persistent);
+            //selfCollisionUpdateList = new NativeList<int>(256, Allocator.Persistent);
+            selfCollisionUpdateSet = new NativeParallelHashSet<int>(256, Allocator.Persistent);
+            animatorUpdateModeMap = new NativeParallelHashMap<int, int>(128, Allocator.Persistent);
+            //distanceReferenceObjectPositionMap = new NativeParallelHashMap<int, float3>(8, Allocator.Persistent);
+
+            teamAnchorTransformIndexArray = new ExSimpleNativeArray<int>(256, true);
+            teamDistanceTransformIndexArray = new ExSimpleNativeArray<int>(256, true);
+            transformPositionMap = new NativeParallelHashMap<int, float3>(32, Allocator.Persistent);
+            transformRotationMap = new NativeParallelHashMap<int, quaternion>(32, Allocator.Persistent);
+
             // 破棄監視更新処理
             MagicaManager.afterUpdateDelegate += MonitoringProcessUpdate;
 
@@ -680,10 +772,12 @@ namespace MagicaCloth2
             // この段階でProxyMeshは完成している
 
             var team = new TeamData();
+            team.componentId = cprocess.cloth.GetInstanceID();
             // ★Enableフラグは立てない
             team.flag.SetBits(Flag_Valid, true);
             team.flag.SetBits(Flag_Reset, true);
             team.flag.SetBits(Flag_TimeReset, true);
+            team.originalUpdateMode = cprocess.cloth.SerializeData.updateMode;
             team.updateMode = cprocess.cloth.SerializeData.updateMode;
             //team.frequency = clothParams.solverFrequency;
             team.timeScale = 1.0f;
@@ -696,6 +790,9 @@ namespace MagicaCloth2
             team.negativeScaleTriangleSign = 1;
             //team.centerWorldPosition = cprocess.clothTransformRecord.position;
             team.animationPoseRatio = cprocess.cloth.SerializeData.animationPoseRatio;
+            team.distanceWeight = 1;
+            team.componentTransformIndex = MagicaManager.Bone.AddComponentTransform(cprocess.cloth.transform); // コンポーネントTransform
+            //cprocess.componentTransformIndex = team.componentTransformIndex; // cprocessにもコピー
             var c = teamDataArray.Add(team);
             int teamId = c.startIndex;
 
@@ -747,6 +844,7 @@ namespace MagicaCloth2
             }
 
             // 制約データなど解除
+            MagicaManager.Bone.RemoveComponentTransform(tdata.componentTransformIndex);
 
             // チームデータを破棄する
             var c = new DataChunk(teamId);
@@ -755,6 +853,10 @@ namespace MagicaCloth2
             teamMappingIndexArray.RemoveAndFill(c, new FixedList64Bytes<short>());
             parameterArray.Remove(c);
             centerDataArray.Remove(c);
+
+            // チーム作業バッファをクリア
+            teamAnchorTransformIndexArray[teamId] = 0;
+            teamDistanceTransformIndexArray[teamId] = 0;
 
             clothProcessDict.Remove(teamId);
         }
@@ -776,6 +878,10 @@ namespace MagicaCloth2
                 enableTeamSet.Add(teamId);
             else
                 enableTeamSet.Remove(teamId);
+
+            // 無効時には一度のみTransform復元フラグを立てる
+            if (sw == false)
+                team.flag.SetBits(Flag_RestoreTransformOnlyOnec, true);
 
             // コライダーの有効状態（内部でコライダートランスフォームの有効状態も設定）
             MagicaManager.Collider.EnableTeamCollider(teamId);
@@ -835,49 +941,33 @@ namespace MagicaCloth2
         }
 
         //=========================================================================================
-        static readonly ProfilerMarker teamUpdateCullingProfiler = new ProfilerMarker("TeamUpdateCulling");
+        static readonly ProfilerMarker teamCameraCullingPreProfiler = new ProfilerMarker("CameraCullingPre");
+        static readonly ProfilerMarker teamCameraCullingProfiler = new ProfilerMarker("CameraCullingPost");
 
         /// <summary>
-        /// カリング状態更新
+        /// カメラカリング状態更新（前処理）
+        /// 次のフレームの開始時に行うレンダラー判定用のデータを収集する
         /// </summary>
-        internal void TeamCullingUpdate()
+        internal void CameraCullingPreProcess()
         {
-            teamUpdateCullingProfiler.Begin();
+            teamCameraCullingPreProfiler.Begin();
 
             var cm = MagicaManager.Cloth;
 
-            // ジョブでは実行できないチーム更新
-            cm.ClearVisibleDict();
-            var clothSet = cm.clothSet;
-            foreach (var cprocess in clothSet)
+            // ここはシミュレーション処理中なのでtdataなどにアクセスできないので注意！
+            cameraCullingClothSet.Clear();
+            foreach (var cprocess in cm.clothSet)
             {
-                int teamId = cprocess.TeamId;
-                ref var tdata = ref GetTeamDataRef(teamId);
-
-                // 動作判定 ----------------------------------------------------
-                if (tdata.flag.IsSet(Flag_Enable) == false || tdata.flag.IsSet(Flag_Suspend))
+                if (cprocess.IsEnable == false)
+                    continue;
+                if (cprocess.IsRunning() == false)
                     continue;
 
-                //-------------------------------------------------------------
-                // 現在の状態
-                bool oldInvisible = tdata.IsCullingInvisible;
-                bool invisible;
 
-                MagicaCloth jugeCloth = cprocess.cloth;
+                // 判定クロス。同期時は同期先を見る
+                MagicaCloth jugeCloth = cprocess.SyncTopCloth != null ? cprocess.SyncTopCloth : cprocess.cloth;
                 CullingSettings jugeSettings = jugeCloth.SerializeData.cullingSettings;
-                ClothProcess jugeProcess = cprocess;
-
-                // 同期時は同期先を見る
-                if (tdata.syncTeamId > 0)
-                {
-                    var syncProcess = GetClothProcess(tdata.syncTeamId);
-                    if (syncProcess != null)
-                    {
-                        jugeCloth = syncProcess.cloth;
-                        jugeSettings = jugeCloth.SerializeData.cullingSettings;
-                        jugeProcess = jugeCloth.Process;
-                    }
-                }
+                ClothProcess jugeProcess = jugeCloth.Process;
 
                 // 最終的なカリングモード
                 var cullingMode = jugeSettings.cameraCullingMode;
@@ -905,7 +995,9 @@ namespace MagicaCloth2
                 // カリング判定
                 if (jugeCloth == null || cullingMode == CullingSettings.CameraCullingMode.Off)
                 {
-                    invisible = false;
+                    // カリングは行わない
+                    cprocess.cameraCullingAnimator = null;
+                    cprocess.cameraCullingRenderers = null;
                 }
                 else
                 {
@@ -917,36 +1009,81 @@ namespace MagicaCloth2
                         jugeAnimator = jugeCloth.Process.interlockingAnimator;
                         jugeRenderers = jugeCloth.Process.interlockingAnimatorRenderers;
                     }
+                    cprocess.cameraCullingAnimator = jugeAnimator;
+                    cprocess.cameraCullingRenderers = jugeRenderers;
+                }
+                cprocess.cameraCullingMode = cullingMode;
 
+                cameraCullingClothSet.Add(cprocess.cloth);
+            }
+
+            teamCameraCullingPreProfiler.End();
+        }
+
+        /// <summary>
+        /// カメラカリング状態更新（後処理）
+        /// カメラカリングは該当するRendereのisVisibleフラグから判定される
+        /// このフラグは前フレームのレンダリング時に設定される
+        /// そのため現在フレームの位置は反映されないので注意する（１フレーム遅れる）
+        /// </summary>
+        internal void CameraCullingPostProcess()
+        {
+            teamCameraCullingProfiler.Begin();
+
+            var cm = MagicaManager.Cloth;
+            cm.ClearVisibleDict();
+
+            foreach (var cloth in cameraCullingClothSet)
+            {
+                if (cloth == null)
+                    continue;
+
+                var cprocess = cloth.Process;
+
+                // 現在の状態
+                bool oldInvisible = cprocess.cameraCullingOldInvisible;
+                bool invisible;
+
+                if (cprocess.cameraCullingAnimator == null && cprocess.cameraCullingRenderers == null)
+                {
+                    // カリングなし
+                    invisible = false;
+                }
+                else
+                {
                     // レンダラー判定
-                    invisible = !cm.CheckVisible(jugeAnimator, jugeRenderers);
+                    invisible = !cm.CheckVisible(cprocess.cameraCullingAnimator, cprocess.cameraCullingRenderers);
                 }
 
                 // 状態変更
                 if (oldInvisible != invisible)
                 {
-                    tdata.flag.SetBits(Flag_CullingInvisible, invisible);
-                    tdata.flag.SetBits(Flag_CullingKeep, false);
-                    //Debug.Log($"Change culling invisible:({oldInvisible}) -> ({invisible})");
+                    int teamId = cprocess.TeamId;
+                    ref var tdata = ref GetTeamDataRef(teamId);
+
+                    tdata.flag.SetBits(Flag_CameraCullingInvisible, invisible);
+                    tdata.flag.SetBits(Flag_CameraCullingKeep, false);
+                    //Debug.Log($"Change camera culling invisible:({oldInvisible}) -> ({invisible})");
 
                     // cprocessクラスにもコピーする
-                    cprocess.SetState(ClothProcess.State_CullingInvisible, invisible);
-                    cprocess.SetState(ClothProcess.State_CullingKeep, false);
+                    cprocess.SetState(ClothProcess.State_CameraCullingInvisible, invisible);
+                    cprocess.SetState(ClothProcess.State_CameraCullingKeep, false);
+                    cprocess.cameraCullingOldInvisible = invisible;
 
                     if (invisible)
                     {
                         // (表示->非表示)時の振る舞い
-                        switch (cullingMode)
+                        switch (cprocess.cameraCullingMode)
                         {
                             case CullingSettings.CameraCullingMode.Reset:
                             case CullingSettings.CameraCullingMode.Off:
                                 tdata.flag.SetBits(Flag_Reset, true);
-                                //Debug.Log($"Culling invisible. Reset On");
+                                //Debug.Log($"Camera culling invisible. Reset On");
                                 break;
                             case CullingSettings.CameraCullingMode.Keep:
-                                tdata.flag.SetBits(Flag_CullingKeep, true);
-                                cprocess.SetState(ClothProcess.State_CullingKeep, true);
-                                //Debug.Log($"Culling invisible. Keep On");
+                                tdata.flag.SetBits(Flag_CameraCullingKeep, true);
+                                cprocess.SetState(ClothProcess.State_CameraCullingKeep, true);
+                                //Debug.Log($"Camera culling invisible. Keep On");
                                 break;
                         }
                     }
@@ -955,278 +1092,472 @@ namespace MagicaCloth2
                     cprocess.UpdateRendererUse();
                 }
             }
+            cameraCullingClothSet.Clear();
 
-            teamUpdateCullingProfiler.End();
+            teamCameraCullingProfiler.End();
         }
 
         //=========================================================================================
-        /// <summary>
-        /// チーム更新後処理用作業リスト
-        /// </summary>
-        List<ClothProcess> workPostProcessList = new List<ClothProcess>(256);
+        static readonly ProfilerMarker startClothUpdateComponentProfiler = new ProfilerMarker("StartClothUpdate.Component");
 
         /// <summary>
         /// 毎フレーム常に実行するチーム更新
+        /// - パラメータ反映
+        /// - 更新モード反映
+        /// - アンカー／距離カリングの参照オブジェクト反映
         /// - 時間の更新と実行回数の算出
         /// </summary>
         internal void AlwaysTeamUpdate()
         {
-            // 集計
-            edgeColliderCollisionCount = 0;
+            var cm = MagicaManager.Cloth;
+            var tm = MagicaManager.Time;
+            var rm = MagicaManager.Render;
+            var bm = MagicaManager.Bone;
 
-            // ジョブでは実行できないチーム更新
-            workPostProcessList.Clear();
-            var clothSet = MagicaManager.Cloth.clothSet;
-            foreach (var cprocess in clothSet)
+            // 作業バッファクリア
+            edgeColliderCollisionCount = 0;
+            edgeColliderCollisionCountBuff.Value = 0;
+            cm.ClearVisibleDict(); // レンダラーの表示判定辞書をクリア
+            selfCollisionUpdateSet.Clear();
+            teamAnchorTransformIndexArray.SetLength(TeamCount);
+            teamDistanceTransformIndexArray.SetLength(TeamCount);
+            transformPositionMap.Clear();
+            transformRotationMap.Clear();
+            cullingDirtyList.Clear();
+
+            // (1)パラメータ反映
+            for (int i = 0; i < parameterDirtyList.Count;)
             {
+                var cprocess = parameterDirtyList[i];
+                if (cprocess == null)
+                {
+                    parameterDirtyList.RemoveAt(i);
+                    continue;
+                }
+                if (cprocess.IsEnable == false)
+                {
+                    i++;
+                    continue;
+                }
+
+                //Develop.DebugLog($"Update Parameters {teamId}");
+                // コライダー更新(内部でteamData更新)
+                MagicaManager.Collider.UpdateColliders(cprocess);
+
+                // カリング用アニメーターとレンダラー更新
+                cprocess.UpdateCullingAnimatorAndRenderers();
+
                 int teamId = cprocess.TeamId;
                 ref var tdata = ref GetTeamDataRef(teamId);
                 var cloth = cprocess.cloth;
 
-                // 動作判定 ----------------------------------------------------
-                if (tdata.flag.IsSet(Flag_Enable) == false)
-                    continue;
+                // 連動アニメーターのインスタンスID
+                tdata.interlockingAnimatorId = cprocess.interlockingAnimator != null ? cprocess.interlockingAnimator.GetInstanceID() : 0;
 
-                // 同期まち判定
-                bool suspend = true;
-                if (cprocess.GetSuspendCounter() == 0)
-                    suspend = false;
+                // パラメータ変更
+                cprocess.SyncParameters();
+                parameterArray[teamId] = cprocess.parameters;
+                tdata.originalUpdateMode = cloth.SerializeData.updateMode;
+                tdata.updateMode = cloth.SerializeData.updateMode;
+                tdata.animationPoseRatio = cloth.SerializeData.animationPoseRatio;
+                tdata.flag.SetBits(Flag_Spring, cprocess.clothType == ClothProcess.ClothType.BoneSpring && cprocess.parameters.springConstraint.springPower > 0.0f); // Spring利用フラグ
 
-                // 同期相手の有効状態
-                if (cloth.SyncCloth != null)
-                {
-                    int syncTeamId = cloth.SyncCloth.Process.TeamId;
-                    if (syncTeamId > 0)
-                    {
-                        ref var syncTeamData = ref GetTeamDataRef(syncTeamId);
-                        if (syncTeamData.flag.IsSet(Flag_Enable) && cloth.SyncCloth.Process.GetSuspendCounter() == 0)
-                            suspend = false; // 相手も処理可能状態
-                    }
-                }
-                tdata.flag.SetBits(Flag_Suspend, suspend);
+                // セルフコリジョン更新
+                selfCollisionUpdateSet.Add(teamId);
 
-                // 有効状態と同期まちフラグの２つで実行判定
-                if (tdata.flag.IsSet(Flag_Enable) == false || tdata.flag.IsSet(Flag_Suspend))
-                    continue;
+                // 接線モード
+                tdata.flag.SetBits(Flag_Tangent, cloth.SerializeData.meshWriteMode == ClothMeshWriteMode.PositionAndNormalTangent);
+                cprocess.SetState(ClothProcess.State_UpdateTangent, tdata.flag.IsSet(Flag_Tangent));
 
-                //-------------------------------------------------------------
-                bool selfCollisionUpdate = false;
-
-                // パラメータ変更反映
-                if (cprocess.IsEnable)
-                {
-                    if (cprocess.IsState(ClothProcess.State_ParameterDirty))
-                    {
-                        //Develop.DebugLog($"Update Parameters {teamId}");
-                        // コライダー更新(内部でteamData更新)
-                        MagicaManager.Collider.UpdateColliders(cprocess);
-
-                        // カリング用アニメーターとレンダラー更新
-                        cprocess.UpdateCullingAnimatorAndRenderers();
-
-                        // パラメータ変更
-                        cprocess.SyncParameters();
-                        parameterArray[teamId] = cprocess.parameters;
-                        tdata.updateMode = cloth.SerializeData.updateMode;
-                        tdata.animationPoseRatio = cloth.SerializeData.animationPoseRatio;
-                        tdata.flag.SetBits(Flag_Spring, cprocess.clothType == ClothProcess.ClothType.BoneSpring && cprocess.parameters.springConstraint.springPower > 0.0f); // Spring利用フラグ
-
-                        // セルフコリジョン更新
-                        selfCollisionUpdate = true;
-
-                        cprocess.SetState(ClothProcess.State_ParameterDirty, false);
-                    }
-                    if (cprocess.IsState(ClothProcess.State_SkipWritingDirty))
-                    {
-                        bool skipWriting = cprocess.IsState(ClothProcess.State_SkipWriting);
-
-                        // チームへ反映
-                        tdata.flag.SetBits(Flag_SkipWriting, skipWriting);
-
-                        // RenderDataへ反映
-                        foreach (var rinfo in cprocess.renderMeshInfoList)
-                        {
-                            var renderData = MagicaManager.Render.GetRendererData(rinfo.renderHandle);
-                            renderData.UpdateSkipWriting();
-                        }
-
-                        cprocess.SetState(ClothProcess.State_SkipWritingDirty, false);
-                    }
-                }
-
-                // チーム同期
-                // 同期チェーンをたどり先端のチームを参照する
-                int oldSyncTeamId = tdata.syncTeamId;
-                var syncCloth = cloth.SyncCloth;
-                if (syncCloth != null)
-                {
-                    // デッドロック対策
-                    var c = syncCloth;
-                    while (c)
-                    {
-                        if (c == cloth)
-                        {
-                            syncCloth = null;
-                            c = null;
-                        }
-                        else
-                            c = c.SyncCloth;
-                    }
-                }
-                cprocess.SyncCloth = syncCloth;
-                tdata.syncTeamId = syncCloth != null ? syncCloth.Process.TeamId : 0;
-                tdata.flag.SetBits(Flag_Synchronization, tdata.syncTeamId != 0);
-                tdata.syncCenterTransformIndex = 0;
-                if (oldSyncTeamId != tdata.syncTeamId)
-                {
-                    // 変更あり！
-
-                    // 同期解除
-                    if (oldSyncTeamId > 0)
-                    {
-                        Develop.DebugLog($"Desynchronization! (1) {teamId}");
-                        ref var syncTeamData = ref GetTeamDataRef(oldSyncTeamId);
-                        RemoveSyncParent(ref syncTeamData, teamId);
-                    }
-
-                    // 同期変更
-                    if (syncCloth != null)
-                    {
-                        ref var syncTeamData = ref GetTeamDataRef(syncCloth.Process.TeamId);
-
-                        // 相手に自身を登録
-                        AddSyncParent(ref syncTeamData, teamId);
-
-                        // 時間リセットフラグクリア
-                        tdata.flag.SetBits(Flag_TimeReset, false);
-
-                        Develop.DebugLog($"Synchronization! {teamId}->{syncCloth.Process.TeamId}");
-                    }
-                    else
-                    {
-                        // 同期解除
-                        cloth.SerializeData.selfCollisionConstraint.syncPartner = null;
-                        //tdata.frequency = cprocess.parameters.solverFrequency;
-                        Develop.DebugLog($"Desynchronization! (2) {teamId}");
-                    }
-
-                    // セルフコリジョン更新
-                    selfCollisionUpdate = true;
-                }
-
-                // 時間の同期
-                if (syncCloth && tdata.syncTeamId > 0)
-                {
-                    ref var syncTeamData = ref GetTeamDataRef(syncCloth.Process.TeamId);
-                    if (syncTeamData.IsValid)
-                    {
-                        // 時間同期
-                        tdata.updateMode = syncTeamData.updateMode;
-                        //tdata.frequency = syncTeamData.frequency;
-                        tdata.time = syncTeamData.time;
-                        tdata.oldTime = syncTeamData.oldTime;
-                        tdata.nowUpdateTime = syncTeamData.nowUpdateTime;
-                        tdata.oldUpdateTime = syncTeamData.oldUpdateTime;
-                        tdata.frameUpdateTime = syncTeamData.frameUpdateTime;
-                        tdata.frameOldTime = syncTeamData.frameOldTime;
-                        tdata.timeScale = syncTeamData.timeScale;
-                        tdata.updateCount = syncTeamData.updateCount;
-                        tdata.frameInterpolation = syncTeamData.frameInterpolation;
-                        tdata.skipCount = syncTeamData.skipCount;
-                        //Develop.DebugLog($"Team time sync:{teamId}->{syncCloth.Process.TeamId}");
-                    }
-
-                    // パラメータ同期
-                    // 同期中は一部のパラメータを連動させる
-                    ref var clothParam = ref GetParametersRef(teamId);
-                    clothParam.inertiaConstraint.anchorInertia = syncCloth.SerializeData.inertiaConstraint.anchorInertia;
-                    clothParam.inertiaConstraint.worldInertia = syncCloth.SerializeData.inertiaConstraint.worldInertia;
-                    clothParam.inertiaConstraint.movementInertiaSmoothing = syncCloth.SerializeData.inertiaConstraint.movementInertiaSmoothing;
-                    clothParam.inertiaConstraint.movementSpeedLimit = syncCloth.SerializeData.inertiaConstraint.movementSpeedLimit.GetValue(-1);
-                    clothParam.inertiaConstraint.rotationSpeedLimit = syncCloth.SerializeData.inertiaConstraint.rotationSpeedLimit.GetValue(-1);
-                    clothParam.inertiaConstraint.teleportMode = syncCloth.SerializeData.inertiaConstraint.teleportMode;
-                    clothParam.inertiaConstraint.teleportDistance = syncCloth.SerializeData.inertiaConstraint.teleportDistance;
-                    clothParam.inertiaConstraint.teleportRotation = syncCloth.SerializeData.inertiaConstraint.teleportRotation;
-
-                    // 同期先のセンタートランスフォームインデックスを記録
-                    tdata.syncCenterTransformIndex = syncTeamData.centerTransformIndex;
-                }
-
-                // アンカー
-                var anchorTransform = syncCloth && tdata.syncTeamId > 0 ? syncCloth.SerializeData.inertiaConstraint.anchor : cloth.SerializeData.inertiaConstraint.anchor;
-                int anchorTransformId = anchorTransform != null ? anchorTransform.GetInstanceID() : 0;
-                tdata.flag.SetBits(Flag_Anchor, anchorTransformId != 0);
-                tdata.flag.SetBits(Flag_AnchorReset, anchorTransformId != tdata.anchorTransformId);
-                tdata.anchorTransformId = anchorTransformId;
-                ref var cdata = ref GetCenterDataRef(teamId);
-                cdata.anchorPosition = anchorTransformId != 0 ? anchorTransform.position : float3.zero;
-                cdata.anchorRotation = anchorTransformId != 0 ? anchorTransform.rotation : quaternion.identity;
-
-                // 集計まわり
-                ref var param = ref GetParametersRef(teamId);
-                if (param.colliderCollisionConstraint.mode == ColliderCollisionConstraint.Mode.Edge)
-                    edgeColliderCollisionCount += tdata.EdgeCount;
-
-                // セルフコリジョンのフラグやバッファ更新
-                if (selfCollisionUpdate)
-                {
-                    //Develop.DebugLog("Update Selfcollision");
-                    MagicaManager.Simulation.selfCollisionConstraint.UpdateTeam(teamId);
-                }
-
-                // 一部の処理は後処理にする
-                if (cloth.SerializeData.updateMode == ClothUpdateMode.AnimatorLinkage || syncCloth)
-                {
-                    workPostProcessList.Add(cprocess);
-                }
+                parameterDirtyList.RemoveAt(i);
             }
 
-            // チーム更新（後処理）
-            // 同期が確定してから実行しなければならないもの
-            foreach (var cprocess in workPostProcessList)
+            // (2)書き込み停止反映
+            for (int i = 0; i < skipWritingDirtyList.Count;)
             {
+                var cprocess = skipWritingDirtyList[i];
+                if (cprocess == null)
+                {
+                    skipWritingDirtyList.RemoveAt(i);
+                    continue;
+                }
+                if (cprocess.IsEnable == false)
+                {
+                    i++;
+                    continue;
+                }
+
+                bool skipWriting = cprocess.IsState(ClothProcess.State_SkipWriting);
+
                 int teamId = cprocess.TeamId;
                 ref var tdata = ref GetTeamDataRef(teamId);
 
-                // 更新モード
-                tdata.updateMode = cprocess.SyncCloth ? cprocess.SyncCloth.Process.GetClothUpdateMode() : cprocess.GetClothUpdateMode();
-            }
-            workPostProcessList.Clear();
+                // チームへ反映
+                tdata.flag.SetBits(Flag_SkipWriting, skipWriting);
 
+                // RenderDataへ反映
+                foreach (var rinfo in cprocess.renderMeshInfoList)
+                {
+                    var renderData = rm.GetRendererData(rinfo.renderHandle);
+                    renderData.UpdateSkipWriting();
+                }
+
+                skipWritingDirtyList.RemoveAt(i);
+            }
+
+#if true
+            // (3A)チーム前処理ジョブ
+            // このジョブは相互参照があるので並列化できない
+            var job1 = new AlwaysTeamUpdatePreJob()
+            {
+                teamDataArray = teamDataArray.GetNativeArray(),
+                parameterArray = parameterArray.GetNativeArray(),
+
+                comp2SuspendCounterMap = comp2SuspendCounterMap,
+                comp2TeamIdMap = comp2TeamIdMap,
+                comp2SyncPartnerCompMap = comp2SyncPartnerCompMap,
+                comp2SyncTopCompMap = comp2SyncTopCompMap,
+                selfCollisionUpdateSet = selfCollisionUpdateSet,
+                edgeColliderCollisionCountBuff = edgeColliderCollisionCountBuff,
+            };
+            var jobHandle1 = job1.Schedule();
+
+            // (3B)コンポーネント座標読み込みジョブ
+            // 3Aと並列実行
+            var jobHandle2 = bm.ReadComponentTransform(default);
+
+            JobHandle.ScheduleBatchedJobs(); // 即時開始
+#endif
+
+            // (4)他のコンポーネントを参照する必要がある処理
+            startClothUpdateComponentProfiler.Begin();
+            animatorUpdateModeMap.Clear();
+            foreach (var cprocess in cm.clothSet)
+            {
+                if (cprocess.TeamId == 0)
+                    continue;
+
+                // 連動アニメーターの更新モード取得
+                if (cprocess.interlockingAnimator)
+                {
+                    int animatorId = cprocess.interlockingAnimator.GetInstanceID();
+                    if (animatorUpdateModeMap.ContainsKey(animatorId) == false)
+                    {
+                        animatorUpdateModeMap.Add(animatorId, (int)cprocess.interlockingAnimator.updateMode);
+                    }
+                }
+
+                // 同期時は同期先を見る
+                var refCloth = cprocess.SyncTopCloth != null ? cprocess.SyncTopCloth : cprocess.cloth;
+                var sdata = refCloth.SerializeData;
+
+#if true
+                // アンカー参照オブジェクト
+                var anchorTransform = sdata.inertiaConstraint.anchor;
+                int anchorTransformId = anchorTransform != null ? anchorTransform.GetInstanceID() : 0;
+                if (anchorTransformId != 0 && transformPositionMap.ContainsKey(anchorTransformId) == false)
+                {
+                    // 参照オブジェクトの座標取得
+                    transformPositionMap.Add(anchorTransformId, anchorTransform.position);
+                    transformRotationMap.Add(anchorTransformId, anchorTransform.rotation);
+                }
+                if (cprocess.anchorTransformId != anchorTransformId)
+                {
+                    // 変更あり
+                    cprocess.anchorTransformId = anchorTransformId;
+                    teamAnchorTransformIndexArray[cprocess.TeamId] = anchorTransformId;
+                }
+
+                // 距離カリング参照オブジェクト
+                int distanceObjectId = sdata.cullingSettings.distanceCullingReferenceObject != null ? sdata.cullingSettings.distanceCullingReferenceObject.GetInstanceID() : 0;
+                if (distanceObjectId != 0 && transformPositionMap.ContainsKey(distanceObjectId) == false)
+                {
+                    // 参照オブジェクトの座標取得
+                    transformPositionMap.Add(distanceObjectId, sdata.cullingSettings.distanceCullingReferenceObject.transform.position);
+                }
+                if (cprocess.distanceReferenceObjectId != distanceObjectId)
+                {
+                    // 変更あり
+                    cprocess.distanceReferenceObjectId = distanceObjectId;
+                    teamDistanceTransformIndexArray[cprocess.TeamId] = distanceObjectId;
+                }
+#endif
+            }
+
+            // メインカメラ座標
+            bool hasMainCamera = Camera.main != null;
+            float3 mainCameraPosition = Camera.main ? Camera.main.transform.position : 0;
+            transformPositionMap.Add(0, mainCameraPosition);
+            startClothUpdateComponentProfiler.End();
+
+            // チーム前処理ジョブ待ち
+            jobHandle1.Complete();
+            jobHandle2.Complete();
+            edgeColliderCollisionCount = edgeColliderCollisionCountBuff.Value;
+
+            // (5)セルフコリジョンのフラグやバッファ更新
+            if (selfCollisionUpdateSet.Count() > 0)
+            {
+                var sm = MagicaManager.Simulation;
+                foreach (var teamId in selfCollisionUpdateSet)
+                {
+                    sm.selfCollisionConstraint.UpdateTeam(teamId);
+                }
+                selfCollisionUpdateSet.Clear();
+            }
+
+            // (6)チーム後処理ジョブ
 #if true
             if (ActiveTeamCount > 0)
             {
                 // フレーム更新時間
                 float deltaTime = Time.deltaTime;
-                float fixedDeltaTime = MagicaManager.Time.FixedUpdateCount * Time.fixedDeltaTime;
+                float fixedDeltaTime = tm.FixedUpdateCount * Time.fixedDeltaTime;
                 float unscaledDeltaTime = Time.unscaledDeltaTime;
 
                 //Debug.Log($"DeltaTime:{deltaTime}, FixedDeltaTime:{fixedDeltaTime}, simulationDeltaTime:{MagicaManager.Time.SimulationDeltaTime}, maxDeltaTime:{MagicaManager.Time.MaxDeltaTime}");
                 //Debug.Log($"DeltaTime:{deltaTime}, FixedDeltaTime:{fixedDeltaTime}, simulationDeltaTime:{MagicaManager.Time.SimulationDeltaTime}");
 
                 // このJobは即時実行させる
-                var job = new AlwaysTeamUpdateJob()
+                var postJob = new AlwaysTeamUpdatePostJob()
                 {
                     teamCount = TeamCount,
                     unityFrameDeltaTime = deltaTime,
                     unityFrameFixedDeltaTime = fixedDeltaTime,
                     unityFrameUnscaledDeltaTime = unscaledDeltaTime,
-                    globalTimeScale = MagicaManager.Time.GlobalTimeScale,
-                    simulationDeltaTime = MagicaManager.Time.SimulationDeltaTime,
+                    globalTimeScale = tm.GlobalTimeScale,
+                    simulationDeltaTime = tm.SimulationDeltaTime,
                     //maxDeltaTime = MagicaManager.Time.MaxDeltaTime,
-                    maxSimmulationCountPerFrame = MagicaManager.Time.maxSimulationCountPerFrame,
+                    maxSimmulationCountPerFrame = tm.maxSimulationCountPerFrame,
 
                     maxUpdateCount = maxUpdateCount,
                     teamDataArray = teamDataArray.GetNativeArray(),
                     parameterArray = parameterArray.GetNativeArray(),
+                    centerDataArray = centerDataArray.GetNativeArray(),
+
+                    componentPositionArray = bm.componentPositionArray.GetNativeArray(),
+                    hasMainCamera = hasMainCamera,
+
+                    comp2TeamIdMap = comp2TeamIdMap,
+                    //comp2SyncPartnerCompMap = comp2SyncPartnerCompMap,
+                    comp2SyncTopCompMap = comp2SyncTopCompMap,
+                    animatorUpdateModeMap = animatorUpdateModeMap,
+                    teamAnchorTransformIndexArray = teamAnchorTransformIndexArray.GetNativeArray(),
+                    teamDistanceTransformIndexArray = teamDistanceTransformIndexArray.GetNativeArray(),
+                    transformPositionMap = transformPositionMap,
+                    transformRotationMap = transformRotationMap,
+                    cullingDirtyList = cullingDirtyList,
                 };
-                job.Run();
+                postJob.Run();
+
+                // 距離カリング反映
+                if (cullingDirtyList.Length > 0)
+                {
+                    foreach (int teamId in cullingDirtyList)
+                    {
+                        ref var tdata = ref GetTeamDataRef(teamId);
+                        var cprocess = GetClothProcess(teamId);
+
+                        bool invisible = tdata.IsDistanceCullingInvisible;
+
+                        // cprocessクラスにもコピーする
+                        // 距離カリングでは表示/非表示切替時に常にリセットする
+                        // またカメラカリングのKeepは強制解除する
+                        cprocess.SetState(ClothProcess.State_DistanceCullingInvisible, invisible);
+                        cprocess.SetState(ClothProcess.State_CameraCullingKeep, false);
+
+                        // 対応するレンダーデータに更新を指示する
+                        cprocess.UpdateRendererUse();
+                    }
+                }
             }
 #endif
         }
 
         [BurstCompile]
-        struct AlwaysTeamUpdateJob : IJob
+        struct AlwaysTeamUpdatePreJob : IJob
+        {
+            public NativeArray<TeamData> teamDataArray;
+            public NativeArray<ClothParameters> parameterArray;
+
+            // work
+            public NativeParallelHashMap<int, int> comp2SuspendCounterMap;
+            public NativeParallelHashMap<int, int> comp2TeamIdMap;
+            public NativeParallelHashMap<int, int> comp2SyncPartnerCompMap;
+            public NativeParallelHashMap<int, int> comp2SyncTopCompMap;
+            public NativeParallelHashSet<int> selfCollisionUpdateSet;
+            public NativeReference<int> edgeColliderCollisionCountBuff;
+
+            public void Execute()
+            {
+                int edgeColliderCollisionCount = 0;
+
+                foreach (var kv in comp2TeamIdMap)
+                {
+                    int teamId = kv.Value;
+                    if (teamId == 0)
+                        continue;
+
+                    int compId = kv.Key;
+                    var tdata = teamDataArray[teamId];
+
+                    // 作業フラグをクリア -------------------------------------
+                    tdata.flag.SetBits(Flag_RestoreTransformOnlyOnec, false);
+                    teamDataArray[teamId] = tdata;
+
+                    // 動作判定 ----------------------------------------------------
+                    if (tdata.flag.IsSet(Flag_Enable) == false)
+                        continue;
+
+                    // 同期まち判定 -------------------------------------------------
+                    bool syncSuspend = true;
+                    if (comp2SuspendCounterMap.ContainsKey(compId) == false || comp2SuspendCounterMap[compId] == 0)
+                        syncSuspend = false;
+
+                    // 同期相手の有効状態
+                    if (comp2SyncPartnerCompMap.ContainsKey(compId))
+                    {
+                        int syncCompId = comp2SyncPartnerCompMap[compId];
+                        if (comp2TeamIdMap.ContainsKey(syncCompId))
+                        {
+                            int syncTeamId = comp2TeamIdMap[syncCompId];
+                            if (syncTeamId > 0)
+                            {
+                                var syncTeamData = teamDataArray[syncTeamId];
+                                int syncSuspendCounter = comp2SuspendCounterMap.ContainsKey(syncCompId) ? comp2SuspendCounterMap[syncCompId] : 0;
+                                if (syncTeamData.IsEnable && syncSuspendCounter == 0)
+                                    syncSuspend = false; // 相手も処理可能状態
+                            }
+                        }
+                    }
+                    tdata.flag.SetBits(Flag_SyncSuspend, syncSuspend);
+                    teamDataArray[teamId] = tdata;
+
+                    // 同期待ちなら実行できない
+                    if (tdata.flag.IsSet(Flag_SyncSuspend))
+                        continue;
+
+                    // チーム同期 --------------------------------------------------
+                    int oldSyncTeamId = tdata.syncTeamId;
+                    tdata.syncTeamId = 0;
+                    if (comp2SyncPartnerCompMap.ContainsKey(compId))
+                    {
+                        int syncCompId = comp2SyncPartnerCompMap[compId];
+                        if (comp2TeamIdMap.ContainsKey(syncCompId))
+                        {
+                            int syncTeamId = comp2TeamIdMap[syncCompId];
+                            tdata.syncTeamId = syncTeamId;
+                        }
+                    }
+                    tdata.flag.SetBits(Flag_Synchronization, tdata.syncTeamId != 0);
+                    tdata.syncCenterTransformIndex = 0;
+                    if (oldSyncTeamId != tdata.syncTeamId)
+                    {
+                        // 変更あり！
+                        // 同期解除
+                        if (oldSyncTeamId > 0)
+                        {
+                            //Debug.Log($"Desynchronization! (1) {teamId}");
+                            var syncTeamData = teamDataArray[oldSyncTeamId];
+                            syncTeamData.syncParentTeamId.MC2RemoveItemAtSwapBack(teamId);
+                            teamDataArray[oldSyncTeamId] = syncTeamData;
+                        }
+
+                        // 同期変更
+                        if (tdata.syncTeamId != 0)
+                        {
+                            var syncTeamData = teamDataArray[tdata.syncTeamId];
+
+                            // 相手に自身を登録
+                            // 最大７まで
+                            if (syncTeamData.syncParentTeamId.Length == syncTeamData.syncParentTeamId.Capacity)
+                            {
+                                //Debug.LogWarning($"Synchronous team number limit!");
+                            }
+                            else
+                                syncTeamData.syncParentTeamId.Add(teamId);
+                            teamDataArray[tdata.syncTeamId] = syncTeamData;
+
+                            // 時間リセットフラグクリア
+                            tdata.flag.SetBits(Flag_TimeReset, false);
+
+                            //Debug.Log($"Synchronization! {teamId}->{tdata.syncTeamId}");
+                        }
+                        else
+                        {
+                            // 同期解除
+                            //cloth.SerializeData.selfCollisionConstraint.syncPartner = null;
+                            //Debug.Log($"Desynchronization! (2) {teamId}");
+                        }
+
+                        // セルフコリジョン更新セットに追加
+                        selfCollisionUpdateSet.Add(teamId);
+                    }
+
+                    // 時間とパラメータの同期
+                    var clothParam = parameterArray[teamId];
+
+                    // トップ階層の同期クロスを見る
+                    int syncTopTeamId = 0;
+                    if (comp2SyncTopCompMap.ContainsKey(compId))
+                    {
+                        int syncTopCompId = comp2SyncTopCompMap[compId];
+                        if (comp2TeamIdMap.ContainsKey(syncTopCompId))
+                        {
+                            syncTopTeamId = comp2TeamIdMap[syncTopCompId];
+                            var syncTeamData = teamDataArray[syncTopTeamId];
+
+                            // 時間同期
+                            if (syncTeamData.IsValid)
+                            {
+                                tdata.originalUpdateMode = syncTeamData.originalUpdateMode;
+                                tdata.updateMode = syncTeamData.updateMode;
+                                //tdata.frequency = syncTeamData.frequency;
+                                tdata.time = syncTeamData.time;
+                                tdata.oldTime = syncTeamData.oldTime;
+                                tdata.nowUpdateTime = syncTeamData.nowUpdateTime;
+                                tdata.oldUpdateTime = syncTeamData.oldUpdateTime;
+                                tdata.frameUpdateTime = syncTeamData.frameUpdateTime;
+                                tdata.frameOldTime = syncTeamData.frameOldTime;
+                                tdata.timeScale = syncTeamData.timeScale;
+                                tdata.updateCount = syncTeamData.updateCount;
+                                tdata.frameInterpolation = syncTeamData.frameInterpolation;
+                                tdata.skipCount = syncTeamData.skipCount;
+                                //Develop.DebugLog($"Team time sync:{teamId}->{syncCloth.Process.TeamId}");
+                            }
+
+                            // パラメータ同期
+                            // 同期中は一部のパラメータを連動させる
+                            var syncClothParam = parameterArray[syncTopTeamId];
+                            clothParam.inertiaConstraint.anchorInertia = syncClothParam.inertiaConstraint.anchorInertia;
+                            clothParam.inertiaConstraint.worldInertia = syncClothParam.inertiaConstraint.worldInertia;
+                            clothParam.inertiaConstraint.movementInertiaSmoothing = syncClothParam.inertiaConstraint.movementInertiaSmoothing;
+                            clothParam.inertiaConstraint.movementSpeedLimit = syncClothParam.inertiaConstraint.movementSpeedLimit;
+                            clothParam.inertiaConstraint.rotationSpeedLimit = syncClothParam.inertiaConstraint.rotationSpeedLimit;
+                            clothParam.inertiaConstraint.teleportMode = syncClothParam.inertiaConstraint.teleportMode;
+                            clothParam.inertiaConstraint.teleportDistance = syncClothParam.inertiaConstraint.teleportDistance;
+                            clothParam.inertiaConstraint.teleportRotation = syncClothParam.inertiaConstraint.teleportRotation;
+                            parameterArray[teamId] = clothParam;
+
+                            // 同期先のセンタートランスフォームインデックスを記録
+                            tdata.syncCenterTransformIndex = syncTeamData.centerTransformIndex;
+                        }
+                    }
+
+                    // 集計まわり
+                    if (clothParam.colliderCollisionConstraint.mode == ColliderCollisionConstraint.Mode.Edge)
+                        edgeColliderCollisionCount += tdata.EdgeCount;
+
+
+                    teamDataArray[teamId] = tdata;
+                }
+
+                edgeColliderCollisionCountBuff.Value = edgeColliderCollisionCount;
+            }
+        }
+
+        [BurstCompile]
+        struct AlwaysTeamUpdatePostJob : IJob
         {
             public int teamCount;
             public float unityFrameDeltaTime;
@@ -1234,29 +1565,130 @@ namespace MagicaCloth2
             public float unityFrameUnscaledDeltaTime;
             public float globalTimeScale;
             public float simulationDeltaTime;
-            //public float maxDeltaTime;
             public int maxSimmulationCountPerFrame;
 
             public NativeReference<int> maxUpdateCount;
             public NativeArray<TeamData> teamDataArray;
             [Unity.Collections.ReadOnly]
             public NativeArray<ClothParameters> parameterArray;
+            public NativeArray<InertiaConstraint.CenterData> centerDataArray;
+
+            public NativeArray<float3> componentPositionArray;
+            public bool hasMainCamera;
+
+            // work
+            public NativeParallelHashMap<int, int> comp2TeamIdMap;
+            //public NativeParallelHashMap<int, int> comp2SyncPartnerCompMap;
+            public NativeParallelHashMap<int, int> comp2SyncTopCompMap;
+            public NativeParallelHashMap<int, int> animatorUpdateModeMap;
+            public NativeArray<int> teamAnchorTransformIndexArray;
+            public NativeArray<int> teamDistanceTransformIndexArray;
+            public NativeParallelHashMap<int, float3> transformPositionMap;
+            public NativeParallelHashMap<int, quaternion> transformRotationMap;
+            public NativeList<int> cullingDirtyList;
 
             public void Execute()
             {
                 int maxCount = 0;
 
-                for (int teamId = 0; teamId < teamCount; teamId++)
+                for (int teamId = 1; teamId < teamCount; teamId++)
                 {
-                    if (teamId == 0)
+                    var tdata = teamDataArray[teamId];
+                    int compId = tdata.componentId;
+                    //if (tdata.IsProcess == false)
+                    //    continue;
+                    if (tdata.IsEnable == false)
+                        continue;
+                    if (tdata.flag.IsSet(Flag_SyncSuspend))
+                        continue;
+
+                    // 動作検証
+                    // ★一旦停止
+
+                    // アンカー
+                    int anchorTransformIndex = teamAnchorTransformIndexArray[teamId];
+                    bool oldAnchor = tdata.flag.IsSet(Flag_Anchor);
+                    bool newAnchor = anchorTransformIndex != 0;
+                    tdata.flag.SetBits(Flag_Anchor, newAnchor);
+                    tdata.flag.SetBits(Flag_AnchorReset, oldAnchor != newAnchor);
+                    var cdata = centerDataArray[teamId];
+                    cdata.anchorPosition = anchorTransformIndex != 0 ? transformPositionMap[anchorTransformIndex] : float3.zero;
+                    cdata.anchorRotation = anchorTransformIndex != 0 ? transformRotationMap[anchorTransformIndex] : quaternion.identity;
+                    centerDataArray[teamId] = cdata;
+
+                    // 距離カリング判定
+                    DistanceCullingUpdate(teamId, ref tdata);
+
+                    if (tdata.IsCullingInvisible)
                     {
-                        // グローバルチーム
+                        teamDataArray[teamId] = tdata;
                         continue;
                     }
 
-                    var tdata = teamDataArray[teamId];
-                    if (tdata.IsProcess == false)
-                        continue;
+                    // 更新モード
+                    int syncTopTeamId = 0;
+                    if (comp2SyncTopCompMap.ContainsKey(compId))
+                    {
+                        int syncTopCompId = comp2SyncTopCompMap[compId];
+                        if (comp2TeamIdMap.ContainsKey(syncTopCompId))
+                        {
+                            syncTopTeamId = comp2TeamIdMap[syncTopCompId];
+                        }
+                    }
+                    if (tdata.originalUpdateMode == ClothUpdateMode.AnimatorLinkage || syncTopTeamId > 0)
+                    {
+                        var originalUpdateMode = tdata.originalUpdateMode;
+                        int animatorId = tdata.interlockingAnimatorId;
+                        if (syncTopTeamId > 0)
+                        {
+                            var syncTeamData = teamDataArray[syncTopTeamId];
+                            originalUpdateMode = syncTeamData.originalUpdateMode;
+                            animatorId = syncTeamData.interlockingAnimatorId;
+                        }
+
+                        switch (originalUpdateMode)
+                        {
+                            case ClothUpdateMode.Normal:
+                            case ClothUpdateMode.UnityPhysics:
+                            case ClothUpdateMode.Unscaled:
+                                tdata.updateMode = originalUpdateMode;
+                                break;
+                            case ClothUpdateMode.AnimatorLinkage:
+                                if (animatorUpdateModeMap.ContainsKey(animatorId))
+                                {
+                                    AnimatorUpdateMode aniUpdateMode = (AnimatorUpdateMode)animatorUpdateModeMap[animatorId];
+                                    switch (aniUpdateMode)
+                                    {
+                                        case AnimatorUpdateMode.Normal:
+                                            tdata.updateMode = ClothUpdateMode.Normal;
+                                            break;
+#if UNITY_2023_1_OR_NEWER
+                                        case AnimatorUpdateMode.Fixed:
+                                            tdata.updateMode = ClothUpdateMode.UnityPhysics;
+                                            break;
+#else
+                                        case AnimatorUpdateMode.AnimatePhysics:
+                                            tdata.updateMode = ClothUpdateMode.UnityPhysics;
+                                            break;
+#endif
+                                        case AnimatorUpdateMode.UnscaledTime:
+                                            tdata.updateMode = ClothUpdateMode.Unscaled;
+                                            break;
+                                        default:
+                                            //Develop.DebugLogWarning($"[{cloth.name}] Unknown Animator UpdateMode:{interlockingAnimator.updateMode}");
+                                            tdata.updateMode = ClothUpdateMode.Normal;
+                                            break;
+                                    }
+                                }
+                                else
+                                    tdata.updateMode = ClothUpdateMode.Normal;
+                                break;
+                            default:
+                                //Develop.LogError($"[{cloth.name}] Unknown Cloth Update Mode:{cloth.SerializeData.updateMode}");
+                                tdata.updateMode = ClothUpdateMode.Normal;
+                                break;
+                        }
+                    }
 
                     // 時間リセット
                     if (tdata.flag.IsSet(Flag_TimeReset))
@@ -1277,7 +1709,7 @@ namespace MagicaCloth2
 
                     // タイムスケール
                     float timeScale = tdata.timeScale * (tdata.IsUnscaled ? 1.0f : globalTimeScale);
-                    timeScale = tdata.flag.IsSet(Flag_Suspend) ? 0.0f : timeScale;
+                    timeScale = tdata.flag.IsSet(Flag_SyncSuspend) ? 0.0f : timeScale;
                     tdata.nowTimeScale = timeScale; // 最終計算用タイムスケール
 
                     // 加算時間
@@ -1342,20 +1774,101 @@ namespace MagicaCloth2
 
                 maxUpdateCount.Value = maxCount;
             }
-        }
 
-        bool AddSyncParent(ref TeamData tdata, int parentTeamId)
-        {
-            // 最大７まで
-            if (tdata.syncParentTeamId.Length == tdata.syncParentTeamId.Capacity)
+            void DistanceCullingUpdate(int teamId, ref TeamData tdata)
             {
-                Develop.LogWarning($"Synchronous team number limit!");
-                return false;
-            }
-            tdata.syncParentTeamId.Add(parentTeamId);
+                // 現在の状態
+                bool oldInvisible = tdata.IsDistanceCullingInvisible;
+                bool invisible;
 
-            return true;
+                var param = parameterArray[teamId].culling;
+
+                // 距離カリングの有無
+                if (param.useDistanceCulling)
+                {
+                    // 距離カリング有効
+                    // 距離判定
+                    int transformId = teamDistanceTransformIndexArray[teamId];
+                    if (transformPositionMap.ContainsKey(transformId))
+                    {
+                        // 現在コンポーネント位置(pos)は同期を取っていない
+                        // これは２つのコンポーネントが同じ階層と同じ位置であることを想定しているためである
+                        // そのため２つのコンポーネントの位置がずれていると予期せぬ動作不良を起こす危険性がある
+                        float3 pos = componentPositionArray[tdata.componentTransformIndex];
+
+                        // 参照オブジェクト位置(spos)は同期されている
+                        float3 spos = transformPositionMap[transformId];
+
+                        //Debug.Log($"[{teamId}] pos:{pos}, spos:{spos}");
+                        //Debug.Log($"[{teamId}] componentTransformIndex:{tdata.componentTransformIndex}, objTransformId:{transformId}");
+
+                        float dist = math.distance(pos, spos);
+                        float cullingDist = param.distanceCullingLength;
+                        if (hasMainCamera == false && tdata.componentTransformIndex == 0)
+                            cullingDist = 1000000.0f; // メインカメラnull時の安全対策
+                        invisible = dist >= cullingDist;
+
+                        // フェードウエイト
+                        float fadeDist = math.saturate(param.distanceCullingFadeRatio) * cullingDist;
+                        tdata.distanceWeight = 1.0f - math.saturate(math.unlerp(cullingDist - fadeDist, cullingDist, dist));
+                    }
+                    else
+                    {
+                        // 距離カリング無効
+                        invisible = false;
+                        tdata.distanceWeight = 1.0f;
+                    }
+                }
+                else
+                {
+                    // 距離カリング無効
+                    invisible = false;
+                    tdata.distanceWeight = 1.0f;
+                }
+
+                // 状態変更
+                if (oldInvisible != invisible)
+                {
+                    tdata.flag.SetBits(Flag_DistanceCullingInvisible, invisible);
+                    //Debug.Log($"Change distance culling invisible:({oldInvisible}) -> ({invisible})");
+
+                    // 距離カリングでは表示/非表示切替時に常にリセットする
+                    // またカメラカリングのKeepは強制解除する
+                    tdata.flag.SetBits(Flag_Reset, true);
+                    tdata.flag.SetBits(Flag_CameraCullingKeep, false);
+
+                    // メインスレッド処理用のリストに追加する
+                    cullingDirtyList.Add(teamId);
+                }
+            }
         }
+
+#if false
+        /// <summary>
+        /// 実行検証
+        /// 予期せぬ状態が発生した場合は実行を停止させる
+        /// </summary>
+        /// <param name="cprocess"></param>
+        void ExecutionVerify(ClothProcess cprocess)
+        {
+            bool old = cprocess.IsState(ClothProcess.State_Verification);
+            bool now = true;
+
+            // スケール検証
+            // ０スケールは動作不良を起こす
+            float3 scl = cprocess.cloth.transform.lossyScale;
+            scl = math.abs(scl);
+            const float minScale = 0.000001f;
+            if (scl.x < minScale || scl.y < minScale || scl.z < minScale)
+                now = false;
+
+            if (old != now)
+            {
+                cprocess.SetState(ClothProcess.State_Verification, now);
+                cprocess.UpdateUse();
+            }
+        }
+#endif
 
         void RemoveSyncParent(ref TeamData tdata, int parentTeamId)
         {
@@ -1458,7 +1971,7 @@ namespace MagicaCloth2
                 // ■コンポーネント姿勢
                 float3 componentWorldPos = transformPositionArray[centerTransformIndex];
                 quaternion componentWorldRot = transformRotationArray[centerTransformIndex];
-                float3 componentWorldScl = transformScaleArray[centerTransformIndex];
+                float3 componentWorldScl = transformScaleArray[cdata.centerTransformIndex]; // ただしスケールは同期させない！(v2.11.1)
                 cdata.componentWorldPosition = componentWorldPos;
                 cdata.componentWorldRotation = componentWorldRot;
                 cdata.componentWorldScale = componentWorldScl;
@@ -1733,6 +2246,7 @@ namespace MagicaCloth2
                     float rotationShift = 1.0f - param.inertiaConstraint.worldInertia; // 同期時は同期先の値が入っている
 
                     // KeepテレポートもしくはCulling時はシフト量100%で実装
+                    //bool keep = tdata.IsKeepReset || tdata.IsCameraCullingInvisible;
                     bool keep = tdata.IsKeepReset || tdata.IsCullingInvisible;
                     movementShift = keep ? 1.0f : movementShift;
                     rotationShift = keep ? 1.0f : rotationShift;
@@ -1824,6 +2338,7 @@ namespace MagicaCloth2
                         cdata.nowWorldRotation = math.mul(cdata.frameComponentShiftRotation, cdata.nowWorldRotation);
                     }
                 }
+                //Debug.Log($"team:[{teamId}] frameComponentShiftVector:{cdata.frameComponentShiftVector}, frameComponentShiftRotation:{cdata.frameComponentShiftRotation}");
                 //Debug.Log($"team:[{teamId}] centerTransformIndex:{centerTransformIndex}");
                 //Debug.Log($"team:[{teamId}] worldInertia:{param.inertiaConstraint.worldInertia}");
                 //Debug.Log($"team:[{teamId}] movementSpeedLimit:{param.inertiaConstraint.movementSpeedLimit}");
@@ -2038,7 +2553,11 @@ namespace MagicaCloth2
 
                 // 今回のフレーム割合を計算する
                 // frameStartTimeからtime区間でのnowUpdateTimeの割合
-                tdata.frameInterpolation = (tdata.nowUpdateTime - tdata.frameOldTime) / (tdata.time - tdata.frameOldTime);
+                //tdata.frameInterpolation = (tdata.nowUpdateTime - tdata.frameOldTime) / (tdata.time - tdata.frameOldTime);
+                // 念の為、0除算チェックと0-1クランプを入れる
+                float b = tdata.time - tdata.frameOldTime;
+                tdata.frameInterpolation = b > 0 ? math.saturate((tdata.nowUpdateTime - tdata.frameOldTime) / b) : 1.0f;
+
                 //Debug.Log($"Team[{teamId}] time.{tdata.time}, oldTime:{tdata.oldTime}, frameTime:{tdata.frameUpdateTime}, frameOldTime:{tdata.frameOldTime}, nowUpdateTime:{tdata.nowUpdateTime}, frameInterp:{tdata.frameInterpolation}");
 
                 // ■センター ---------------------------------------------------
@@ -2057,6 +2576,7 @@ namespace MagicaCloth2
                 cdata.stepRotation = MathUtility.FromToRotation(cdata.oldWorldRotation, cdata.nowWorldRotation);
                 float stepAngle = MathUtility.Angle(cdata.oldWorldRotation, cdata.nowWorldRotation);
                 //Debug.Log($"Team[{teamId}] stepVector:{cdata.stepVector}, stepRotation:{cdata.stepRotation}, stepAngle:{stepAngle}");
+                //Debug.Log($"Team[{teamId}] stepVector:{math.length(cdata.stepVector)}, frameInterpolation:{tdata.frameInterpolation}");
 
                 // ローカル慣性
                 float localMovementInertia = 1.0f - param.inertiaConstraint.localInertia;
@@ -2131,7 +2651,7 @@ namespace MagicaCloth2
                 //Debug.Log($"{tdata.velocityWeight}");
 
                 // シミュレーション結果のブレンド割合
-                tdata.blendWeight = math.saturate(tdata.velocityWeight * param.blendWeight);
+                tdata.blendWeight = math.saturate(tdata.velocityWeight * param.blendWeight * tdata.distanceWeight);
                 //Debug.Log($"{tdata.blendWeight}");
 
                 // 風の時間更新
@@ -2392,7 +2912,7 @@ namespace MagicaCloth2
                     sb.AppendLine($"  -blendWeight {tdata.blendWeight}");
 
                     // 同期
-                    sb.AppendLine($"  Sync:{cloth.SyncCloth}, SyncParentCount:{tdata.syncParentTeamId.Length}");
+                    sb.AppendLine($"  Sync:{cloth.SyncPartnerCloth}, SyncParentCount:{tdata.syncParentTeamId.Length}");
 
                     // chunk情報
                     sb.AppendLine($"  -ProxyTransformChunk {tdata.proxyTransformChunk}");

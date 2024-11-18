@@ -204,6 +204,7 @@ public abstract class EnemyBase : MonoBehaviour
         SetIsAttacking(false);
         _animator.SetBool("Attack", false);
         _animator.SetBool("StrongAttack", false);
+        _animator.SetBool("TakeDamage", false);
         TransitionToState(new IdleState());
     }
 

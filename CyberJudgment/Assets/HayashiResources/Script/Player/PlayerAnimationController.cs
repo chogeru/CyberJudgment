@@ -14,6 +14,7 @@ public class PlayerAnimationController : MonoBehaviour
     private readonly ReactiveProperty<PlayerState> playerState = new ReactiveProperty<PlayerState>(PlayerState.Idle);
 
     private UIPresenter _uiPresenter;
+    [SerializeField]
     private bool isUIOpen = false;
 
     private void Start()
@@ -47,8 +48,12 @@ public class PlayerAnimationController : MonoBehaviour
     private void ObserveUIState()
     {
         Observable.EveryUpdate()
-            .Where(_ => _uiPresenter.IsMenuOpen != isUIOpen)
-            .Subscribe(_ => ToggleUIAnimation(_uiPresenter.IsMenuOpen))
+            .Select(_ => _uiPresenter.IsMenuOpen)
+            .DistinctUntilChanged() // 状態が変化したときだけ反応
+            .Subscribe(isMenuOpen =>
+            {
+                ToggleUIAnimation(isMenuOpen);
+            })
             .AddTo(this);
     }
 
@@ -58,30 +63,32 @@ public class PlayerAnimationController : MonoBehaviour
     /// <param name="isUIOpen">UIが開いているかどうか</param>
     private void ToggleUIAnimation(bool isUIOpen)
     {
+        if (this.isUIOpen == isUIOpen)
+        {
+            // 状態が変更されていない場合は何もしない
+            return;
+        }
+
         this.isUIOpen = isUIOpen;
 
         if (isUIOpen)
         {
             // UIが開いている間は専用のアニメーションを再生
-            m_Animator.CrossFade("UIOpen",0.2f);
+            m_Animator.CrossFade("UIOpen", 0.2f);
+            m_Animator.SetBool("Idle", false);
+
         }
         else
         {
-            // UIが閉じたら現在のプレイヤー状態に基づいたアニメーションに遷移
-            if (playerState.Value == PlayerState.Idle)
-            {
-                m_Animator.CrossFade("Idle", 0.2f);
-            }
-            else if (playerState.Value == PlayerState.Walk)
-            {
-                m_Animator.CrossFade("Walk", 0.05f);
-            }
-            else if (playerState.Value == PlayerState.Run)
-            {
-                m_Animator.CrossFade("Run", 0.05f);
-            }
+            // UIが閉じたときにアニメーションをリセット
+            Observable.Timer(System.TimeSpan.FromSeconds(0.2)) // UI専用アニメーションのクロスフェード時間
+                .Subscribe(_ =>
+                {
+                    UpdateAnimator(playerState.Value); // プレイヤーの現在の状態に基づいてアニメーションを再設定
+                }).AddTo(this);
         }
     }
+
 
     /// <summary>
     /// 入力によりアニメーション更新処理

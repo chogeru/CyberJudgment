@@ -55,20 +55,26 @@ namespace MagicaCloth2
         Mesh customMesh;
         NativeArray<Vector3> localPositions;
         NativeArray<Vector3> localNormals;
+        NativeArray<Vector4> localTangents; // option
         NativeArray<BoneWeight> boneWeights;
         BoneWeight centerBoneWeight;
 
         /// <summary>
-        /// カスタムメッシュの状態フラグ
+        /// カスタムメッシュの状態フラグ(32bit)
         /// </summary>
         private const int Flag_UseCustomMesh = 0; // カスタムメッシュの利用
         private const int Flag_ChangePositionNormal = 1; // 座標および法線の書き込み
         private const int Flag_ChangeBoneWeight = 2; // ボーンウエイトの書き込み
         private const int Flag_ModifyBoneWeight = 3; // ボーンウエイトの変更
+        private const int Flag_HasMeshTangent = 4; // オリジナルメッシュが接線を持っているかどうか
+        private const int Flag_HasTangent = 5; // 最終的に接線情報を持っているかどうか
+        private const int Flag_ChangeTangent = 6; // 接線の書き込み
 
         private BitField32 flag;
 
         public bool UseCustomMesh => flag.IsSet(Flag_UseCustomMesh);
+        public bool HasMeshTangent => flag.IsSet(Flag_HasMeshTangent);
+        public bool HasTangent => flag.IsSet(Flag_HasTangent);
 
         //=========================================================================================
         public void Dispose()
@@ -83,6 +89,8 @@ namespace MagicaCloth2
                 localPositions.Dispose();
             if (localNormals.IsCreated)
                 localNormals.Dispose();
+            if (localTangents.IsCreated)
+                localTangents.Dispose();
             if (boneWeights.IsCreated)
                 boneWeights.Dispose();
 
@@ -105,7 +113,12 @@ namespace MagicaCloth2
         /// この処理はスレッド化できないので少し負荷がかかるが即時実行する
         /// </summary>
         /// <param name="ren"></param>
-        internal void Initialize(Renderer ren, RenderSetupData referenceSetupData, RenderSetupData.UniqueSerializationData referencePreBuildUniqueSetupData)
+        internal void Initialize(
+            Renderer ren,
+            RenderSetupData referenceSetupData,
+            RenderSetupData.UniqueSerializationData referencePreBuildUniqueSetupData,
+            RenderSetupSerializeData referenceInitSetupData
+            )
         {
             Debug.Assert(ren);
 
@@ -123,7 +136,7 @@ namespace MagicaCloth2
             }
             else
             {
-                setupData = new RenderSetupData(ren);
+                setupData = new RenderSetupData(referenceInitSetupData, ren);
                 preBuildUniqueSerializeData = null;
 
                 originalMesh = setupData.originalMesh;
@@ -131,6 +144,10 @@ namespace MagicaCloth2
                 meshFilter = setupData.meshFilter;
                 transformList = setupData.transformList;
             }
+
+            // オリジナルメッシュの接線情報を確認
+            flag.SetBits(Flag_HasMeshTangent, originalMesh.HasVertexAttribute(UnityEngine.Rendering.VertexAttribute.Tangent));
+            //Debug.Log($"OriginalMesh[{originalMesh.name}] hasTangent:{originalMesh.HasVertexAttribute(UnityEngine.Rendering.VertexAttribute.Tangent)}");
 
             // センタートランスフォーム用ボーンウエイト
             centerBoneWeight = new BoneWeight();
@@ -177,6 +194,8 @@ namespace MagicaCloth2
                 int vertexCount = setupData.vertexCount;
                 localPositions = new NativeArray<Vector3>(vertexCount, Allocator.Persistent);
                 localNormals = new NativeArray<Vector3>(vertexCount, Allocator.Persistent);
+                if (HasMeshTangent)
+                    localTangents = new NativeArray<Vector4>(vertexCount, Allocator.Persistent);
                 if (HasBoneWeight)
                     boneWeights = new NativeArray<BoneWeight>(vertexCount, Allocator.Persistent);
 
@@ -213,11 +232,21 @@ namespace MagicaCloth2
                 var meshData = setupData.meshDataArray[0];
                 meshData.GetVertices(localPositions);
                 meshData.GetNormals(localNormals);
+                if (HasMeshTangent)
+                {
+                    meshData.GetTangents(localTangents);
+                    flag.SetBits(Flag_HasTangent, true); // 最終的な接線あり
+                }
             }
             else
             {
                 NativeArray<Vector3>.Copy(setupData.localPositions, localPositions);
                 NativeArray<Vector3>.Copy(setupData.localNormals, localNormals);
+                if (HasMeshTangent && setupData.HasTangent)
+                {
+                    NativeArray<Vector4>.Copy(setupData.localTangents, localTangents);
+                    flag.SetBits(Flag_HasTangent, true); // 最終的な接線あり
+                }
             }
             if (HasBoneWeight)
             {
@@ -302,7 +331,7 @@ namespace MagicaCloth2
             }
 
             // Invisible状態
-            bool invisible = useProcessSet.Any(x => x.IsCullingInvisible() && x.IsCullingKeep() == false);
+            bool invisible = useProcessSet.Any(x => (x.IsCameraCullingInvisible() && x.IsCameraCullingKeep() == false) || x.IsDistanceCullingInvisible());
 
             // 状態変更
             if (invisible || useProcessSet.Count == 0)
@@ -369,6 +398,8 @@ namespace MagicaCloth2
             {
                 customMesh.SetVertices(localPositions);
                 customMesh.SetNormals(localNormals);
+                if (HasTangent && flag.IsSet(Flag_ChangeTangent))
+                    customMesh.SetTangents(localTangents);
             }
             if (flag.IsSet(Flag_ChangeBoneWeight) && HasBoneWeight)
             {
@@ -380,6 +411,7 @@ namespace MagicaCloth2
             // 完了
             flag.SetBits(Flag_ChangePositionNormal, false);
             flag.SetBits(Flag_ChangeBoneWeight, false);
+            flag.SetBits(Flag_ChangeTangent, false);
         }
 
         //=========================================================================================
@@ -389,27 +421,52 @@ namespace MagicaCloth2
         /// <param name="mappingChunk"></param>
         /// <param name="jobHandle"></param>
         /// <returns></returns>
-        internal JobHandle UpdatePositionNormal(DataChunk mappingChunk, JobHandle jobHandle = default)
+        internal JobHandle UpdatePositionNormal(bool updateTangent, DataChunk mappingChunk, JobHandle jobHandle)
         {
             if (UseCustomMesh == false)
                 return jobHandle;
 
             var vm = MagicaManager.VMesh;
 
-            // 座標・法線の差分書き換え
-            var job = new UpdatePositionNormalJob2()
+            // 座標・法線・接線の差分書き換え
+            if (HasTangent && updateTangent)
             {
-                startIndex = mappingChunk.startIndex,
+                // 接線あり
+                var job = new UpdatePositionNormalTangentJob()
+                {
+                    startIndex = mappingChunk.startIndex,
 
-                meshLocalPositions = localPositions.Reinterpret<float3>(),
-                meshLocalNormals = localNormals.Reinterpret<float3>(),
+                    meshLocalPositions = localPositions.Reinterpret<float3>(),
+                    meshLocalNormals = localNormals.Reinterpret<float3>(),
+                    meshLocalTangents = localTangents.Reinterpret<float4>(),
 
-                mappingReferenceIndices = vm.mappingReferenceIndices.GetNativeArray(),
-                mappingAttributes = vm.mappingAttributes.GetNativeArray(),
-                mappingPositions = vm.mappingPositions.GetNativeArray(),
-                mappingNormals = vm.mappingNormals.GetNativeArray(),
-            };
-            jobHandle = job.Schedule(mappingChunk.dataLength, 32, jobHandle);
+                    mappingReferenceIndices = vm.mappingReferenceIndices.GetNativeArray(),
+                    mappingAttributes = vm.mappingAttributes.GetNativeArray(),
+                    mappingPositions = vm.mappingPositions.GetNativeArray(),
+                    mappingNormals = vm.mappingNormals.GetNativeArray(),
+                    mappingTangents = vm.mappingTangents.GetNativeArray(),
+                };
+                jobHandle = job.Schedule(mappingChunk.dataLength, 32, jobHandle);
+
+                flag.SetBits(Flag_ChangeTangent, true);
+            }
+            else
+            {
+                // 接線なし
+                var job = new UpdatePositionNormalJob()
+                {
+                    startIndex = mappingChunk.startIndex,
+
+                    meshLocalPositions = localPositions.Reinterpret<float3>(),
+                    meshLocalNormals = localNormals.Reinterpret<float3>(),
+
+                    mappingReferenceIndices = vm.mappingReferenceIndices.GetNativeArray(),
+                    mappingAttributes = vm.mappingAttributes.GetNativeArray(),
+                    mappingPositions = vm.mappingPositions.GetNativeArray(),
+                    mappingNormals = vm.mappingNormals.GetNativeArray(),
+                };
+                jobHandle = job.Schedule(mappingChunk.dataLength, 32, jobHandle);
+            }
 
             flag.SetBits(Flag_ChangePositionNormal, true);
 
@@ -417,7 +474,7 @@ namespace MagicaCloth2
         }
 
         [BurstCompile]
-        struct UpdatePositionNormalJob2 : IJobParallelFor
+        struct UpdatePositionNormalJob : IJobParallelFor
         {
             public int startIndex;
 
@@ -459,6 +516,61 @@ namespace MagicaCloth2
 
                 // 法線書き込み
                 meshLocalNormals[windex] = mappingNormals[vindex];
+            }
+        }
+
+        [BurstCompile]
+        struct UpdatePositionNormalTangentJob : IJobParallelFor
+        {
+            public int startIndex;
+
+            [NativeDisableParallelForRestriction]
+            [Unity.Collections.WriteOnly]
+            public NativeArray<float3> meshLocalPositions;
+            [NativeDisableParallelForRestriction]
+            [Unity.Collections.WriteOnly]
+            public NativeArray<float3> meshLocalNormals;
+            [NativeDisableParallelForRestriction]
+            //[Unity.Collections.WriteOnly]
+            public NativeArray<float4> meshLocalTangents;
+
+            // mapping mesh
+            [Unity.Collections.ReadOnly]
+            public NativeArray<int> mappingReferenceIndices;
+            [Unity.Collections.ReadOnly]
+            public NativeArray<VertexAttribute> mappingAttributes;
+            [Unity.Collections.ReadOnly]
+            public NativeArray<float3> mappingPositions;
+            [Unity.Collections.ReadOnly]
+            public NativeArray<float3> mappingNormals;
+            [Unity.Collections.ReadOnly]
+            public NativeArray<float3> mappingTangents;
+
+            public void Execute(int index)
+            {
+                int vindex = index + startIndex;
+
+                // 無効頂点なら書き込まない
+                var attr = mappingAttributes[vindex];
+                if (attr.IsInvalid())
+                    return;
+
+                // 固定も書き込まない
+                if (attr.IsFixed())
+                    return;
+
+                // 書き込む頂点インデックス
+                int windex = mappingReferenceIndices[vindex];
+
+                // 座標書き込み
+                meshLocalPositions[windex] = mappingPositions[vindex];
+
+                // 法線書き込み
+                meshLocalNormals[windex] = mappingNormals[vindex];
+
+                // 接線書き込み
+                var tan = meshLocalTangents[windex];
+                meshLocalTangents[windex] = new float4(mappingTangents[vindex], tan.w);
             }
         }
 

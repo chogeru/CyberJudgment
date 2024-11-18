@@ -78,6 +78,11 @@ namespace MagicaCloth2
             public const float SameSurfaceAngle = 80.0f;
 
             /// <summary>
+            /// 未来予測時のルートからの距離制限倍率
+            /// </summary>
+            public const float MaxDistanceRatioFutuerPrediction = 1.3f;
+
+            /// <summary>
             /// [Reduction]
             /// 有効フラグ。常にtrueとする。
             /// </summary>
@@ -403,6 +408,12 @@ namespace MagicaCloth2
             /// BoneSpring利用時のfriction値
             /// </summary>
             public const float BoneSpringCollisionFriction = 0.5f;
+
+            /// <summary>
+            /// [Culling]
+            /// 距離カリングの最大距離
+            /// </summary>
+            public const float DistanceCullingMaxLength = 100.0f;
         }
     }
 }

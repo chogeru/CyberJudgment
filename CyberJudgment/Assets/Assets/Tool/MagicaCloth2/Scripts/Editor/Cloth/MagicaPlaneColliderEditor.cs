@@ -9,7 +9,8 @@ namespace MagicaCloth2
     /// PlaneColliderのインスペクター拡張
     /// </summary>
     [CustomEditor(typeof(MagicaPlaneCollider))]
-    public class MagicaPlaneColliderEditor : Editor
+    [CanEditMultipleObjects]
+    public class MagicaPlaneColliderEditor : MagicaEditorBase
     {
         public override void OnInspectorGUI()
         {
@@ -19,8 +20,7 @@ namespace MagicaCloth2
             Undo.RecordObject(scr, "PlaneCollider");
 
             // center
-            var centerValue = serializedObject.FindProperty("center");
-            centerValue.vector3Value = EditorGUILayout.Vector3Field("Center", centerValue.vector3Value);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("center"));
 
             serializedObject.ApplyModifiedProperties();
         }

@@ -83,15 +83,15 @@ namespace MagicaCloth2
 
         //=========================================================================================
         /// <summary>
-        /// 書き込み用トランスフォームのデータ参照インデックス
-        /// つまり上記配列へのインデックス
+        /// コンポーネント用ワールド座標
         /// </summary>
-        //internal ExNativeArray<short> writeIndexArray;
+        internal ExNativeArray<float3> componentPositionArray;
 
         /// <summary>
-        /// 書き込み用トランスフォームアクセス配列
+        /// コンポーネント用トランスフォーム
         /// </summary>
-        //internal TransformAccessArray writeTransformAccessArray;
+        internal TransformAccessArray componentTransformAccessArray;
+
 
         bool isValid;
 
@@ -130,6 +130,10 @@ namespace MagicaCloth2
                 transformAccessArray.Dispose();
             //if (writeTransformAccessArray.isCreated)
             //    writeTransformAccessArray.Dispose();
+
+            componentPositionArray?.Dispose();
+            if (componentTransformAccessArray.isCreated)
+                componentTransformAccessArray.Dispose();
         }
 
         public void EnterdEditMode()
@@ -155,6 +159,9 @@ namespace MagicaCloth2
             teamIdArray = new ExNativeArray<short>(capacity);
 
             transformAccessArray = new TransformAccessArray(capacity);
+
+            componentPositionArray = new ExNativeArray<float3>(capacity);
+            componentTransformAccessArray = new TransformAccessArray(capacity);
 
             isValid = true;
         }
@@ -546,15 +553,21 @@ namespace MagicaCloth2
                 if (transform.isValid == false)
                     return;
                 var flag = flagList[index];
-                if (flag.IsSet(Flag_Enable) == false)
-                    return;
                 if (flag.IsSet(Flag_Restore) == false)
                     return;
 
-                // Keepカリング時はスキップする
                 int teamId = teamIdArray[index];
                 var tdata = teamDataArray[teamId];
-                if (tdata.IsCullingInvisible && tdata.IsCullingKeep)
+
+                // 一度のみ復元フラグが立っている場合は実行する
+                if (flag.IsSet(Flag_Enable) == false && tdata.flag.IsSet(TeamManager.Flag_RestoreTransformOnlyOnec) == false)
+                    return;
+
+                // Keepカリング時はスキップする
+                //if (tdata.IsCameraCullingInvisible && tdata.IsCameraCullingKeep)
+                //if (tdata.IsCullingInvisible && tdata.IsCameraCullingKeep)
+                //    return;
+                if ((tdata.IsCameraCullingInvisible && tdata.IsCameraCullingKeep) || tdata.IsDistanceCullingInvisible)
                     return;
 
                 transform.localPosition = localPositionArray[index];
@@ -633,9 +646,10 @@ namespace MagicaCloth2
                 if (flag.IsSet(Flag_Read) == false)
                     return;
 
-                // カリング時は書き込まない
+                // カリング時は読み込まない
                 int teamId = teamIdArray[index];
                 var tdata = teamDataArray[teamId];
+                //if (tdata.IsCameraCullingInvisible)
                 if (tdata.IsCullingInvisible)
                     return;
 
@@ -724,6 +738,7 @@ namespace MagicaCloth2
                 // カリング時は書き込まない
                 int teamId = teamIdArray[index];
                 var tdata = teamDataArray[teamId];
+                //if (tdata.IsCameraCullingInvisible)
                 if (tdata.IsCullingInvisible)
                     return;
 
@@ -751,6 +766,82 @@ namespace MagicaCloth2
                 }
             }
         }
+
+        //=========================================================================================
+        /// <summary>
+        /// コンポーネント用トランスフォームの登録
+        /// </summary>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        internal int AddComponentTransform(Transform t)
+        {
+            if (isValid == false)
+                return -1;
+            Debug.Assert(t);
+
+            int index = componentPositionArray.Add(float3.zero).startIndex;
+
+            // トランスフォーム
+            int nowcnt = componentTransformAccessArray.length;
+            if (index < nowcnt)
+                componentTransformAccessArray[index] = t;
+            else
+                componentTransformAccessArray.Add(t);
+
+            return index;
+        }
+
+        /// <summary>
+        /// コンポーネント用トランスフォームの削除
+        /// </summary>
+        /// <param name="index"></param>
+        internal void RemoveComponentTransform(int index)
+        {
+            if (isValid == false)
+                return;
+            if (index < 0)
+                return;
+
+            componentPositionArray.Remove(index);
+
+            // トランスフォーム削除
+            componentTransformAccessArray[index] = null;
+        }
+
+        /// <summary>
+        /// トランスフォームを読み込むジョブを発行する
+        /// </summary>
+        /// <param name="jobHandle"></param>
+        /// <returns></returns>
+        internal JobHandle ReadComponentTransform(JobHandle jobHandle)
+        {
+            if (componentPositionArray.Count > 0)
+            {
+                var job = new ReadComponentTransformJob()
+                {
+                    positionArray = componentPositionArray.GetNativeArray(),
+                };
+                jobHandle = job.ScheduleReadOnly(componentTransformAccessArray, 16, jobHandle);
+            }
+
+            return jobHandle;
+        }
+
+        [BurstCompile]
+        struct ReadComponentTransformJob : IJobParallelForTransform
+        {
+            [Unity.Collections.WriteOnly]
+            public NativeArray<float3> positionArray;
+
+            public void Execute(int index, TransformAccess transform)
+            {
+                if (transform.isValid == false)
+                    return;
+
+                positionArray[index] = transform.position;
+            }
+        }
+
 
         //=========================================================================================
         public void InformationLog(StringBuilder allsb)

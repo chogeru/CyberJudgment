@@ -237,6 +237,7 @@ namespace MagicaCloth2
             }
         }
 
+        [BurstCompile]
         struct Mapping_CalcDirectWeightJob : IJob
         {
             // data

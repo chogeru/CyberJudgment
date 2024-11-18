@@ -33,12 +33,16 @@ namespace MagicaCloth2
             public byte[] boneWeightArray;
             public Vector3[] localPositions;
             public Vector3[] localNormals;
+            public Vector4[] localTangents; // option
 
             // Bone ---------------------------------------------------------------
             public BoneConnectionMode boneConnectionMode;
 
             // Common -------------------------------------------------------------
             public int renderTransformIndex;
+
+            // --------------------------------------------------------------------
+            public bool HasTangent => localTangents?.Length > 0;
         }
 
         public ShareSerializationData ShareSerialize()
@@ -62,6 +66,8 @@ namespace MagicaCloth2
                 sdata.boneWeightArray = boneWeightArray.MC2ToRawBytes();
                 sdata.localPositions = originalMesh.vertices;
                 sdata.localNormals = originalMesh.normals;
+                if (originalMesh.HasVertexAttribute(UnityEngine.Rendering.VertexAttribute.Tangent))
+                    sdata.localTangents = originalMesh.tangents;
 
                 // Bone
                 sdata.boneConnectionMode = boneConnectionMode;
@@ -102,6 +108,8 @@ namespace MagicaCloth2
                 // その代わりに保存したlocalPositions/Normalsを復元する
                 setup.localPositions = new NativeArray<Vector3>(sdata.localPositions, Allocator.Persistent);
                 setup.localNormals = new NativeArray<Vector3>(sdata.localNormals, Allocator.Persistent);
+                if (sdata.HasTangent)
+                    setup.localTangents = new NativeArray<Vector4>(sdata.localTangents, Allocator.Persistent);
 
                 // Bone
                 setup.boneConnectionMode = sdata.boneConnectionMode;

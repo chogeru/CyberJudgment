@@ -63,6 +63,9 @@ namespace MagicaCloth2
         public float rotationalInterpolation;
         public float rootRotation;
 
+        // カリング(Culling)
+        public CullingSettings.CullingParams culling;
+
         // 慣性制約(Inertia)
         public InertiaConstraint.InertiaConstraintParams inertiaConstraint;
 

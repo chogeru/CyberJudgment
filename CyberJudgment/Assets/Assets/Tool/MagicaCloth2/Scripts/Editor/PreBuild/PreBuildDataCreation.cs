@@ -115,13 +115,13 @@ namespace MagicaCloth2
                 }
 
                 // 初期トランスフォーム状態
-                var clothTransformRecord = new TransformRecord(cloth.ClothTransform);
+                var clothTransformRecord = new TransformRecord(cloth.ClothTransform, read: true);
 
                 // 法線調整用トランスフォーム
                 var normalAdjustmentTransformRecord = new TransformRecord(
                     sdata.normalAlignmentSetting.adjustmentTransform ?
                     sdata.normalAlignmentSetting.adjustmentTransform :
-                    cloth.ClothTransform);
+                    cloth.ClothTransform, read: true);
 
                 // セットアップ情報の初期化
                 if (clothType == ClothProcess.ClothType.MeshCloth)
@@ -130,7 +130,7 @@ namespace MagicaCloth2
                     {
                         if (ren)
                         {
-                            var setupData = new RenderSetupData(ren);
+                            var setupData = new RenderSetupData(null, ren);
                             if (setupData.IsFaild())
                             {
                                 sharePreBuildData.buildResult.Merge(setupData.result);
@@ -147,6 +147,7 @@ namespace MagicaCloth2
                 else if (clothType == ClothProcess.ClothType.BoneCloth || clothType == ClothProcess.ClothType.BoneSpring)
                 {
                     var setupData = new RenderSetupData(
+                        null,
                         clothType == ClothProcess.ClothType.BoneCloth ? RenderSetupData.SetupType.BoneCloth : RenderSetupData.SetupType.BoneSpring,
                         clothTransformRecord.transform,
                         sdata.rootBones,
@@ -167,7 +168,7 @@ namespace MagicaCloth2
                 int bcnt = sdata.customSkinningSetting.skinningBones.Count;
                 for (int i = 0; i < bcnt; i++)
                 {
-                    customSkinningBoneRecords.Add(new TransformRecord(sdata.customSkinningSetting.skinningBones[i]));
+                    customSkinningBoneRecords.Add(new TransformRecord(sdata.customSkinningSetting.skinningBones[i], read: true));
                 }
 
                 //======================== Proxy/Mapping Mesh ============================
@@ -424,7 +425,8 @@ namespace MagicaCloth2
 
                 // ======================= Cloth Data ===============================
                 // クロスデータ作成
-                var distanceConstraintData = DistanceConstraint.CreateData(proxyMesh, cloth.Process.parameters);
+                var parameters = cloth.SerializeData.GetClothParameters();
+                var distanceConstraintData = DistanceConstraint.CreateData(proxyMesh, parameters);
                 if (distanceConstraintData != null)
                 {
                     if (distanceConstraintData.result.IsSuccess())
@@ -437,7 +439,7 @@ namespace MagicaCloth2
                         throw new MagicaClothProcessingException();
                     }
                 }
-                var bendingConstraintData = TriangleBendingConstraint.CreateData(proxyMesh, cloth.Process.parameters);
+                var bendingConstraintData = TriangleBendingConstraint.CreateData(proxyMesh, parameters);
                 if (bendingConstraintData != null)
                 {
                     if (bendingConstraintData.result.IsSuccess())
@@ -450,7 +452,7 @@ namespace MagicaCloth2
                         throw new MagicaClothProcessingException();
                     }
                 }
-                var inertiaConstraintData = InertiaConstraint.CreateData(proxyMesh, cloth.Process.parameters);
+                var inertiaConstraintData = InertiaConstraint.CreateData(proxyMesh, parameters);
                 if (inertiaConstraintData != null)
                 {
                     if (inertiaConstraintData.result.IsSuccess())

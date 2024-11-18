@@ -44,6 +44,11 @@ namespace MagicaCloth2
                         return false;
                     if (rootBones.Count(x => x != null) == 0)
                         return false;
+                    if (rootBones.Distinct().Count() != rootBones.Count)
+                    {
+                        verificationResult.SetError(Define.Result.SerializeData_DuplicateRootBone);
+                        return false;
+                    }
                     break;
                 case ClothProcess.ClothType.MeshCloth:
                     if (sourceRenderers == null || sourceRenderers.Count == 0)
@@ -55,6 +60,11 @@ namespace MagicaCloth2
                     if (sourceRenderers.Count > Define.System.MaxRendererCount)
                     {
                         verificationResult.SetError(Define.Result.SerializeData_Over31Renderers);
+                        return false;
+                    }
+                    if (sourceRenderers.Distinct().Count() != sourceRenderers.Count)
+                    {
+                        verificationResult.SetError(Define.Result.SerializeData_DuplicateRenderer);
                         return false;
                     }
                     break;
@@ -174,6 +184,7 @@ namespace MagicaCloth2
             cparams.rotationalInterpolation = rotationalInterpolation;
             cparams.rootRotation = rootRotation;
 
+            cparams.culling.Convert(cullingSettings);
             cparams.inertiaConstraint.Convert(inertiaConstraint);
             cparams.tetherConstraint.Convert(tetherConstraint, clothType);
             cparams.distanceConstraint.Convert(distanceConstraint, clothType);
@@ -192,6 +203,7 @@ namespace MagicaCloth2
         {
             ClothProcess.ClothType clothType;
             List<Renderer> sourceRenderers;
+            ClothMeshWriteMode meshWriteMode;
             PaintMode paintMode;
             List<Texture2D> paintMaps;
             List<Transform> rootBones;
@@ -209,9 +221,7 @@ namespace MagicaCloth2
             MagicaCloth synchronization;
             float stablizationTimeAfterReset;
             float blendWeight;
-            CullingSettings.CameraCullingMode cullingMode;
-            CullingSettings.CameraCullingMethod cullingMethod;
-            List<Renderer> cullingRenderers;
+            CullingSettings cullingSetting;
             Transform anchor;
             float anchorInertia;
 
@@ -224,6 +234,7 @@ namespace MagicaCloth2
             {
                 clothType = sdata.clothType;
                 sourceRenderers = new List<Renderer>(sdata.sourceRenderers);
+                meshWriteMode = sdata.meshWriteMode;
                 paintMode = sdata.paintMode;
                 paintMaps = new List<Texture2D>(sdata.paintMaps);
                 rootBones = new List<Transform>(sdata.rootBones);
@@ -241,9 +252,7 @@ namespace MagicaCloth2
                 synchronization = sdata.selfCollisionConstraint.syncPartner;
                 stablizationTimeAfterReset = sdata.stablizationTimeAfterReset;
                 blendWeight = sdata.blendWeight;
-                cullingMode = sdata.cullingSettings.cameraCullingMode;
-                cullingMethod = sdata.cullingSettings.cameraCullingMethod;
-                cullingRenderers = new List<Renderer>(sdata.cullingSettings.cameraCullingRenderers);
+                cullingSetting = sdata.cullingSettings.Clone();
                 anchor = sdata.inertiaConstraint.anchor;
                 anchorInertia = sdata.inertiaConstraint.anchorInertia;
             }
@@ -252,6 +261,7 @@ namespace MagicaCloth2
             {
                 sdata.clothType = clothType;
                 sdata.sourceRenderers = sourceRenderers;
+                sdata.meshWriteMode = meshWriteMode;
                 sdata.paintMode = paintMode;
                 sdata.paintMaps = paintMaps;
                 sdata.rootBones = rootBones;
@@ -269,9 +279,7 @@ namespace MagicaCloth2
                 sdata.selfCollisionConstraint.syncPartner = synchronization;
                 sdata.stablizationTimeAfterReset = stablizationTimeAfterReset;
                 sdata.blendWeight = blendWeight;
-                sdata.cullingSettings.cameraCullingMode = cullingMode;
-                sdata.cullingSettings.cameraCullingMethod = cullingMethod;
-                sdata.cullingSettings.cameraCullingRenderers = cullingRenderers;
+                sdata.cullingSettings = cullingSetting;
                 sdata.inertiaConstraint.anchor = anchor;
                 sdata.inertiaConstraint.anchorInertia = anchorInertia;
             }

@@ -179,7 +179,8 @@ namespace MagicaCloth2
                 anchorInertia = 0.0f;
                 worldInertia = 1.0f;
                 //movementInertiaSmoothing = 0.65f; // ->0.0524
-                movementInertiaSmoothing = 0.5f; // ->0.13375
+                //movementInertiaSmoothing = 0.5f; // ->0.13375
+                movementInertiaSmoothing = 0.4f;
                 movementSpeedLimit = new CheckSliderSerializeData(true, 5.0f);
                 rotationSpeedLimit = new CheckSliderSerializeData(true, 720.0f);
                 localInertia = 1.0f;

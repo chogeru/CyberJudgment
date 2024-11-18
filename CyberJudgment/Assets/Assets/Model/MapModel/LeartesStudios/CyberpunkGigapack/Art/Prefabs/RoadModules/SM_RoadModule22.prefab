@@ -29,7 +29,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1031368472}
-  - {fileID: 1813960962080978254}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -44,6 +43,7 @@ GameObject:
   - component: {fileID: 1031368472}
   - component: {fileID: 1031368473}
   - component: {fileID: 1031368474}
+  - component: {fileID: 4680493922679205678}
   m_Layer: 0
   m_Name: SM_RoadModule22
   m_TagString: Untagged
@@ -121,49 +121,16 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1031368471}
   m_Mesh: {fileID: 4300000, guid: abc00000000014118778745488864942, type: 3}
---- !u!1 &6024153465755004039
-GameObject:
+--- !u!65 &4680493922679205678
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1813960962080978254}
-  - component: {fileID: 6838520429132981910}
-  m_Layer: 0
-  m_Name: Collider
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1813960962080978254
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6024153465755004039}
-  m_LocalRotation: {x: -0.5, y: 0.5, z: 0.5, w: 0.5}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1031368469}
-  m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 90}
---- !u!64 &6838520429132981910
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6024153465755004039}
+  m_GameObject: {fileID: 1031368471}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  serializedVersion: 4
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 4300000, guid: abc00000000014118778745488864942, type: 3}
+  serializedVersion: 2
+  m_Size: {x: 35.000477, y: 35.00077, z: 0.07364805}
+  m_Center: {x: -17.500078, y: -17.500362, z: -0.02439088}

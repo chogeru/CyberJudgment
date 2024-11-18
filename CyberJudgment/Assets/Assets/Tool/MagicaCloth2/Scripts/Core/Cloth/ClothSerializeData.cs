@@ -29,6 +29,13 @@ namespace MagicaCloth2
         /// </summary>
         public List<Renderer> sourceRenderers = new List<Renderer>();
 
+        /// <summary>
+        /// Write target to mesh in MeshCloth.
+        /// [OK] Runtime changes.
+        /// [NG] Export/Import with Presets
+        /// </summary>
+        public ClothMeshWriteMode meshWriteMode = ClothMeshWriteMode.PositionAndNormal;
+
         public enum PaintMode
         {
             Manual = 0,
@@ -180,7 +187,7 @@ namespace MagicaCloth2
         /// [OK] Runtime changes.
         /// [NG] Export/Import with Presets
         /// </summary>
-        [System.NonSerialized]
+        [Range(0.0f, 1.0f)]
         public float blendWeight = 1.0f;
 
         /// <summary>

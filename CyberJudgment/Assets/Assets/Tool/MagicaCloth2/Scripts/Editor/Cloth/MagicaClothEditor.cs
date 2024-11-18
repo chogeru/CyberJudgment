@@ -11,7 +11,7 @@ namespace MagicaCloth2
     /// </summary>
     [CustomEditor(typeof(MagicaCloth))]
     [CanEditMultipleObjects]
-    public class MagicaClothEditor : Editor
+    public class MagicaClothEditor : MagicaEditorBase
     {
         //=========================================================================================
         private void Awake()
@@ -120,9 +120,16 @@ namespace MagicaCloth2
             int nowActive = cloth.isActiveAndEnabled ? 1 : 0;
             if (nowActive != oldAcitve)
             {
-                //Debug.Log($"[{cloth.name}] rebuild. active:{nowActive}");
                 oldAcitve = nowActive;
-                ClothEditorManager.RegisterComponent(cloth, nowActive > 0 ? GizmoType.Active : 0, true);
+
+                // ただしコンポーネントがProjectビューで選択されている場合は再構築しない
+                // Hierarchyおよびプレハブモードはこれに該当しない
+                bool inProject = AssetDatabase.Contains(cloth.gameObject.GetInstanceID());
+                if (inProject == false)
+                {
+                    //Develop.Log($"[{cloth.name}] rebuild. active:{nowActive}, inProject:{inProject}");
+                    ClothEditorManager.RegisterComponent(cloth, nowActive > 0 ? GizmoType.Active : 0, true);
+                }
             }
         }
 
@@ -156,12 +163,6 @@ namespace MagicaCloth2
         void DispVersion()
         {
             EditorGUILayout.LabelField($"Version {AboutMenu.MagicaClothVersion}");
-            //using (new EditorGUILayout.HorizontalScope())
-            //{
-            //    //GUILayout.FlexibleSpace();
-            //    EditorGUILayout.Space();
-            //    EditorGUILayout.LabelField($"Version {AboutMenu.MagicaClothVersion}", GUILayout.Width(100));
-            //}
         }
 
         void DispStatus()
@@ -177,16 +178,19 @@ namespace MagicaCloth2
             }
             else
             {
+                var result = ClothEditorManager.GetResultCode(cloth);
                 var preBuildData = cloth.GetSerializeData2().preBuildData;
                 if (preBuildData.enabled)
                 {
                     // pre-build
-                    DispClothStatus("[Pre-Build Construction]", preBuildData.DataValidate(), false);
+                    if (result.IsError() == false)
+                        result = preBuildData.DataValidate();
+                    DispClothStatus("[Pre-Build Construction]", result, false);
                 }
                 else
                 {
                     // runtime
-                    DispClothStatus("[Runtime Construction]", ClothEditorManager.GetResultCode(cloth), true);
+                    DispClothStatus("[Runtime Construction]", result, true);
                 }
             }
         }
@@ -243,17 +247,35 @@ namespace MagicaCloth2
             var vmesh = cmesh.shareVirtualMesh;
 
             StaticStringBuilder.Clear();
+
+            // 初期化データ
+            StaticStringBuilder.AppendLine("[Init Data]");
+            if (EditorApplication.isPlaying)
+            {
+                StaticStringBuilder.Append($"{cloth.Process.InitDataResult.GetResultString()}");
+            }
+            else
+            {
+                StaticStringBuilder.Append($"{cloth.GetSerializeData2().initData.HasData()}");
+            }
+
+            // Proxyメッシュ
+            StaticStringBuilder.AppendLine();
             if (EditorApplication.isPlaying)
                 StaticStringBuilder.AppendLine("[Proxy Mesh]");
             else
                 StaticStringBuilder.AppendLine("[Edit Mesh]");
             if (EditorApplication.isPlaying)
-                StaticStringBuilder.AppendLine($"Visible: {!cloth.Process.IsCullingInvisible()}");
+            {
+                StaticStringBuilder.AppendLine($"Camera Visible: {!cloth.Process.IsCameraCullingInvisible()}");
+                StaticStringBuilder.AppendLine($"Distance Visible: {!cloth.Process.IsDistanceCullingInvisible()}");
+            }
             StaticStringBuilder.AppendLine($"Vertex: {vmesh.VertexCount}");
             StaticStringBuilder.AppendLine($"Edge: {vmesh.EdgeCount}");
             StaticStringBuilder.AppendLine($"Triangle: {vmesh.TriangleCount}");
             StaticStringBuilder.AppendLine($"SkinBoneCount: {vmesh.SkinBoneCount}");
             StaticStringBuilder.Append($"TransformCount: {cmesh.GetTransformCount()}");
+
 
             EditorGUILayout.HelpBox(StaticStringBuilder.ToString(), MessageType.Info);
         }
@@ -268,7 +290,7 @@ namespace MagicaCloth2
             bool runtime = EditorApplication.isPlaying;
 
             // 同期状態
-            bool sync = EditorApplication.isPlaying && cloth.SyncCloth != null;
+            bool sync = EditorApplication.isPlaying && cloth.SyncPartnerCloth != null;
 
             EditorGUILayout.LabelField("Main", EditorStyles.boldLabel);
 
@@ -307,6 +329,7 @@ namespace MagicaCloth2
                     else if (clothType == ClothProcess.ClothType.MeshCloth)
                     {
                         EditorGUILayout.PropertyField(serializedObject.FindProperty("serializeData.sourceRenderers"));
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("serializeData.meshWriteMode"));
                         EditorGUILayout.PropertyField(serializedObject.FindProperty("serializeData.reductionSetting"));
                     }
 
@@ -326,6 +349,7 @@ namespace MagicaCloth2
                         }
                     }
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("serializeData.animationPoseRatio"));
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("serializeData.blendWeight"));
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("serializeData.normalAxis"));
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("serializeData.normalAlignmentSetting.alignmentMode"), new GUIContent("Normal Alignment"));
                     if (cloth.SerializeData.normalAlignmentSetting.alignmentMode == NormalAlignmentSettings.AlignmentMode.Transform)
@@ -374,6 +398,14 @@ namespace MagicaCloth2
                     {
                         EditorGUILayout.PropertyField(serializedObject.FindProperty("serializeData.cullingSettings.cameraCullingRenderers"));
                     }
+                    EditorGUILayout.Space();
+                    EditorGUILayout.PropertyField(serializedObject.FindProperty("serializeData.cullingSettings.distanceCullingLength"));
+                    using (new EditorGUI.DisabledScope(cloth.SerializeData.cullingSettings.distanceCullingLength.use == false))
+                    {
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("serializeData.cullingSettings.distanceCullingFadeRatio"));
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("serializeData.cullingSettings.distanceCullingReferenceObject"));
+                        EditorGUILayout.HelpBox("If Reference Object is [None], the main camera is referred.", MessageType.None);
+                    }
                 }
                 else
                 {
@@ -388,6 +420,21 @@ namespace MagicaCloth2
                         using (new EditorGUILayout.HorizontalScope())
                         {
                             EditorGUILayout.LabelField("Camera Culling Method");
+                            EditorGUILayout.LabelField("(Synchronizing)");
+                        }
+                        using (new EditorGUILayout.HorizontalScope())
+                        {
+                            EditorGUILayout.LabelField("Distance Culling Length");
+                            EditorGUILayout.LabelField("(Synchronizing)");
+                        }
+                        using (new EditorGUILayout.HorizontalScope())
+                        {
+                            EditorGUILayout.LabelField("Distance Culling Fade Ratio");
+                            EditorGUILayout.LabelField("(Synchronizing)");
+                        }
+                        using (new EditorGUILayout.HorizontalScope())
+                        {
+                            EditorGUILayout.LabelField("Distance Culling Reference Object");
                             EditorGUILayout.LabelField("(Synchronizing)");
                         }
                     }
@@ -444,7 +491,7 @@ namespace MagicaCloth2
             bool isBoneSpring = clothType == ClothProcess.ClothType.BoneSpring;
 
             // 同期状態
-            bool sync = EditorApplication.isPlaying && cloth.SyncCloth != null;
+            bool sync = EditorApplication.isPlaying && cloth.SyncPartnerCloth != null;
 
             ClothPresetUtility.DrawPresetButton(cloth, cloth.SerializeData);
 
@@ -706,6 +753,9 @@ namespace MagicaCloth2
                 case "particleSpeedLimit":
                     minmax.Set(0.0f, Define.System.MaxParticleSpeedLimit);
                     break;
+                case "distanceCullingLength":
+                    minmax.Set(0.0f, Define.System.DistanceCullingMaxLength);
+                    break;
             }
 
             return minmax;
@@ -891,6 +941,9 @@ namespace MagicaCloth2
                     }
                     else
                     {
+                        // 初期化データの保存確認
+                        ClothEditorManager.ApplyInitData(cloth, global: true);
+
                         ClothPainter.ExitPaint();
                         SceneView.RepaintAll();
                     }

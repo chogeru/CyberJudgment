@@ -125,9 +125,13 @@ namespace MagicaCloth2
                 case Define.Result.RenderSetup_Unreadable:
                     return "It is necessary to turn on [Read/Write] in the model import settings.";
                 case Define.Result.RenderSetup_Over65535vertices:
-                    return "Original mesh must have no more than 65,535 vertices";
+                    return "Original mesh must have no more than 65,535 vertices.";
                 case Define.Result.SerializeData_Over31Renderers:
                     return $"There are {Define.System.MaxRendererCount} renderers that can be set.";
+                case Define.Result.Init_ScaleIsZero:
+                    return "Component scale values is 0.";
+                case Define.Result.Init_NegativeScale:
+                    return "Component has negative scale.";
                 default:
                     return null;
             }
@@ -139,6 +143,8 @@ namespace MagicaCloth2
             {
                 case Define.Result.RenderMesh_VertexWeightIs5BonesOrMore:
                     return "The source renderer mesh contains vertex weights that utilize more than 5 bones.\nA weight of 5 or more is invalid.";
+                case Define.Result.Init_NonUniformScale:
+                    return "Component scale values ​​should be uniform.\nIf the scale is not uniform, there is a risk that it will not work properly.";
                 default:
                     return null;
             }

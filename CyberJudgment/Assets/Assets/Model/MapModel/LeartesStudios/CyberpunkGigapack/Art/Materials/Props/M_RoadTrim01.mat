@@ -37,18 +37,15 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: M_RoadTrim01
-  m_Shader: {fileID: -6465566751694194690, guid: d85f40f8431d7124c8dc3df1b25396d8,
-    type: 3}
-  m_ValidKeywords:
-  - _DISABLE_SSR_TRANSPARENT
+  m_Shader: {fileID: 4800000, guid: 98e5517100f362c428f2a50ce6ecfa5a, type: 3}
+  m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2225
+  m_CustomRenderQueue: -1
   stringTagMap:
     MotionVector: User
-    RenderType: Opaque
   disabledShaderPasses:
   - TransparentDepthPrepass
   - TransparentDepthPostpass
@@ -58,6 +55,10 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _Albedo:
+        m_Texture: {fileID: 2800000, guid: f1dc42e9c5fb28640a1b58811be48c7c, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _Base_Map:
         m_Texture: {fileID: 2800000, guid: 439300415af228c4294cce279ec078f8, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -70,6 +71,10 @@ Material:
         m_Texture: {fileID: 2800000, guid: cbbf64e7b8ce34a4b8b01bec81eab6c2, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 2800000, guid: c7007a76c71f7a94ea188b5d9ef9dd0b, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _Normal_Map:
         m_Texture: {fileID: 2800000, guid: c7007a76c71f7a94ea188b5d9ef9dd0b, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -78,8 +83,24 @@ Material:
         m_Texture: {fileID: 2800000, guid: ee3b9a67b74d24f4cbf6bd2ecd9e42e3, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _RainDropsNormal:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _SampleTexture2D_62cb0e4f9b08435cacdda2b2d4c430b8_Texture_1:
         m_Texture: {fileID: 2800000, guid: cbbf64e7b8ce34a4b8b01bec81eab6c2, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SpecularGloss:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _WaveNormal:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _texcoord:
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
@@ -97,7 +118,8 @@ Material:
     m_Ints: []
     m_Floats:
     - _AddPrecomputedVelocity: 0
-    - _AlphaClip: 0
+    - _AlphaClip: 1
+    - _AlphaCutoff: 0.5
     - _AlphaCutoffEnable: 0
     - _AlphaDstBlend: 0
     - _AlphaSrcBlend: 1
@@ -130,6 +152,7 @@ Material:
     - _Emissive_Intensity: 1
     - _EnableBlendModePreserveSpecularLighting: 1
     - _EnableFogOnTransparent: 1
+    - _EnvironmentReflections: 1
     - _MaskPower: 1
     - _MaskUseSecondUV: 0
     - _Mask_Tiling: 1
@@ -137,6 +160,10 @@ Material:
     - _OpaqueCullMode: 2
     - _QueueControl: 1
     - _QueueOffset: 0
+    - _RainMask: 0.5
+    - _RainSpeed: 0
+    - _RaindropsUVTile: 0
+    - _Raindropsint: 0
     - _RayTracing: 0
     - _ReceiveShadows: 1
     - _ReceivesSSR: 1
@@ -145,6 +172,8 @@ Material:
     - _RenderQueueType: 1
     - _RequireSplitLighting: 0
     - _Roughness_Intensity: 0.5
+    - _Smoothness: 0.5
+    - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _StencilRef: 0
     - _StencilRefDepth: 8
@@ -167,6 +196,9 @@ Material:
     - _TransparentWritingMotionVec: 0
     - _TransparentZWrite: 0
     - _UseShadowThreshold: 0
+    - _WaveNormalint: 0
+    - _WaveSpeed: 0
+    - _WaveUVTile: 0
     - _WorkflowMode: 1
     - _ZTest: 4
     - _ZTestDepthEqualForOpaque: 3
@@ -177,10 +209,11 @@ Material:
     m_Colors:
     - _B_Channel: {r: 0.3647059, g: 0.41960788, b: 0.4156863, a: 0}
     - _Base_Color_Tint: {r: 1, g: 1, b: 1, a: 0}
+    - _Color: {r: 0.7264151, g: 0.7264151, b: 0.7264151, a: 0}
     - _DoubleSidedConstants: {r: 1, g: 1, b: -1, a: 0}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
     - _G_Channel: {r: 0.5254902, g: 0.5254902, b: 0.5254902, a: 0}
-    - _R_Channel: {r: 0.7843138, g: 0.63529414, b: 0.3137255, a: 0}
+    - _R_Channel: {r: 1, g: 0.68333334, b: 0, a: 0}
   m_BuildTextureStacks: []
 --- !u!114 &1801566655220489276
 MonoBehaviour:

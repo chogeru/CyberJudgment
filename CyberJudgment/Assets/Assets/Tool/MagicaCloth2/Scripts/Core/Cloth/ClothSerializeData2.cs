@@ -14,6 +14,12 @@ namespace MagicaCloth2
     public class ClothSerializeData2 : IDataValidate, IValid, ITransform
     {
         /// <summary>
+        /// Initialization Data.
+        /// </summary>
+        [SerializeField]
+        public ClothInitSerializeData initData = new ClothInitSerializeData();
+
+        /// <summary>
         /// 頂点ペイントデータ
         /// vertex paint data.
         /// </summary>
@@ -26,7 +32,17 @@ namespace MagicaCloth2
         /// Transform and vertex attribute dictionary data.
         /// When creating BoneCloth/BoneSpring at runtime, you can store Transform and vertex attribute pairs in this dictionary and use it instead of vertex paint data.
         /// </summary>
+        [System.NonSerialized]
         public Dictionary<Transform, VertexAttribute> boneAttributeDict = new Dictionary<Transform, VertexAttribute>();
+
+        /// <summary>
+        /// Rendererに対応する頂点属性データ
+        /// 実行時にMeshClothを構築する場合に、このリストにレンダラーごとのメッシュ頂点数分の頂点属性を格納することでセレクションデータの代わりにすることができます
+        /// Vertex attribute data corresponding to the Renderer.
+        /// When constructing MeshCloth at runtime, you can substitute selection data by storing vertex attributes in this list for the number of mesh vertices per renderer.
+        /// </summary>
+        [System.NonSerialized]
+        public List<VertexAttribute[]> vertexAttributeList = new List<VertexAttribute[]>();
 
         /// <summary>
         /// PreBuild Data.
@@ -65,11 +81,13 @@ namespace MagicaCloth2
 
         public void GetUsedTransform(HashSet<Transform> transformSet)
         {
+            initData.GetUsedTransform(transformSet);
             preBuildData.GetUsedTransform(transformSet);
         }
 
         public void ReplaceTransform(Dictionary<int, Transform> replaceDict)
         {
+            initData.ReplaceTransform(replaceDict);
             preBuildData.ReplaceTransform(replaceDict);
         }
     }

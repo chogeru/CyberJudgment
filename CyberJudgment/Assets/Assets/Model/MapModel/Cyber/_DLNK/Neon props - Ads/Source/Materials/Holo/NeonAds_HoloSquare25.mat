@@ -10,6 +10,7 @@ Material:
   m_Name: NeonAds_HoloSquare25
   m_Shader: {fileID: 4800000, guid: 46995c18756215840bc8ba71a34ebad6, type: 3}
   m_ValidKeywords:
+  - _RECEIVE_SHADOWS_OFF
   - _USEGLITCHCOLOR_ON
   - _USEGLITCHINTENSITY_ON
   m_InvalidKeywords: []
@@ -70,8 +71,21 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AlphaCutoff: 0.5
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _Depth: 2.33
@@ -80,6 +94,7 @@ Material:
     - _DisplaceHorizontal: 0
     - _DstBlend: 0
     - _EmissionIntensity: 2
+    - _EnvironmentReflections: 1
     - _GlitchIntensity: 5
     - _GlitchScale: 1
     - _Gloss: 0
@@ -94,10 +109,14 @@ Material:
     - _PannerAmmount: 1.36
     - _PannerSpeed: 0.05
     - _Parallax: 0.02
+    - _QueueControl: 0
+    - _QueueOffset: 0
+    - _ReceiveShadows: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _Speed: 0.1
     - _SrcBlend: 1
+    - _URPEmissive: 1
     - _UVSec: 0
     - _UseGlitchColor: 1
     - _UseGlitchIntensity: 1

@@ -113,11 +113,13 @@ namespace MagicaCloth2
         //=========================================================================================
         /// <summary>
         /// 領域のみ拡張する
+        /// すでにその長さの領域が確保されている場合は何もしない
         /// </summary>
-        /// <param name="capacity"></param>
-        public void AddCapacity(int capacity)
+        /// <param name="newLength"></param>
+        public void SetLength(int newLength)
         {
-            Expand(capacity, true);
+            if (newLength > length)
+                Expand(newLength - length, force: true, copy: true);
         }
 
         /// <summary>
@@ -218,6 +220,16 @@ namespace MagicaCloth2
                 // copy
                 NativeArray<T>.Copy(narray, 0, nativeArray, count, dataLength);
                 count += dataLength;
+            }
+        }
+
+        public void AddRange(NativeArray<T> narray, int start, int length)
+        {
+            if (length > 0)
+            {
+                Expand(length);
+                NativeArray<T>.Copy(narray, start, nativeArray, count, length);
+                count += length;
             }
         }
 
@@ -486,7 +498,8 @@ namespace MagicaCloth2
         /// </summary>
         /// <param name="dataLength"></param>
         /// <param name="force">強制的に領域を追加</param>
-        void Expand(int dataLength, bool force = false)
+        /// <param name="copy">古いデータをコピーするかどうか</param>
+        void Expand(int dataLength, bool force = false, bool copy = true)
         {
             int newlength = force ? length + dataLength : count + dataLength;
 
@@ -504,8 +517,11 @@ namespace MagicaCloth2
                 var newNativeArray = new NativeArray<T>(newlength, Allocator.Persistent);
 
                 // copy
-                // コピーは使用分だけ
-                NativeArray<T>.Copy(nativeArray, newNativeArray, count);
+                if (copy)
+                {
+                    // コピーは使用分だけ
+                    NativeArray<T>.Copy(nativeArray, newNativeArray, count);
+                }
 
                 nativeArray.Dispose();
                 nativeArray = newNativeArray;

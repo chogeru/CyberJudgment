@@ -44,7 +44,7 @@ namespace MagicaCloth2
                     rsetup.transformIdList,
                     rsetup.transformParentIdList,
                     rsetup.rootTransformIdList,
-                    rsetup.transformLocalPositins,
+                    rsetup.transformLocalPositions,
                     rsetup.transformLocalRotations,
                     rsetup.transformPositions,
                     rsetup.transformRotations,
@@ -155,6 +155,7 @@ namespace MagicaCloth2
             meshData.GetNormals(localNormals.GetNativeArray<Vector3>());
             if (meshData.HasVertexAttribute(UnityEngine.Rendering.VertexAttribute.Tangent))
             {
+                // 接線情報がメッシュに存在する
                 using var tangents = new NativeArray<Vector4>(vcnt, Allocator.TempJob);
                 meshData.GetTangents(tangents);
                 // tangent変換(Vector4->float3)
@@ -162,6 +163,7 @@ namespace MagicaCloth2
             }
             else
             {
+                // 接線情報がメッシュに存在しない
                 Develop.DebugLogWarning($"[{name}] Tangents not found!");
                 // tangentを生成する
                 // このtangentは描画用では無く姿勢制御用なのである意味適当でも大丈夫

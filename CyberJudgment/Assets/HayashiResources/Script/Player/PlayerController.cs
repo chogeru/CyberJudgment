@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using VInspector;
 using AbubuResouse.Singleton;
-
+using AbubuResouse.Log;
 #region
 /*
 .Subscribe
@@ -292,6 +292,16 @@ public class PlayerController : MonoBehaviour
         Vector3 end = start - Vector3.up * 0.2f;
         //地面との衝突を確認
         bool isGrounded = Physics.Raycast(start, -Vector3.up, out RaycastHit hit, 0.5f);
+
+        if (isGrounded)
+        {
+            DebugUtility.Log($"Grounded on: {hit.collider.gameObject.name}");
+        }
+        else
+        {
+            DebugUtility.Log("Not grounded");
+        }
+
 #if UNITY_EDITOR
         Debug.DrawLine(start, end, isGrounded ? Color.green : Color.red);
 #endif

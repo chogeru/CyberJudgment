@@ -15,8 +15,8 @@ namespace MagicaCloth2
         public enum RefreshMode
         {
             /// <summary>
-            /// コンポーネント生成時に１度だけ送信する
-            /// Send only once when the component is created.
+            /// コンポーネントのAwake()で１度だけ送信する
+            /// Send once at the component's Awake()
             /// </summary>
             OnAwake = 0,
 
@@ -25,6 +25,18 @@ namespace MagicaCloth2
             /// Send content every frame.
             /// </summary>
             EveryFrame = 1,
+
+            /// <summary>
+            /// コンポーネントのStart()で一度だけ送信する
+            /// Send once at the component's Start().
+            /// </summary>
+            OnStart = 2,
+
+            /// <summary>
+            /// コンポーネントは何もしません。送信には手動でRefresh()を呼ぶ必要があります
+            /// The component does nothing. You must manually call Refresh() to submit.
+            /// </summary>
+            Manual = 3,
         }
 
         /// <summary>
@@ -81,10 +93,30 @@ namespace MagicaCloth2
         /// </summary>
         public TimeManager.UpdateLocation updateLocation = TimeManager.UpdateLocation.AfterLateUpdate;
 
+        /// <summary>
+        /// PlayerLoopの監視
+        /// MagicaClothのシステムはUnityのPlayerLoopに登録することで動作します
+        /// この登録が他の外部アセットにより上書きされてしまうと、MagicaClothのシステムが停止してしまいます
+        /// このフラグを有効にすると、PlayerLoopを監視して、上書きされていた場合は再度システムを登録するようになります
+        /// 
+        /// PlayerLoop monitoring.
+        /// The MagicaCloth system works by registering it in Unity's PlayerLoop.
+        /// If this registration is overwritten by other external assets, the MagicaCloth system will stop working.
+        /// When this flag is enabled, the PlayerLoop will be monitored, and the system will be registered again if it has been overwritten.
+        /// </summary>
+        public bool monitorPlayerLoop = false;
+
         //=========================================================================================
         public void Awake()
         {
-            Refresh();
+            if (refreshMode == RefreshMode.OnAwake)
+                Refresh();
+        }
+
+        public void Start()
+        {
+            if (refreshMode == RefreshMode.OnStart)
+                Refresh();
         }
 
         public void Update()
@@ -115,6 +147,9 @@ namespace MagicaCloth2
                 MagicaManager.SetMaxSimulationCountPerFrame(maxSimulationCountPerFrame);
                 MagicaManager.SetInitializationLocation(initializationLocation);
                 MagicaManager.SetUpdateLocation(updateLocation);
+
+                if (monitorPlayerLoop)
+                    MagicaManager.InitCustomGameLoop();
             }
             else
             {

@@ -230,8 +230,8 @@ namespace MagicaCloth2
                     // Reset
                     tdata.flag.SetBits(TeamManager.Flag_Reset, true);
                     tdata.flag.SetBits(TeamManager.Flag_TimeReset, true);
-                    tdata.flag.SetBits(TeamManager.Flag_CullingKeep, false);
-                    Process.SetState(ClothProcess.State_CullingKeep, false);
+                    tdata.flag.SetBits(TeamManager.Flag_CameraCullingKeep, false);
+                    Process.SetState(ClothProcess.State_CameraCullingKeep, false);
                     Process.UpdateRendererUse();
                 }
             }

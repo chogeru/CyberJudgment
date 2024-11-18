@@ -7,6 +7,7 @@ using System.Text;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
+using UnityEngine;
 
 namespace MagicaCloth2
 {
@@ -389,6 +390,12 @@ namespace MagicaCloth2
             NativeArray<T>.Copy(nativeArray, array);
         }
 
+        public void CopyTo(T[] array, int startIndex)
+        {
+            Debug.Assert(array != null);
+            NativeArray<T>.Copy(nativeArray, startIndex, array, 0, array.Length);
+        }
+
         public void CopyTo<U>(U[] array) where U : struct
         {
             NativeArray<U>.Copy(nativeArray.Reinterpret<U>(), array);
@@ -397,6 +404,12 @@ namespace MagicaCloth2
         public void CopyFrom(NativeArray<T> array)
         {
             NativeArray<T>.Copy(array, nativeArray);
+        }
+
+        public void CopyFrom(T[] array, int startIndex)
+        {
+            Debug.Assert(array != null);
+            NativeArray<T>.Copy(array, 0, nativeArray, startIndex, array.Length);
         }
 
         public void CopyFrom<U>(NativeArray<U> array) where U : struct
@@ -472,6 +485,11 @@ namespace MagicaCloth2
                     useCount = math.max(useCount, echunk.startIndex);
                 }
             }
+        }
+
+        public void Remove(int index)
+        {
+            Remove(new DataChunk(index));
         }
 
         public void RemoveAndFill(DataChunk chunk, T clearData = default(T))

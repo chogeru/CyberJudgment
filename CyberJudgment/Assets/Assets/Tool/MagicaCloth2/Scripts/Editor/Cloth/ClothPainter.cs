@@ -863,6 +863,9 @@ namespace MagicaCloth2
                 // ペイント終了ボタン
                 if (GUILayout.Button("Exit"))
                 {
+                    // 初期化データの保存確認
+                    ClothEditorManager.ApplyInitData(cloth, global: true);
+
                     // ペイント終了フラグ
                     cloth = null;
 

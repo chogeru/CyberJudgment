@@ -42,7 +42,14 @@ namespace MagicaCloth2
         /// General processing.
         /// </summary>
         private ClothProcess process = new ClothProcess();
-        public ClothProcess Process { get { process.cloth = this; return process; } }
+        public ClothProcess Process
+        {
+            get
+            {
+                process.cloth = this;
+                return process;
+            }
+        }
 
         /// <summary>
         /// Cloth component transform.
@@ -53,7 +60,14 @@ namespace MagicaCloth2
         /// <summary>
         /// Synchronization target.
         /// </summary>
-        public MagicaCloth SyncCloth => SerializeData.IsBoneSpring() ? null : SerializeData.selfCollisionConstraint.GetSyncPartner();
+        public MagicaCloth SyncPartnerCloth
+        {
+            get
+            {
+                var syncCloth = SerializeData.IsBoneSpring() ? null : SerializeData.selfCollisionConstraint.GetSyncPartner();
+                return syncCloth == this ? null : syncCloth;
+            }
+        }
 
         /// <summary>
         /// Check if the cloth component is in a valid state.

@@ -34,6 +34,8 @@ namespace MagicaCloth2
             RenderMesh_UnknownWarning = 10100,
             RenderMesh_VertexWeightIs5BonesOrMore,
 
+            Init_NonUniformScale = 10200,
+
             ///////////////////////////////////////////////////////////////////
             // Error(20000 - )
             ///////////////////////////////////////////////////////////////////
@@ -42,11 +44,15 @@ namespace MagicaCloth2
             // Validating serialized data
             SerializeData_InvalidData = 20050,
             SerializeData_Over31Renderers,
+            SerializeData_DuplicateRootBone,
+            SerializeData_DuplicateRenderer,
 
             // init
             Init_InvalidData = 20100,
             Init_InvalidPaintMap,
             Init_PaintMapNotReadable,
+            Init_ScaleIsZero,
+            Init_NegativeScale,
 
             // RenderSetup
             RenderSetup_Exception = 20200,
@@ -77,6 +83,10 @@ namespace MagicaCloth2
             CreateCloth_PaintMapNotReadable,
             CreateCloth_PaintMapCountMismatch,
             CreateCloth_CanNotStart,
+            CreateCloth_VertexAttributeListCountMismatch,
+            CreateCloth_VertexAttributeListIsNull,
+            CreateCloth_VertexAttributeListDataMismatch,
+            CreateCloth_InvalidVertexAttributeData,
 
             // Reduction
             Reduction_Exception = 20500,
@@ -153,6 +163,20 @@ namespace MagicaCloth2
             // PreBuild Deserialization
             Deserialization_UnknownError = 22800,
             Deserialization_Exception,
+
+            // Init SerializeData
+            InitSerializeData_UnknownError = 22900,
+            InitSerializeData_InvalidHash,
+            InitSerializeData_InvalidVersion,
+            InitSerializeData_InvalidSetupData,
+            InitSerializeData_ClothTypeMismatch,
+            InitSerializeData_SetupCountMismatch,
+            InitSerializeData_CustomSkinningBoneCountMismatch,
+            InitSerializeData_MeshClothSetupValidationError,
+            InitSerializeData_BoneClothSetupValidationError,
+            InitSerializeData_BoneSpringSetupValidationError,
+            InitSerializeData_DeserializationError,
+
         }
     }
 }

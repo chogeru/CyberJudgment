@@ -200,8 +200,9 @@ namespace MagicaCloth2
         public void SetWindDirection(Vector3 dir, bool localSpace = false)
         {
             Vector3 lv = localSpace ? dir : transform.InverseTransformDirection(dir);
-            directionAngleX = Mathf.Atan2(lv.z, lv.x) * Mathf.Rad2Deg;
-            directionAngleY = Mathf.Atan2(lv.z, lv.y) * Mathf.Rad2Deg;
+            var angles = Quaternion.FromToRotation(Vector3.forward, lv).eulerAngles;
+            directionAngleX = angles.x > 180 ? angles.x - 360 : angles.x;
+            directionAngleY = angles.y > 180 ? angles.y - 360 : angles.y;
         }
     }
 }

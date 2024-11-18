@@ -7,6 +7,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
+using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Jobs;
 
@@ -55,6 +56,7 @@ namespace MagicaCloth2
         // PreBuild時のみ保持する情報.逆にmeshDataArrayは持たない
         public NativeArray<Vector3> localPositions;
         public NativeArray<Vector3> localNormals;
+        public NativeArray<Vector4> localTangents;
 
         // Bone ---------------------------------------------------------------
         public List<int> rootTransformIdList;
@@ -88,7 +90,7 @@ namespace MagicaCloth2
         public List<FixedList512Bytes<int>> transformChildIdList; // 子IDリスト
         public NativeArray<float3> transformPositions;
         public NativeArray<quaternion> transformRotations;
-        public NativeArray<float3> transformLocalPositins;
+        public NativeArray<float3> transformLocalPositions;
         public NativeArray<quaternion> transformLocalRotations;
         public NativeArray<float3> transformScales;
         public NativeArray<quaternion> transformInverseRotations;
@@ -103,8 +105,9 @@ namespace MagicaCloth2
         public int TransformCount => transformList?.Count ?? 0;
         public bool HasMeshDataArray => meshDataArray.Length > 0;
         public bool HasLocalPositions => localPositions.IsCreated;
+        public bool HasTangent => localTangents.IsCreated && localTangents.Length > 0;
 
-        //static readonly ProfilerMarker initProfiler = new ProfilerMarker("Render Setup");
+        static readonly ProfilerMarker readTransformProfiler = new ProfilerMarker("readTransform");
 
         //=========================================================================================
         public RenderSetupData() { }
@@ -114,7 +117,7 @@ namespace MagicaCloth2
         /// タイプはMeshになる
         /// </summary>
         /// <param name="ren"></param>
-        public RenderSetupData(Renderer ren)
+        public RenderSetupData(RenderSetupSerializeData referenceInitSetupData, Renderer ren)
         {
             //using (initProfiler.Auto())
             {
@@ -128,6 +131,9 @@ namespace MagicaCloth2
                     result.SetError(Define.Result.RenderSetup_InvalidSource);
                     return;
                 }
+
+                // 初期化データの有無
+                bool useInitData = referenceInitSetupData != null;
 
                 name = ren.name;
 
@@ -143,7 +149,24 @@ namespace MagicaCloth2
                 // 描画の基準トランスフォーム
                 var renderTransform = ren.transform;
 
-                if (sren)
+                if (useInitData)
+                {
+                    // 初期化データがある場合はコピーして終わり
+                    skinBoneCount = referenceInitSetupData.skinBoneCount;
+                    skinRootBoneIndex = referenceInitSetupData.skinRootBoneIndex;
+                    renderTransformIndex = referenceInitSetupData.renderTransformIndex;
+                    hasBoneWeight = referenceInitSetupData.hasBoneWeight;
+
+                    // transformList復元
+                    transformList = new List<Transform>(new Transform[referenceInitSetupData.transformCount]);
+                    int ucnt = referenceInitSetupData.useTransformCount;
+                    for (int i = 0; i < ucnt; i++)
+                    {
+                        int tindex = referenceInitSetupData.useTransformIndexArray[i];
+                        transformList[tindex] = referenceInitSetupData.transformArray[i];
+                    }
+                }
+                else if (sren)
                 {
                     // bones
                     // このスキニングボーンの取得が特に重くメモリアロケーションも頻発する問題児
@@ -198,7 +221,7 @@ namespace MagicaCloth2
                 }
 
                 // トランスフォーム情報の読み取り
-                ReadTransformInformation(includeChilds: false);
+                ReadTransformInformation(includeChilds: false, referenceInitSetupData);
 
                 // bindpose / weights
                 if (sren)
@@ -217,12 +240,14 @@ namespace MagicaCloth2
 
                         // どうもコピーを作らないとダメらしい..
                         // ※具体的にはメッシュのクローンを作成したときに壊れる
-                        var weightArray = mesh.GetAllBoneWeights();
-                        var perVertexArray = mesh.GetBonesPerVertex();
+                        using var weightArray = mesh.GetAllBoneWeights();
+                        using var perVertexArray = mesh.GetBonesPerVertex();
                         boneWeightArray = new NativeArray<BoneWeight1>(weightArray, Allocator.Persistent);
                         bonesPerVertexArray = new NativeArray<byte>(perVertexArray, Allocator.Persistent);
 
+#if UNITY_EDITOR
                         // ５ボーン以上を利用する頂点ウエイトは警告とする。一応無効となるだけで動くのでエラーにはしない。
+                        // なおこの検証はビルド環境では行わない
                         int vcnt = mesh.vertexCount;
                         using var bonesPerVertexResult = new NativeReference<Define.Result>(Allocator.TempJob);
                         var job = new VertexWeight5BoneCheckJob()
@@ -233,6 +258,7 @@ namespace MagicaCloth2
                         };
                         job.Run();
                         result.SetWarning(bonesPerVertexResult.Value);
+#endif
                     }
                     else
                     {
@@ -286,6 +312,10 @@ namespace MagicaCloth2
             }
         }
 
+#if UNITY_EDITOR
+        /// <summary>
+        /// ５ウエイト以上の検出
+        /// </summary>
         [BurstCompile]
         struct VertexWeight5BoneCheckJob : IJob
         {
@@ -311,6 +341,7 @@ namespace MagicaCloth2
                 }
             }
         }
+#endif
 
         /// <summary>
         /// ルートボーンリストから基本情報を作成する（メインスレッドのみ）
@@ -319,6 +350,7 @@ namespace MagicaCloth2
         /// <param name="renderTransform"></param>
         /// <param name="rootTransforms"></param>
         public RenderSetupData(
+            RenderSetupSerializeData referenceInitSetupData,
             SetupType setType,
             Transform renderTransform,
             List<Transform> rootTransforms,
@@ -332,6 +364,8 @@ namespace MagicaCloth2
             //using (initProfiler.Auto())
             try
             {
+                bool useInitData = referenceInitSetupData != null;
+
                 // Boneタイプに設定
                 setupType = setType;
 
@@ -354,30 +388,47 @@ namespace MagicaCloth2
                 this.name = name;
 
                 // 必要なトランスフォーム情報
-                var indexDict = new Dictionary<Transform, int>(256);
-                transformList = new List<Transform>(256);
-
-                // root以下をすべて登録する
-                var stack = new Stack<Transform>(256);
-                foreach (var t in rootTransforms)
-                    stack.Push(t);
-                while (stack.Count > 0)
+                if (useInitData)
                 {
-                    var t = stack.Pop();
-                    if (indexDict.ContainsKey(t))
-                        continue;
+                    // 初期化データがある場合はコピーして終わり
+                    transformList = new List<Transform>(referenceInitSetupData.transformArray);
+                    skinBoneCount = referenceInitSetupData.skinBoneCount;
+                    renderTransformIndex = referenceInitSetupData.renderTransformIndex;
+                }
+                else
+                {
+                    var indexDict = new Dictionary<Transform, int>(256);
+                    transformList = new List<Transform>(256);
 
-                    // 登録
-                    int index = transformList.Count;
-                    transformList.Add(t);
-                    indexDict.Add(t, index);
-
-                    // child
-                    int cnt = t.childCount;
-                    for (int i = 0; i < cnt; i++)
+                    // root以下をすべて登録する
+                    var stack = new Stack<Transform>(256);
+                    foreach (var t in rootTransforms)
+                        stack.Push(t);
+                    while (stack.Count > 0)
                     {
-                        stack.Push(t.GetChild(i));
+                        var t = stack.Pop();
+                        if (indexDict.ContainsKey(t))
+                            continue;
+
+                        // 登録
+                        int index = transformList.Count;
+                        transformList.Add(t);
+                        indexDict.Add(t, index);
+
+                        // child
+                        int cnt = t.childCount;
+                        for (int i = 0; i < cnt; i++)
+                        {
+                            stack.Push(t.GetChild(i));
+                        }
                     }
+
+                    // スキニングボーン数
+                    skinBoneCount = transformList.Count;
+
+                    // レンダートランスフォームを最後に追加
+                    renderTransformIndex = transformList.Count;
+                    transformList.Add(renderTransform);
                 }
 
                 // root transform id
@@ -402,15 +453,8 @@ namespace MagicaCloth2
                     }
                 }
 
-                // スキニングボーン数
-                skinBoneCount = transformList.Count;
-
-                // レンダートランスフォームを最後に追加
-                renderTransformIndex = transformList.Count;
-                transformList.Add(renderTransform);
-
                 // トランスフォーム情報の読み取り
-                ReadTransformInformation(includeChilds: true);
+                ReadTransformInformation(includeChilds: true, referenceInitSetupData);
 
                 // 完了
                 result.SetSuccess();
@@ -432,42 +476,105 @@ namespace MagicaCloth2
         /// トランスフォーム情報の読み取り（メインスレッドのみ）
         /// この情報だけはキャラクターが動く前に取得する必要がある
         /// </summary>
-        void ReadTransformInformation(bool includeChilds)
+        void ReadTransformInformation(bool includeChilds, RenderSetupSerializeData referenceInitSetupData)
         {
+            readTransformProfiler.Begin();
+
             int tcnt = transformList.Count;
-            using var transformArray = new TransformAccessArray(transformList.ToArray());
+            bool useInitData = referenceInitSetupData != null;
+
+            // バッファ作成
             transformPositions = new NativeArray<float3>(tcnt, Allocator.Persistent);
             transformRotations = new NativeArray<quaternion>(tcnt, Allocator.Persistent);
-            transformLocalPositins = new NativeArray<float3>(tcnt, Allocator.Persistent);
+            transformLocalPositions = new NativeArray<float3>(tcnt, Allocator.Persistent);
             transformLocalRotations = new NativeArray<quaternion>(tcnt, Allocator.Persistent);
             transformScales = new NativeArray<float3>(tcnt, Allocator.Persistent);
             transformInverseRotations = new NativeArray<quaternion>(tcnt, Allocator.Persistent);
-            var job = new ReadTransformJob()
+
+            // 読み取り
+            if (useInitData)
             {
-                positions = transformPositions,
-                rotations = transformRotations,
-                scales = transformScales,
-                localPositions = transformLocalPositins,
-                localRotations = transformLocalRotations,
-                inverseRotations = transformInverseRotations,
-            };
-            // シミュレーション以外でワーカーを消費したくないのでRun()版にしておく
-            job.RunReadOnly(transformArray);
+                Debug.Assert(tcnt == referenceInitSetupData.transformCount);
 
-            // 初期センタートランスフォームを別途コピーしておく
-            initRenderLocalToWorld = GetRendeerLocalToWorldMatrix();
-            initRenderWorldtoLocal = math.inverse(initRenderLocalToWorld);
-            initRenderRotation = transformRotations[renderTransformIndex];
-            initRenderScale = transformScales[renderTransformIndex];
+                // 初期化データがある場合はコピーして終わり
+                int ucnt = referenceInitSetupData.useTransformCount;
 
-            // id
+                if (ucnt == tcnt)
+                {
+                    // 全体コピー
+                    NativeArray<float3>.Copy(referenceInitSetupData.transformPositions, 0, transformPositions, 0, ucnt);
+                    NativeArray<quaternion>.Copy(referenceInitSetupData.transformRotations, 0, transformRotations, 0, ucnt);
+                    NativeArray<float3>.Copy(referenceInitSetupData.transformLocalPositions, 0, transformLocalPositions, 0, ucnt);
+                    NativeArray<quaternion>.Copy(referenceInitSetupData.transformLocalRotations, 0, transformLocalRotations, 0, ucnt);
+                    NativeArray<float3>.Copy(referenceInitSetupData.transformScales, 0, transformScales, 0, ucnt);
+                }
+                else
+                {
+                    // 差分
+                    for (int i = 0; i < ucnt; i++)
+                    {
+                        int tindex = referenceInitSetupData.useTransformIndexArray[i];
+                        transformPositions[tindex] = referenceInitSetupData.transformPositions[i];
+                        transformRotations[tindex] = referenceInitSetupData.transformRotations[i];
+                        transformLocalPositions[tindex] = referenceInitSetupData.transformLocalPositions[i];
+                        transformLocalRotations[tindex] = referenceInitSetupData.transformLocalRotations[i];
+                        transformScales[tindex] = referenceInitSetupData.transformScales[i];
+                    }
+                }
+
+                // 逆回転のみ計算で求める
+                var job = new CalcInverseRotationJob()
+                {
+                    rotations = transformRotations,
+                    inverseRotations = transformInverseRotations,
+                };
+                job.Run(tcnt);
+
+                // 初期センタートランスフォームを別途コピーしておく
+                initRenderLocalToWorld = referenceInitSetupData.initRenderLocalToWorld;
+                initRenderWorldtoLocal = referenceInitSetupData.initRenderWorldtoLocal;
+                initRenderRotation = referenceInitSetupData.initRenderRotation;
+                initRenderScale = referenceInitSetupData.initRenderScale;
+            }
+            else
+            {
+                using var transformArray = new TransformAccessArray(transformList.ToArray());
+
+                var job = new ReadTransformJob()
+                {
+                    positions = transformPositions,
+                    rotations = transformRotations,
+                    scales = transformScales,
+                    localPositions = transformLocalPositions,
+                    localRotations = transformLocalRotations,
+                    inverseRotations = transformInverseRotations
+                };
+                // シミュレーション以外でワーカーを消費したくないのでRun()版にしておく
+                job.RunReadOnly(transformArray);
+
+                // 初期センタートランスフォームを別途コピーしておく
+                initRenderLocalToWorld = GetRendeerLocalToWorldMatrix();
+                initRenderWorldtoLocal = math.inverse(initRenderLocalToWorld);
+                initRenderRotation = transformRotations[renderTransformIndex];
+                initRenderScale = transformScales[renderTransformIndex];
+            }
+
+            // id / parent id
             transformIdList = new List<int>(tcnt);
             transformParentIdList = new List<int>(tcnt);
             for (int i = 0; i < tcnt; i++)
             {
+                int id = 0, pid = 0;
+
                 var t = transformList[i];
-                transformIdList.Add(t?.GetInstanceID() ?? 0);
-                transformParentIdList.Add(t?.parent?.GetInstanceID() ?? 0);
+                if (t)
+                {
+                    id = t.GetInstanceID();
+                    if (includeChilds && t.parent)
+                        pid = t.parent.GetInstanceID();
+                }
+                transformIdList.Add(id);
+                transformParentIdList.Add(pid);
             }
 
             // child id
@@ -478,7 +585,7 @@ namespace MagicaCloth2
                 {
                     var t = transformList[i];
                     var clist = new FixedList512Bytes<int>();
-                    if (t?.childCount > 0)
+                    if (t && t.childCount > 0)
                     {
                         for (int j = 0; j < t.childCount; j++)
                         {
@@ -489,6 +596,32 @@ namespace MagicaCloth2
                     transformChildIdList.Add(clist);
                 }
             }
+
+            readTransformProfiler.End();
+        }
+
+        /// <summary>
+        /// 逆回転を計算で求める
+        /// </summary>
+        [BurstCompile]
+        struct CalcInverseRotationJob : IJobParallelFor
+        {
+            [Unity.Collections.ReadOnly]
+            public NativeArray<quaternion> rotations;
+            [NativeDisableParallelForRestriction]
+            [Unity.Collections.WriteOnly]
+            public NativeArray<quaternion> inverseRotations;
+
+            public void Execute(int index)
+            {
+                var rot = rotations[index];
+                if (math.any(rot.value))
+                {
+                    // どれか１つでも != 0 なら実行する
+                    var irot = math.inverse(rot);
+                    inverseRotations[index] = irot;
+                }
+            }
         }
 
         /// <summary>
@@ -497,16 +630,22 @@ namespace MagicaCloth2
         [BurstCompile]
         struct ReadTransformJob : IJobParallelForTransform
         {
+            [NativeDisableParallelForRestriction]
             [Unity.Collections.WriteOnly]
             public NativeArray<float3> positions;
+            [NativeDisableParallelForRestriction]
             [Unity.Collections.WriteOnly]
             public NativeArray<quaternion> rotations;
+            [NativeDisableParallelForRestriction]
             [Unity.Collections.WriteOnly]
             public NativeArray<float3> scales;
+            [NativeDisableParallelForRestriction]
             [Unity.Collections.WriteOnly]
             public NativeArray<float3> localPositions;
+            [NativeDisableParallelForRestriction]
             [Unity.Collections.WriteOnly]
             public NativeArray<quaternion> localRotations;
+            [NativeDisableParallelForRestriction]
             [Unity.Collections.WriteOnly]
             public NativeArray<quaternion> inverseRotations;
 
@@ -545,10 +684,11 @@ namespace MagicaCloth2
             boneWeightArray.MC2DisposeSafe();
             localPositions.MC2DisposeSafe();
             localNormals.MC2DisposeSafe();
+            localTangents.MC2DisposeSafe();
 
             transformPositions.MC2DisposeSafe();
             transformRotations.MC2DisposeSafe();
-            transformLocalPositins.MC2DisposeSafe();
+            transformLocalPositions.MC2DisposeSafe();
             transformLocalRotations.MC2DisposeSafe();
             transformScales.MC2DisposeSafe();
             transformInverseRotations.MC2DisposeSafe();
@@ -633,9 +773,10 @@ namespace MagicaCloth2
 
         public float4x4 GetRendeerLocalToWorldMatrix()
         {
-            var pos = transformPositions[renderTransformIndex];
-            var rot = transformRotations[renderTransformIndex];
-            var scl = transformScales[renderTransformIndex];
+            int index = renderTransformIndex;
+            var pos = transformPositions[index];
+            var rot = transformRotations[index];
+            var scl = transformScales[index];
             return float4x4.TRS(pos, rot, scl);
         }
 

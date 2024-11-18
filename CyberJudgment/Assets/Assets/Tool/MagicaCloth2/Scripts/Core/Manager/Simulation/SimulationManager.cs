@@ -415,7 +415,7 @@ namespace MagicaCloth2
             int pcnt = ParticleCount;
             //int ecnt = MagicaManager.VMesh.EdgeCount;
             //int tcnt = MagicaManager.VMesh.TriangleCount;
-            int bcnt = MagicaManager.VMesh.BaseLineCount;
+            int bcnt = MagicaManager.VMesh.ProxyBaseLineCount;
             int ccnt = MagicaManager.Collider.DataCount;
             int bendCnt = bendingConstraint.DataCount;
 
@@ -1803,7 +1803,6 @@ namespace MagicaCloth2
                 // 実速度
                 float3 realVelocity = (nextPos - oldPos) / simulationDeltaTime;
                 realVelocityArray[pindex] = realVelocity;
-                //Debug.Log($"[{pindex}] realVelocity:{realVelocity}");
 
                 // 今回の予測位置を記録
                 oldPosArray[pindex] = nextPos;
@@ -1837,6 +1836,7 @@ namespace MagicaCloth2
                 attributes = MagicaManager.VMesh.attributes.GetNativeArray(),
                 positions = MagicaManager.VMesh.positions.GetNativeArray(),
                 rotations = MagicaManager.VMesh.rotations.GetNativeArray(),
+                vertexRootIndices = MagicaManager.VMesh.vertexRootIndices.GetNativeArray(),
             };
             jobHandle = job.Schedule(ParticleCount, 32, jobHandle);
 
@@ -1873,6 +1873,8 @@ namespace MagicaCloth2
             //[Unity.Collections.ReadOnly]
             [NativeDisableParallelForRestriction]
             public NativeArray<quaternion> rotations;
+            [Unity.Collections.ReadOnly]
+            public NativeArray<int> vertexRootIndices;
 
             // すべてのパーティクルごと
             public void Execute(int pindex)
@@ -1888,7 +1890,8 @@ namespace MagicaCloth2
                 // ■この処理は更新に関係なく実行する
 
                 int l_index = pindex - tdata.particleChunk.startIndex;
-                int vindex = tdata.proxyCommonChunk.startIndex + l_index;
+                int v_start = tdata.proxyCommonChunk.startIndex;
+                int vindex = v_start + l_index;
 
                 var attr = attributes[vindex];
 
@@ -1909,6 +1912,18 @@ namespace MagicaCloth2
                     float interval = (tdata.nowUpdateTime + simulationDeltaTime) - tdata.oldTime;
                     float t = interval > 0.0f ? (tdata.time - tdata.oldTime) / interval : 0.0f;
                     fpos = math.lerp(dispPosArray[pindex], fpos, t);
+                    // ルートからの距離クランプ（安全対策）
+                    int rootIndex = vertexRootIndices[vindex];
+                    if (rootIndex >= 0)
+                    {
+                        var rootPos = positions[v_start + rootIndex];
+                        float originalDist = math.distance(rootPos, pos);
+                        float clampDist = originalDist * Define.System.MaxDistanceRatioFutuerPrediction; // 許容限界距離
+                        var v = fpos - rootPos;
+                        v = MathUtility.ClampVector(v, clampDist);
+                        fpos = rootPos + v;
+                    }
+
                     dpos = fpos;
 #endif
 

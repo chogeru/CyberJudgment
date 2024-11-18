@@ -32,7 +32,7 @@ namespace MagicaCloth2
 
             public SerializeData()
             {
-                distanceCompression = 0.9f;
+                distanceCompression = 0.4f;
             }
 
             public void DataValidate()
