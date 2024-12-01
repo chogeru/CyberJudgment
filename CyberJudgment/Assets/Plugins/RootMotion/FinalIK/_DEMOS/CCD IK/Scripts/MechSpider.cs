@@ -75,7 +75,7 @@ namespace RootMotion.Demos {
 
 			float footWeight = 1f / (float)legs.Length;
 			
-			// Go through all the legs, rotate the normal by it's offset
+			// Go through all the legs, rotate the normal by its offset
 			for (int i = 0; i < legs.Length; i++) {
 				position += legs[i].position * footWeight;
 			}
@@ -91,7 +91,7 @@ namespace RootMotion.Demos {
 
 			float legWeight = 1f / Mathf.Lerp(legs.Length, 1f, legRotationWeight);
 
-			// Go through all the legs, rotate the normal by it's offset
+			// Go through all the legs, rotate the normal by its offset
 			for (int i = 0; i < legs.Length; i++) {
 				// Direction from the root to the leg
 				Vector3 legDirection = legs[i].position - (transform.position - transform.up * height * scale); 

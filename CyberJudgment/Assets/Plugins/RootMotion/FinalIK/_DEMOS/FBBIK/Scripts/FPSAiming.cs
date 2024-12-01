@@ -9,7 +9,7 @@ namespace RootMotion.Demos {
 	/// 
 	/// If aimWeight is weighed in, the character will simply use AimIK to aim his gun towards the camera forward direction.
 	/// If sightWeight is weighed in, the character will also use FBBIK to pose the gun to a predefined position relative to the camera so it stays fixed in view.
-	/// That position was simply defined by making a copy of the gun (gunTarget), parenting it to the camera and positioning it so that the camera would look down it's sights.
+	/// That position was simply defined by making a copy of the gun (gunTarget), parenting it to the camera and positioning it so that the camera would look down its sights.
 	/// </summary>
 	public class FPSAiming : MonoBehaviour {
 
@@ -61,7 +61,7 @@ namespace RootMotion.Demos {
 			if (!updateFrame) return;
 			updateFrame = false;
 
-			// Put the camera back to it's default local position relative to the head
+			// Put the camera back to its default local position relative to the head
 			cam.transform.localPosition = camDefaultLocalPosition;
 
 			// Remember the camera's position relative to the gun target
@@ -80,15 +80,18 @@ namespace RootMotion.Demos {
 
         private void Aiming()
         {
-            if (headAim == null && aimWeight <= 0f) return;
+            if (aimWeight <= 0f) return;
 
             // Remember the rotation of the camera because we need to reset it later so the IK would not interfere with the rotating of the camera
             Quaternion camRotation = cam.transform.rotation;
 
-            // Aim head towards camera forward
-            headAim.solver.IKPosition = cam.transform.position + cam.transform.forward * 10f;
-            headAim.solver.IKPositionWeight = 1f - aimWeight;
-            headAim.solver.Update();
+            if (headAim != null)
+            {
+                // Aim head towards camera forward
+                headAim.solver.IKPosition = cam.transform.position + cam.transform.forward * 10f;
+                headAim.solver.IKPositionWeight = 1f - aimWeight;
+                headAim.solver.Update();
+            }
 
             // Aim the gun towards camera forward
             gunAim.solver.IKPosition = cam.transform.position + cam.transform.forward * 10f + cam.transform.rotation * aimOffset;

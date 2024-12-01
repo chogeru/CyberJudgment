@@ -92,11 +92,11 @@ namespace RootMotion.Demos {
 			if (effectorType != FullBodyBipedEffector.LeftHand) return;
 			if (interactionObject != obj) return;
 
-            // Rotate the pivot of the hand targets
-			RotatePivot();
-
 			// Rotate the hold point so it matches the current rotation of the object
 			holdPoint.rotation = obj.transform.rotation;
+
+			// Rotate the pivot of the hand targets
+			RotatePivot();
 		}
 		
 		// Called by the InteractionSystem when an interaction is resumed from being paused

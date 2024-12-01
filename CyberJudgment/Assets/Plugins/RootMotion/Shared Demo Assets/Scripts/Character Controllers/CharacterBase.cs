@@ -33,7 +33,7 @@ namespace RootMotion.Demos {
 		public abstract void Move(Vector3 deltaPosition, Quaternion deltaRotation);
 
 		protected Vector3 GetGravity() {
-			if (gravityTarget != null) {
+            if (gravityTarget != null) {
 				return (gravityTarget.position - transform.position).normalized * Physics.gravity.magnitude;
 			}
 

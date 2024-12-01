@@ -44,10 +44,9 @@ namespace RootMotion.Demos {
 		protected virtual void Update() {
 			if (Time.deltaTime == 0f) return;
 
-			animatePhysics = animator.updateMode == AnimatorUpdateMode.AnimatePhysics;
+            animatePhysics = animator.updateMode == AnimatorUpdateMode.AnimatePhysics;
 
 			// Jumping
-            
 			if (characterController.animState.jump) {
                 if (!lastJump)
                 {
@@ -96,7 +95,15 @@ namespace RootMotion.Demos {
 			Vector3 f = animator.deltaRotation * Vector3.forward;
 			deltaAngle += Mathf.Atan2(f.x, f.z) * Mathf.Rad2Deg;
 
-            characterController.Move(animator.deltaPosition, animator.deltaRotation);
+            if (characterController.fullRootMotion)
+            {
+                characterController.transform.position += animator.deltaPosition;
+                characterController.transform.rotation *= animator.deltaRotation;
+            }
+            else
+            {
+                characterController.Move(animator.deltaPosition, animator.deltaRotation);
+            }
 		}
 	}
 }

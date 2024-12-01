@@ -69,6 +69,7 @@ namespace RootMotion.Demos {
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("threeDOFWeight"));
             }
             EditorGUILayout.PropertyField(serializedObject.FindProperty("rotateOnce"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("usePoser"));
 
             if (serializedObject.ApplyModifiedProperties())
             {

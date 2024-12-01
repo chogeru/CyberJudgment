@@ -928,33 +928,38 @@ MonoBehaviour:
     spine:
       bones: []
       headTarget: {fileID: 1719237537}
-      pelvisTarget: {fileID: 0}
       positionWeight: 1
       rotationWeight: 1
+      headClampWeight: 0.6
+      minHeadHeight: 0.8
+      useAnimatedHeadHeightWeight: 0
+      useAnimatedHeadHeightRange: 0.1
+      animatedHeadHeightBlend: 0.3
+      pelvisTarget: {fileID: 0}
       pelvisPositionWeight: 0
       pelvisRotationWeight: 0
+      maintainPelvisPosition: 0.2
       chestGoal: {fileID: 0}
       chestGoalWeight: 0
-      minHeadHeight: 0.8
+      chestClampWeight: 0.5
+      rotateChestByHands: 1
       bodyPosStiffness: 0.55
       bodyRotStiffness: 0.1
       neckStiffness: 0.3
-      rotateChestByHands: 1
-      chestClampWeight: 0.5
-      headClampWeight: 0.6
       moveBodyBackWhenCrouching: 0.5
-      maintainPelvisPosition: 0.2
       maxRootAngle: 25
       rootHeadingOffset: 0
     leftArm:
       bones: []
       target: {fileID: 1332956367}
-      bendGoal: {fileID: 0}
       positionWeight: 1
       rotationWeight: 1
-      shoulderRotationMode: 0
       shoulderRotationWeight: 0.5
+      shoulderRotationMode: 0
       shoulderTwistWeight: 1
+      shoulderYawOffset: 45
+      shoulderPitchOffset: -30
+      bendGoal: {fileID: 0}
       bendGoalWeight: 0
       swivelOffset: 20
       wristToPalmAxis: {x: -1, y: -0, z: -0}
@@ -969,12 +974,14 @@ MonoBehaviour:
     rightArm:
       bones: []
       target: {fileID: 793694367}
-      bendGoal: {fileID: 0}
       positionWeight: 1
       rotationWeight: 1
-      shoulderRotationMode: 0
       shoulderRotationWeight: 0.5
+      shoulderRotationMode: 0
       shoulderTwistWeight: 1
+      shoulderYawOffset: 45
+      shoulderPitchOffset: -30
+      bendGoal: {fileID: 0}
       bendGoalWeight: 0
       swivelOffset: -20
       wristToPalmAxis: {x: -1, y: -0, z: -0}
@@ -989,9 +996,9 @@ MonoBehaviour:
     leftLeg:
       bones: []
       target: {fileID: 0}
-      bendGoal: {fileID: 0}
       positionWeight: 0
       rotationWeight: 0
+      bendGoal: {fileID: 0}
       bendGoalWeight: 0
       swivelOffset: 0
       bendToTargetWeight: 0.5
@@ -1006,9 +1013,9 @@ MonoBehaviour:
     rightLeg:
       bones: []
       target: {fileID: 0}
-      bendGoal: {fileID: 0}
       positionWeight: 0
       rotationWeight: 0
+      bendGoal: {fileID: 0}
       bendGoalWeight: 0
       swivelOffset: 0
       bendToTargetWeight: 0.5
@@ -1021,7 +1028,23 @@ MonoBehaviour:
         m_RotationOrder: 4
       useAnimatedBendNormal: 0
     locomotion:
+      mode: 1
       weight: 1
+      moveThreshold: 0.3
+      animationHeader: 0
+      minAnimationSpeed: 0.2
+      maxAnimationSpeed: 3
+      animationSmoothTime: 0.1
+      rootPositionHeader: 0
+      standOffset: {x: 0, y: 0}
+      rootLerpSpeedWhileMoving: 30
+      rootLerpSpeedWhileStopping: 10
+      rootLerpSpeedWhileTurning: 10
+      maxRootOffset: 0.5
+      rootRotationHeader: 0
+      maxRootAngleMoving: 10
+      maxRootAngleStanding: 90
+      stepLengthMlp: 1
       footDistance: 0.3
       stepThreshold: 0.35
       angleThreshold: 60
@@ -1108,9 +1131,9 @@ Animator:
     type: 3}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 613948130}
-  m_Enabled: 0
+  m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: 7a2e6c216d01d1649b50691291befc2d, type: 3}
-  m_Controller: {fileID: 9100000, guid: faed11bba652f41a1994daac6de46ca8, type: 2}
+  m_Controller: {fileID: 9100000, guid: 78f02360f31c1a547b937559d34b03b1, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 1
@@ -1386,7 +1409,7 @@ Transform:
   m_PrefabParentObject: {fileID: 400084, guid: 7a2e6c216d01d1649b50691291befc2d, type: 3}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 896524381}
-  m_LocalRotation: {x: 0.10761322, y: -0.21844831, z: -0.43410334, w: 0.8673258}
+  m_LocalRotation: {x: 0.10761323, y: -0.21844831, z: -0.43410337, w: 0.8673258}
   m_LocalPosition: {x: -0.09051102, y: -0.0026820372, z: -0.04543991}
   m_LocalScale: {x: 1.0000001, y: 1.0000001, z: 1.0000001}
   m_Children:
@@ -2944,7 +2967,7 @@ Transform:
   m_PrefabParentObject: {fileID: 400014, guid: 7a2e6c216d01d1649b50691291befc2d, type: 3}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2127214888}
-  m_LocalRotation: {x: -0.007701862, y: -0.084760465, z: -0.18418694, w: 0.9791994}
+  m_LocalRotation: {x: -0.0077018626, y: -0.08476047, z: -0.18418695, w: 0.97919947}
   m_LocalPosition: {x: -0.0916025, y: -0.002146797, z: -0.036640625}
   m_LocalScale: {x: 1, y: 0.99999994, z: 1}
   m_Children:

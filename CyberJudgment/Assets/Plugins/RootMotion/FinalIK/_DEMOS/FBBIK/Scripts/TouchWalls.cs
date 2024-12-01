@@ -129,7 +129,7 @@ namespace RootMotion.Demos {
 				else {
 					speedF = 0f;
 					targetPosition = hit.point;
-					targetRotation = Quaternion.LookRotation(-hit.normal);
+					if (hit.normal != Vector3.zero) targetRotation = Quaternion.LookRotation(-hit.normal);
 				}
 			}
 			
