@@ -332,6 +332,7 @@ MonoBehaviour:
   center: {x: 0, y: -0.1, z: 0}
   size: {x: 0.05, y: 0.001, z: 0.33}
   direction: 1
+  reverseDirection: 0
   radiusSeparation: 0
   alignedOnCenter: 1
 --- !u!1 &10532009
@@ -366,6 +367,7 @@ MonoBehaviour:
   center: {x: -0.1, y: -0.05, z: 0}
   size: {x: 0.06, y: 0.001, z: 0.001}
   direction: 0
+  reverseDirection: 0
   radiusSeparation: 0
   alignedOnCenter: 1
 --- !u!4 &10532011
@@ -1775,7 +1777,7 @@ Transform:
   - {fileID: 1030974042}
   - {fileID: 1852453740}
   - {fileID: 1553509934}
-  - {fileID: 1944542488}
+  - {fileID: 249793068}
   - {fileID: 1563032934}
   - {fileID: 1261197928}
   - {fileID: 242994562}
@@ -2640,6 +2642,7 @@ MonoBehaviour:
   center: {x: 0, y: -0.1, z: 0}
   size: {x: 0.05, y: 0.001, z: 0.33}
   direction: 1
+  reverseDirection: 0
   radiusSeparation: 0
   alignedOnCenter: 1
 --- !u!1001 &140726247
@@ -4234,6 +4237,12 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 246891899}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &249793068 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1030973694, guid: abc00000000006219677561374395088,
+    type: 3}
+  m_PrefabInstance: {fileID: 1030972903}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &249969800
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4860,6 +4869,7 @@ MonoBehaviour:
   center: {x: 0, y: -0.05, z: 0}
   size: {x: 0.06, y: 0.001, z: 0.001}
   direction: 0
+  reverseDirection: 0
   radiusSeparation: 0
   alignedOnCenter: 1
 --- !u!114 &319519230
@@ -8216,6 +8226,7 @@ MonoBehaviour:
   center: {x: 0.1, y: -0.05, z: 0}
   size: {x: 0.06, y: 0.001, z: 0.001}
   direction: 0
+  reverseDirection: 0
   radiusSeparation: 0
   alignedOnCenter: 1
 --- !u!1001 &624337440
@@ -9115,6 +9126,7 @@ MonoBehaviour:
   center: {x: 0, y: -0.05, z: 0}
   size: {x: 0.06, y: 0.001, z: 0.001}
   direction: 0
+  reverseDirection: 0
   radiusSeparation: 0
   alignedOnCenter: 1
 --- !u!1 &705996005
@@ -10772,6 +10784,7 @@ MonoBehaviour:
   center: {x: 0, y: -0.1, z: 0}
   size: {x: 0.05, y: 0.001, z: 0.33}
   direction: 1
+  reverseDirection: 0
   radiusSeparation: 0
   alignedOnCenter: 1
 --- !u!4 &871845489
@@ -68380,6 +68393,7 @@ MonoBehaviour:
   center: {x: -0.1, y: -0.05, z: 0}
   size: {x: 0.06, y: 0.001, z: 0.001}
   direction: 0
+  reverseDirection: 0
   radiusSeparation: 0
   alignedOnCenter: 1
 --- !u!1 &1308005584
@@ -69641,6 +69655,7 @@ MonoBehaviour:
   center: {x: 0, y: 0.03, z: 0}
   size: {x: 0.09, y: 0.001, z: 0.001}
   direction: 0
+  reverseDirection: 0
   radiusSeparation: 0
   alignedOnCenter: 1
 --- !u!4 &1401323500
@@ -70561,6 +70576,7 @@ MonoBehaviour:
   serializeData:
     clothType: 1
     sourceRenderers: []
+    meshWriteMode: 0
     paintMode: 0
     paintMaps: []
     rootBones:
@@ -70610,6 +70626,11 @@ MonoBehaviour:
       cameraCullingMode: 30
       cameraCullingMethod: 0
       cameraCullingRenderers: []
+      distanceCullingLength:
+        value: 30
+        use: 0
+      distanceCullingFadeRatio: 0.2
+      distanceCullingReferenceObject: {fileID: 0}
     normalAxis: 1
     gravity: 0
     gravityDirection:
@@ -70618,6 +70639,7 @@ MonoBehaviour:
       z: 0
     gravityFalloff: 0
     stablizationTimeAfterReset: 0.1
+    blendWeight: 1
     damping:
       value: 0.5
       useCurve: 0
@@ -70935,6 +70957,95 @@ MonoBehaviour:
       normalLimitRatio: 1
       springNoise: 0
   serializeData2:
+    initData:
+      initVersion: 0
+      localHash: 0
+      globalHash: 0
+      clothType: 0
+      clothTransformRecord:
+        transform: {fileID: 0}
+        localPosition: {x: 0, y: 0, z: 0}
+        localRotation: {x: 0, y: 0, z: 0, w: 0}
+        position: {x: 0, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 0}
+        scale: {x: 0, y: 0, z: 0}
+        localToWorldMatrix:
+          e00: 0
+          e01: 0
+          e02: 0
+          e03: 0
+          e10: 0
+          e11: 0
+          e12: 0
+          e13: 0
+          e20: 0
+          e21: 0
+          e22: 0
+          e23: 0
+          e30: 0
+          e31: 0
+          e32: 0
+          e33: 0
+        worldToLocalMatrix:
+          e00: 0
+          e01: 0
+          e02: 0
+          e03: 0
+          e10: 0
+          e11: 0
+          e12: 0
+          e13: 0
+          e20: 0
+          e21: 0
+          e22: 0
+          e23: 0
+          e30: 0
+          e31: 0
+          e32: 0
+          e33: 0
+      normalAdjustmentTransformRecord:
+        transform: {fileID: 0}
+        localPosition: {x: 0, y: 0, z: 0}
+        localRotation: {x: 0, y: 0, z: 0, w: 0}
+        position: {x: 0, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 0}
+        scale: {x: 0, y: 0, z: 0}
+        localToWorldMatrix:
+          e00: 0
+          e01: 0
+          e02: 0
+          e03: 0
+          e10: 0
+          e11: 0
+          e12: 0
+          e13: 0
+          e20: 0
+          e21: 0
+          e22: 0
+          e23: 0
+          e30: 0
+          e31: 0
+          e32: 0
+          e33: 0
+        worldToLocalMatrix:
+          e00: 0
+          e01: 0
+          e02: 0
+          e03: 0
+          e10: 0
+          e11: 0
+          e12: 0
+          e13: 0
+          e20: 0
+          e21: 0
+          e22: 0
+          e23: 0
+          e30: 0
+          e31: 0
+          e32: 0
+          e33: 0
+      customSkinningBoneRecords: []
+      clothSetupDataList: []
     selectionData:
       positions:
       - x: 0.11052704
@@ -71093,12 +71204,14 @@ MonoBehaviour:
       animatedAxis: 0
       animatedShape: 0
       inertiaCenter: 1
+      customSkinningBone: 1
   animationPoseRatioProperty: 0
   gravityProperty: 0
   dampingProperty: 0
   worldInertiaProperty: 0
   localInertiaProperty: 0
   windInfluenceProperty: 0
+  blendWeightProperty: 0
 --- !u!4 &1474923608
 Transform:
   m_ObjectHideFlags: 0
@@ -73127,6 +73240,7 @@ MonoBehaviour:
   center: {x: 0, y: -0.1, z: 0}
   size: {x: 0.05, y: 0.001, z: 0.33}
   direction: 1
+  reverseDirection: 0
   radiusSeparation: 0
   alignedOnCenter: 1
 --- !u!4 &1630461905
@@ -77765,12 +77879,6 @@ Transform:
   m_Father: {fileID: 257815976}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &1944542488 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 1030987795, guid: abc00000000006219677561374395088,
-    type: 3}
-  m_PrefabInstance: {fileID: 1030972903}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1947060498
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -78350,6 +78458,7 @@ MonoBehaviour:
   center: {x: 0.1, y: -0.05, z: 0}
   size: {x: 0.06, y: 0.001, z: 0.001}
   direction: 0
+  reverseDirection: 0
   radiusSeparation: 0
   alignedOnCenter: 1
 --- !u!114 &1975363162
@@ -78489,6 +78598,7 @@ MonoBehaviour:
   center: {x: 0, y: 0.03, z: 0}
   size: {x: 0.09, y: 0.001, z: 0.001}
   direction: 0
+  reverseDirection: 0
   radiusSeparation: 0
   alignedOnCenter: 1
 --- !u!1 &2002261973
@@ -78538,6 +78648,7 @@ MonoBehaviour:
   serializeData:
     clothType: 1
     sourceRenderers: []
+    meshWriteMode: 0
     paintMode: 0
     paintMaps: []
     rootBones:
@@ -78587,6 +78698,11 @@ MonoBehaviour:
       cameraCullingMode: 30
       cameraCullingMethod: 0
       cameraCullingRenderers: []
+      distanceCullingLength:
+        value: 30
+        use: 0
+      distanceCullingFadeRatio: 0.2
+      distanceCullingReferenceObject: {fileID: 0}
     normalAxis: 1
     gravity: 0
     gravityDirection:
@@ -78595,6 +78711,7 @@ MonoBehaviour:
       z: 0
     gravityFalloff: 0
     stablizationTimeAfterReset: 0.1
+    blendWeight: 1
     damping:
       value: 0.5
       useCurve: 0
@@ -78912,6 +79029,95 @@ MonoBehaviour:
       normalLimitRatio: 1
       springNoise: 0
   serializeData2:
+    initData:
+      initVersion: 0
+      localHash: 0
+      globalHash: 0
+      clothType: 0
+      clothTransformRecord:
+        transform: {fileID: 0}
+        localPosition: {x: 0, y: 0, z: 0}
+        localRotation: {x: 0, y: 0, z: 0, w: 0}
+        position: {x: 0, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 0}
+        scale: {x: 0, y: 0, z: 0}
+        localToWorldMatrix:
+          e00: 0
+          e01: 0
+          e02: 0
+          e03: 0
+          e10: 0
+          e11: 0
+          e12: 0
+          e13: 0
+          e20: 0
+          e21: 0
+          e22: 0
+          e23: 0
+          e30: 0
+          e31: 0
+          e32: 0
+          e33: 0
+        worldToLocalMatrix:
+          e00: 0
+          e01: 0
+          e02: 0
+          e03: 0
+          e10: 0
+          e11: 0
+          e12: 0
+          e13: 0
+          e20: 0
+          e21: 0
+          e22: 0
+          e23: 0
+          e30: 0
+          e31: 0
+          e32: 0
+          e33: 0
+      normalAdjustmentTransformRecord:
+        transform: {fileID: 0}
+        localPosition: {x: 0, y: 0, z: 0}
+        localRotation: {x: 0, y: 0, z: 0, w: 0}
+        position: {x: 0, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 0}
+        scale: {x: 0, y: 0, z: 0}
+        localToWorldMatrix:
+          e00: 0
+          e01: 0
+          e02: 0
+          e03: 0
+          e10: 0
+          e11: 0
+          e12: 0
+          e13: 0
+          e20: 0
+          e21: 0
+          e22: 0
+          e23: 0
+          e30: 0
+          e31: 0
+          e32: 0
+          e33: 0
+        worldToLocalMatrix:
+          e00: 0
+          e01: 0
+          e02: 0
+          e03: 0
+          e10: 0
+          e11: 0
+          e12: 0
+          e13: 0
+          e20: 0
+          e21: 0
+          e22: 0
+          e23: 0
+          e30: 0
+          e31: 0
+          e32: 0
+          e33: 0
+      customSkinningBoneRecords: []
+      clothSetupDataList: []
     selectionData:
       positions:
       - x: 0.20935059
@@ -79070,12 +79276,14 @@ MonoBehaviour:
       animatedAxis: 0
       animatedShape: 0
       inertiaCenter: 1
+      customSkinningBone: 1
   animationPoseRatioProperty: 0
   gravityProperty: 0
   dampingProperty: 0
   worldInertiaProperty: 0
   localInertiaProperty: 0
   windInfluenceProperty: 0
+  blendWeightProperty: 0
 --- !u!4 &2004184766 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1030971960, guid: abc00000000008463448101296003194,

@@ -35,7 +35,7 @@ Shader "Hidden/Baking URP"
 			
 
             HLSLPROGRAM
-            #define ASE_SRP_VERSION 150007
+            #define ASE_SRP_VERSION 120114
 
             // Required to compile gles 2.0 with standard srp library
             #pragma prefer_hlslcc gles
@@ -261,4 +261,4 @@ WireConnection;271;2;187;0
 WireConnection;271;3;257;0
 WireConnection;271;8;244;0
 ASEEND*/
-//CHKSM=9F0A9987325728BEB8F356FD7F9FC65AFAFA33A3
+//CHKSM=72710CAF5E1BF832B0A52F9D6E761F3C379988DD
