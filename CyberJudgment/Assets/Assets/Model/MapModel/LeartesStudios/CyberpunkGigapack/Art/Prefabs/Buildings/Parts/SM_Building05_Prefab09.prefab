@@ -33,7 +33,6 @@ Transform:
   - {fileID: 1031359626}
   - {fileID: 1031359630}
   - {fileID: 1031359634}
-  - {fileID: 8511708857904352085}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -51,19 +50,19 @@ LODGroup:
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
   m_LODs:
-  - screenRelativeHeight: 0.18
+  - screenRelativeHeight: 0.9527101
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 1031359623}
-  - screenRelativeHeight: 0.03
+  - screenRelativeHeight: 0.89861006
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 1031359627}
-  - screenRelativeHeight: 0.01
+  - screenRelativeHeight: 0.850406
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 1031359631}
-  - screenRelativeHeight: 0.01
+  - screenRelativeHeight: 0.054948315
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 1031359635}
@@ -464,49 +463,3 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1031359633}
   m_Mesh: {fileID: 4300006, guid: abc00000000004182896175519984971, type: 3}
---- !u!1 &2348772203107972136
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 8511708857904352085}
-  - component: {fileID: 2201602352157569249}
-  m_Layer: 0
-  m_Name: Collider
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
-  m_IsActive: 1
---- !u!4 &8511708857904352085
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2348772203107972136}
-  m_LocalRotation: {x: -0.5, y: 0.5, z: 0.5, w: 0.5}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1031359618}
-  m_RootOrder: 4
-  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 90}
---- !u!64 &2201602352157569249
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2348772203107972136}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 4
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -8971288178142822753, guid: abc00000000004182896175519984971, type: 3}

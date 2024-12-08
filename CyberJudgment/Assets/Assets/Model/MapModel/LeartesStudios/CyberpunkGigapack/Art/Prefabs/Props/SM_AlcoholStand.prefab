@@ -33,7 +33,6 @@ Transform:
   - {fileID: 1031822378}
   - {fileID: 1031822382}
   - {fileID: 1031822386}
-  - {fileID: 3719488211330054108}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -46,24 +45,24 @@ LODGroup:
   m_GameObject: {fileID: 1031822369}
   serializedVersion: 2
   m_LocalReferencePoint: {x: 0.436875, y: 0.417503, z: -0.927765}
-  m_Size: 2.23094
+  m_Size: 100
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
   m_LODs:
-  - screenRelativeHeight: 0.85
+  - screenRelativeHeight: 0.98
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 1031822375}
-  - screenRelativeHeight: 0.21
+  - screenRelativeHeight: 0.95
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 1031822379}
-  - screenRelativeHeight: 0.05
+  - screenRelativeHeight: 0.9
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 1031822383}
-  - screenRelativeHeight: 0.01
+  - screenRelativeHeight: 0.5
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 1031822387}
@@ -80,6 +79,7 @@ GameObject:
   - component: {fileID: 1031822374}
   - component: {fileID: 1031822375}
   - component: {fileID: 1031822376}
+  - component: {fileID: 4780285210823417900}
   m_Layer: 0
   m_Name: SM_AlcoholStand_LOD0
   m_TagString: Untagged
@@ -154,6 +154,19 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1031822373}
   m_Mesh: {fileID: 4300000, guid: abc00000000006474312325887467101, type: 3}
+--- !u!65 &4780285210823417900
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1031822373}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1.8555311, y: 0.87375, z: 0.87787145}
+  m_Center: {x: 0.92776555, y: -0.436875, z: 0.4175028}
 --- !u!1 &1031822377
 GameObject:
   m_ObjectHideFlags: 0
@@ -408,48 +421,3 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1031822385}
   m_Mesh: {fileID: 4300006, guid: abc00000000006474312325887467101, type: 3}
---- !u!1 &7832104243288794538
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 3719488211330054108}
-  - component: {fileID: 3137457424110186377}
-  m_Layer: 0
-  m_Name: Collider
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
-  m_IsActive: 1
---- !u!4 &3719488211330054108
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7832104243288794538}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1031822370}
-  m_RootOrder: 4
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &3137457424110186377
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7832104243288794538}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 0.87293833, y: 0.86706084, z: 1.9108293}
-  m_Center: {x: 0.43993565, y: 0.42503324, z: -0.91274726}

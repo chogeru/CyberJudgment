@@ -46,24 +46,24 @@ LODGroup:
   m_GameObject: {fileID: 1031682520}
   serializedVersion: 2
   m_LocalReferencePoint: {x: -0.17939, y: 0.341567, z: -0.002402}
-  m_Size: 2.528359
+  m_Size: 100
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
   m_LODs:
-  - screenRelativeHeight: 0.61
+  - screenRelativeHeight: 0.98
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 1031682543}
-  - screenRelativeHeight: 0.05
+  - screenRelativeHeight: 0.95
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 1031682547}
-  - screenRelativeHeight: 0
+  - screenRelativeHeight: 0.9
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 1031682551}
-  - screenRelativeHeight: 0.01
+  - screenRelativeHeight: 0.65
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 1031682555}
@@ -80,6 +80,7 @@ GameObject:
   - component: {fileID: 1031682542}
   - component: {fileID: 1031682543}
   - component: {fileID: 1031682544}
+  - component: {fileID: 1254323336381224892}
   m_Layer: 0
   m_Name: SM_Bench06_LOD0
   m_TagString: Untagged
@@ -152,6 +153,19 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1031682541}
   m_Mesh: {fileID: 4300000, guid: abc00000000008353086804027052911, type: 3}
+--- !u!65 &1254323336381224892
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1031682541}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 2.2883615, y: 0.8302566, z: 0.68313444}
+  m_Center: {x: 0.0024014711, y: 0.17939006, z: 0.34156722}
 --- !u!1 &1031682545
 GameObject:
   m_ObjectHideFlags: 0
@@ -410,7 +424,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3478583000709879153}
-  - component: {fileID: 6791548087295920457}
   m_Layer: 0
   m_Name: Collider
   m_TagString: Untagged
@@ -433,17 +446,3 @@ Transform:
   m_Father: {fileID: 1031682521}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 90}
---- !u!64 &6791548087295920457
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7144492690659240563}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 4
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -1744475414056788196, guid: abc00000000008353086804027052911, type: 3}

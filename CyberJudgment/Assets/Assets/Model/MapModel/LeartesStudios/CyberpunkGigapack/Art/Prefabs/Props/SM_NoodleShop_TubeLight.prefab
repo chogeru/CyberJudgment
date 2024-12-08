@@ -33,7 +33,6 @@ Transform:
   - {fileID: 1031509263}
   - {fileID: 1031509267}
   - {fileID: 1031509271}
-  - {fileID: 7131910554388237339}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -46,16 +45,16 @@ LODGroup:
   m_GameObject: {fileID: 1031509254}
   serializedVersion: 2
   m_LocalReferencePoint: {x: -0, y: 0, z: 0.046126}
-  m_Size: 0.984105
+  m_Size: 100
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
   m_LODs:
-  - screenRelativeHeight: 0.93
+  - screenRelativeHeight: 0.98
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 1031509260}
-  - screenRelativeHeight: 0.33
+  - screenRelativeHeight: 0.8
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 1031509264}
@@ -80,6 +79,7 @@ GameObject:
   - component: {fileID: 1031509259}
   - component: {fileID: 1031509260}
   - component: {fileID: 1031509261}
+  - component: {fileID: 4890804796083505000}
   m_Layer: 0
   m_Name: SM_NoodleShop_TubeLight_LOD0
   m_TagString: Untagged
@@ -152,6 +152,19 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1031509258}
   m_Mesh: {fileID: 4300000, guid: abc00000000012086594357928342979, type: 3}
+--- !u!65 &4890804796083505000
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1031509258}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.096915394, y: 0.046915155, z: 0.9792765}
+  m_Center: {x: -0.046126097, y: 0, z: 0}
 --- !u!1 &1031509262
 GameObject:
   m_ObjectHideFlags: 0
@@ -401,49 +414,3 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1031509270}
   m_Mesh: {fileID: 4300006, guid: abc00000000012086594357928342979, type: 3}
---- !u!1 &5602744402292646875
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 7131910554388237339}
-  - component: {fileID: 1599903756047351323}
-  m_Layer: 0
-  m_Name: Collider
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
-  m_IsActive: 1
---- !u!4 &7131910554388237339
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5602744402292646875}
-  m_LocalRotation: {x: -0.5, y: 0.5, z: 0.5, w: 0.5}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1031509255}
-  m_RootOrder: 4
-  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 90}
---- !u!64 &1599903756047351323
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5602744402292646875}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 4
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -1062641707519085806, guid: abc00000000012086594357928342979, type: 3}

@@ -33,7 +33,6 @@ Transform:
   - {fileID: 1031467768}
   - {fileID: 1031467772}
   - {fileID: 1031467776}
-  - {fileID: 8622371726407435005}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -46,20 +45,20 @@ LODGroup:
   m_GameObject: {fileID: 1031467759}
   serializedVersion: 2
   m_LocalReferencePoint: {x: 0.067493, y: 0.410376, z: 0.013376}
-  m_Size: 2.469424
+  m_Size: 100
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
   m_LODs:
-  - screenRelativeHeight: 0.48
+  - screenRelativeHeight: 0.95
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 1031467765}
-  - screenRelativeHeight: 0.22
+  - screenRelativeHeight: 0.9
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 1031467769}
-  - screenRelativeHeight: 0.06
+  - screenRelativeHeight: 0.87
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 1031467773}
@@ -80,6 +79,7 @@ GameObject:
   - component: {fileID: 1031467764}
   - component: {fileID: 1031467765}
   - component: {fileID: 1031467766}
+  - component: {fileID: 5232734545632076884}
   m_Layer: 0
   m_Name: SM_StreetShopCounter_LOD0
   m_TagString: Untagged
@@ -154,6 +154,19 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1031467763}
   m_Mesh: {fileID: 4300000, guid: abc00000000002886836571985923650, type: 3}
+--- !u!65 &5232734545632076884
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1031467763}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 2.1907544, y: 0.9021021, z: 0.8207526}
+  m_Center: {x: -0.013375938, y: -0.067492604, z: 0.4103763}
 --- !u!1 &1031467767
 GameObject:
   m_ObjectHideFlags: 0
@@ -409,49 +422,3 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1031467775}
   m_Mesh: {fileID: 4300006, guid: abc00000000002886836571985923650, type: 3}
---- !u!1 &7892450382275305540
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 8622371726407435005}
-  - component: {fileID: 3520577830815671549}
-  m_Layer: 0
-  m_Name: Collider
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
-  m_IsActive: 1
---- !u!4 &8622371726407435005
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7892450382275305540}
-  m_LocalRotation: {x: -0.5, y: 0.5, z: 0.5, w: 0.5}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1031467760}
-  m_RootOrder: 4
-  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 90}
---- !u!64 &3520577830815671549
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7892450382275305540}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 4
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 4449347617712980030, guid: abc00000000002886836571985923650, type: 3}

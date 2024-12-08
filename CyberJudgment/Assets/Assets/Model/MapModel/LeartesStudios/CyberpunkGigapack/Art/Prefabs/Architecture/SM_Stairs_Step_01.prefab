@@ -29,7 +29,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1031747451}
-  - {fileID: 8110463315690299741}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -44,6 +43,7 @@ GameObject:
   - component: {fileID: 1031747451}
   - component: {fileID: 1031747452}
   - component: {fileID: 1031747453}
+  - component: {fileID: 8544409087078235066}
   m_Layer: 0
   m_Name: SM_Stairs_Step_01
   m_TagString: Untagged
@@ -116,48 +116,16 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1031747450}
   m_Mesh: {fileID: 4300000, guid: abc00000000006427670151386876677, type: 3}
---- !u!1 &3582480644026012034
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 8110463315690299741}
-  - component: {fileID: 7848278844779944571}
-  m_Layer: 0
-  m_Name: Collider
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
-  m_IsActive: 1
---- !u!4 &8110463315690299741
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3582480644026012034}
-  m_LocalRotation: {x: -0.5, y: 0.5, z: 0.5, w: 0.5}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1031747448}
-  m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 90}
---- !u!65 &7848278844779944571
+--- !u!65 &8544409087078235066
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3582480644026012034}
+  m_GameObject: {fileID: 1031747450}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.11151788, y: 1.5377316, z: 0.49317244}
-  m_Center: {x: -0.040740766, y: 0.7324276, z: 0.16070138}
+  m_Size: {x: 1.4593539, y: 0.38573676, z: 0.07948375}
+  m_Center: {x: -0.7296766, y: 0.18108425, z: 0.039741844}
