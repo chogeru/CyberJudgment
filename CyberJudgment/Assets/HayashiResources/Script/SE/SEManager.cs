@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using AbubuResouse.Log;
 using UnityEngine;
+
 namespace AbubuResouse.Singleton
 {
     /// <summary>
@@ -9,16 +10,17 @@ namespace AbubuResouse.Singleton
     /// </summary>
     public class SEManager : AudioManagerBase<SEManager>
     {
-
         private List<AudioSource> _audioSources = new List<AudioSource>();
-        [SerializeField, Header("AudioSouceザイズ")]
-        private int _audioSouceSize;
+        [SerializeField, Header("AudioSourceの数")]
+        private int _audioSourceSize = 10;
+
+        private Dictionary<string, AudioClip> _loadedClips = new Dictionary<string, AudioClip>();
 
         protected override void Awake()
         {
             base.Awake();
             // 必要な数のAudioSourceを生成してプールに追加
-            for (int i = 0; i < _audioSouceSize; i++) 
+            for (int i = 0; i < _audioSourceSize; i++)
             {
                 AudioSource source = gameObject.AddComponent<AudioSource>();
                 source.loop = false;
@@ -35,14 +37,14 @@ namespace AbubuResouse.Singleton
         /// <summary>
         /// 指定されたSE名と同じレコードをデータベースから検索して、SEを再生する
         /// </summary>
-        /// <param name="bgmName">BGM名</param>
+        /// <param name="clipName">サウンドクリップ名</param>
         /// <param name="volume">音量</param>
         public override void PlaySound(string clipName, float volume)
         {
             var query = connection.Table<SoundClip>().FirstOrDefault(x => x.ClipName == clipName);
             if (query != null)
             {
-                LoadAndPlayClip($"SE/{query.ClipPath}", volume);
+                PlayFromPath(query.ClipPath, volume);
             }
             else
             {
@@ -50,44 +52,40 @@ namespace AbubuResouse.Singleton
             }
         }
 
-
         /// <summary>
-        /// 指定されたリソースパスのサウンドクリップをロードし、再生する
+        /// 指定されたパスのサウンドを再生
         /// </summary>
-        /// <param name="resourcePath">リソースパス</param>
+        /// <param name="path">リソースパス</param>
         /// <param name="volume">音量</param>
-        protected override void LoadAndPlayClip(string resourcePath, float volume)
+        private void PlayFromPath(string path, float volume)
         {
-            try
+            if (!_loadedClips.ContainsKey(path))
             {
-                AudioClip clip = Resources.Load<AudioClip>(resourcePath);
-                if (clip != null)
+                // リソースをロードしてキャッシュ
+                AudioClip clip = Resources.Load<AudioClip>($"SE/{path}");
+                if (clip == null)
                 {
-                    // 空いているAudioSourceを探す
-                    AudioSource source = _audioSources.FirstOrDefault(a => !a.isPlaying);
-                    if (source != null)
-                    {
-                        source.clip = clip;
-                        source.volume = volume;
-                        source.Play();
-                        DebugUtility.Log($"サウンドクリップを再生: {resourcePath}");
-                    }
-                    else
-                    {
-                        DebugUtility.LogError("再生可能なAudioSourceがありません");
-                    }
+                    DebugUtility.LogError($"指定されたサウンドクリップが見つかりません: {path}");
+                    return;
                 }
-                else
-                {
-                    DebugUtility.LogError($"サウンドファイルが見つからない: {resourcePath}");
-                }
+
+                _loadedClips[path] = clip;
             }
-            catch (System.Exception ex)
+
+            // 空いているAudioSourceを探して再生
+            AudioSource source = _audioSources.FirstOrDefault(a => !a.isPlaying);
+            if (source != null)
             {
-                DebugUtility.LogError($"サウンドファイルのロード時にエラー発生: {ex.Message}");
+                source.clip = _loadedClips[path];
+                source.volume = volume;
+                source.Play();
+                DebugUtility.Log($"サウンドクリップを再生: {path}");
+            }
+            else
+            {
+                DebugUtility.LogError("再生可能なAudioSourceがありません");
             }
         }
-
 
         /// <summary>
         /// データベースのサウンドクリップテーブル

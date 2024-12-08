@@ -14,6 +14,9 @@ public class PlayerCameraController : MonoBehaviour
 {
     [SerializeField, Header("走行時のカメラオフセット")]
     private float m_RunCameraOffsetMultiplier = 1.5f;
+    [SerializeField]
+    private float m_EnemyCameraOffsetMultiplier = 1.5f;
+
 
     #region プレイヤー関連の設定
     [Tab("プレイヤー関連設定")]
@@ -76,6 +79,7 @@ public class PlayerCameraController : MonoBehaviour
     #endregion
 
     private Camera m_MainCamera;
+    [SerializeField]
     private Vector3 m_Offset;
     private float m_CurrentDistance;
 
@@ -87,6 +91,16 @@ public class PlayerCameraController : MonoBehaviour
     private bool m_IsUIOpen = false;
     private bool m_IsCameraMoving = false;
 
+    [SerializeField, Header("敵のレイヤー")]
+    private LayerMask m_EnemyLayer;
+
+    [SerializeField, Header("敵の検出範囲")]
+    private float m_EnemyDetectionRange = 10f;
+
+    private Collider[] m_EnemyColliders = new Collider[10];
+
+    [SerializeField]
+    private bool isHit;
     void Start()
     {
         InitializeCamera();
@@ -108,6 +122,44 @@ public class PlayerCameraController : MonoBehaviour
         m_OriginalCameraOffsetMagnitude = m_Offset.magnitude;
     }
 
+    private bool IsEnemyNearby()
+    {
+        int count = Physics.OverlapSphereNonAlloc(
+            m_Player.position,
+            m_EnemyDetectionRange,
+            m_EnemyColliders,
+            m_EnemyLayer
+        );
+
+        foreach (var collider in m_EnemyColliders)
+        {
+            if (collider != null)
+            {
+                // カメラの視野内にいるかチェック
+                Vector3 enemyDirection = (collider.transform.position - m_MainCamera.transform.position).normalized;
+                float dot = Vector3.Dot(m_MainCamera.transform.forward, enemyDirection);
+
+                if (dot > 0.5f) // 視野角約60度内
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private void Update()
+    {
+        isHit = IsEnemyNearby();
+        if (IsEnemyNearby())
+        {
+            var target = m_OriginalCameraOffsetMagnitude * m_EnemyCameraOffsetMultiplier;
+            m_CurrentDistance = target;
+        }
+        
+
+    }
     /// <summary>
     /// カメラの回転操作を監視し、毎フレーム入力に応じたカメラの更新を行う。
     /// </summary>
@@ -350,7 +402,7 @@ public class PlayerCameraController : MonoBehaviour
 
         m_CurrentDistance = targetDistance;
     }
-
+  
     private async UniTask SmoothMoveToDefaultOffset()
     {
         float elapsedTime = 0f;
@@ -367,4 +419,5 @@ public class PlayerCameraController : MonoBehaviour
         m_CurrentDistance = targetDistance;
     }
 
+  
 }

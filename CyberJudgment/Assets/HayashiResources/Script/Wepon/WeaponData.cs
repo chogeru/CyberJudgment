@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using VInspector;
 
@@ -9,9 +10,14 @@ public class WeaponData : ScriptableObject
     public int _weaponID;
     [SerializeField,Header("武器の名前")]
     public string _weaponName;
+    [Tab("デザイン")]
+    [SerializeField,Header("エフェクトのプレハブ")]
+    public List<GameObject> EffectPrefabs;
+    [SerializeField,Header("攻撃時SE")]
+    public List<string> SoundEffects;
     [Tab("ステータス")]
     [SerializeField, Header("攻撃力")]
-    public float _attackPower;
+    public int _attackPower;
     [SerializeField, Header("攻撃速度")]
     public float _attackSpeed;
     [SerializeField, Header("武器重量")]
