@@ -57,7 +57,7 @@ public class NPCSpeakSystem : MonoBehaviour
 
     /// <summary>
     /// NPCとのインタラクション処理
-    /// </summary
+    /// </summary>
     private void HandleNPCInteraction()
     {
         if (_isTalking)

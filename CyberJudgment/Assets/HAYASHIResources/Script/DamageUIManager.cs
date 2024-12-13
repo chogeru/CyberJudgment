@@ -61,7 +61,7 @@ namespace AbubuResouse.Singleton
         {
             if (damageTextPrefab == null)
             {
-                Debug.LogError("DamageTextPrefabが設定されていません！");
+                Debug.LogError("DamageTextPrefabがアタッチされていない！");
                 return false;
             }
             return true;
@@ -93,7 +93,7 @@ namespace AbubuResouse.Singleton
             TMP_Text textComponent = damageTextInstance.GetComponentInChildren<TMP_Text>();
             if (textComponent == null)
             {
-                Debug.LogError($"TMP_Textが{damageTextPrefab.name}に見つかりません！");
+                Debug.LogError($"TMP_Textが{damageTextPrefab.name}に存在しない");
                 SharedGameObjectPool.Return(damageTextInstance);
                 return null;
             }
