@@ -59,17 +59,15 @@ public class EnemyAttackCol : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // すり抜けた対象がEnemyタグを持つか確認
         if (other.CompareTag("Player"))
         {
-            // EnemyBase クラスを持っているか確認してダメージを与える
-            PlayerController enemy = other.GetComponent<PlayerController>();
-            if (enemy != null)
+            PlayerHealth player = other.GetComponent<PlayerHealth>();
+            if (player != null)
             {
                 string randomSound = _attackSounds[Random.Range(0, _attackSounds.Count)];
                 GenerateAttackEffect();
                 SEManager.Instance.PlaySound(randomSound, _volume);
-                //enemy.TakeDamage(_attackPower);
+                player.TakeDamage(_attackPower);
             }
         }
         if(other.CompareTag("Ground"))

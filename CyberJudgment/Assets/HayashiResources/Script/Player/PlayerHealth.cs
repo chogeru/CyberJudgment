@@ -2,6 +2,7 @@ using R3;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerHealth : MonoBehaviour
 {
@@ -16,6 +17,12 @@ public class PlayerHealth : MonoBehaviour
     // 体力が変化した際に通知するためのReactiveプロパティ
     private ReactiveProperty<int> health;
 
+    [SerializeField, Header("体力スライダー")]
+    private Slider healthSlider;
+
+    [SerializeField, Header("体力テキスト")]
+    private Text healthText;
+
     private void Awake()
     {
         _currentHealth = _maxHealth;
@@ -24,6 +31,13 @@ public class PlayerHealth : MonoBehaviour
 
     private void Start()
     {
+
+        if (healthSlider != null)
+        {
+            healthSlider.maxValue = _maxHealth;
+            healthSlider.value = _currentHealth;
+        }
+
         // 体力が変更されたときにUIを更新するなどの処理を購読
         health.Subscribe(newHealth =>
         {
@@ -87,5 +101,14 @@ public class PlayerHealth : MonoBehaviour
     /// <param name="newHealth">更新後の体力</param>
     private void UpdateHealthUI(int newHealth)
     {
+        if (healthSlider != null)
+        {
+            healthSlider.value = newHealth;
+        }
+
+        if (healthText != null)
+        {
+            healthText.text = $"{newHealth}/{_maxHealth}";
+        }
     }
 }
