@@ -7,6 +7,12 @@ public class PlayerManager : MonoBehaviour
     public PlayerAttackController PlayerAttackController { get; private set; }
 
     private bool isAttacking;
+    private bool isHit;
+    private bool isDead;
+
+    public bool IsHit => isHit;
+    public bool IsDead => isDead;
+
     private PlayerState currentState;
 
     private void Awake()
@@ -47,6 +53,20 @@ public class PlayerManager : MonoBehaviour
     public bool IsAttacking()
     {
         return isAttacking;
+    }
+
+    public void SetHitState(bool hit)
+    {
+        isHit = hit;
+        PlayerController.SetMovementEnabled(!hit);
+        PlayerAttackController.SetAttackEnabled(!hit);
+    }
+
+    public void SetDeadState(bool dead)
+    {
+        isDead = dead;
+        PlayerController.SetMovementEnabled(!dead);
+        PlayerAttackController.SetAttackEnabled(!dead);
     }
 }
 /// <summary>

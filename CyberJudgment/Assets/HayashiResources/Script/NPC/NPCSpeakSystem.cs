@@ -5,6 +5,7 @@ using UnityEngine;
 using Zenject.SpaceFighter;
 using AbubuResouse.Editor;
 using AbubuResouse.Singleton;
+using UnityEngine.InputSystem;
 
 public class NPCSpeakSystem : MonoBehaviour
 {
@@ -113,7 +114,7 @@ public class NPCSpeakSystem : MonoBehaviour
         if (distance <= _triggerDistance)
         {
             ShowCanvas();
-            if (Input.GetKeyDown(_keyCode))
+            if (Input.GetKeyDown(_keyCode) || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame))
             {
                 _textTrigger.TriggerTextDisplay();
                 _isTalking = true;

@@ -5,12 +5,14 @@ using UnityEngine;
 /// </summary>
 public class Enemy : EnemyBase
 {
-    [SerializeField,Header("巡回ポイントの配列")]
-    private Transform[] _patrolPoints;
-    //現在の巡回ポイント
-    private int _currentPatrolIndex;
-    //巡回ポイントで待機時間
-    private float _patrolTimer;
+    [Header("巡回ポイントの配列")]
+    [SerializeField] private Transform[] _patrolPoints;
+
+    // 現在の巡回ポイント
+    private int _currentPatrolIndex = 0;
+
+    // 巡回ポイントで待機時間
+    private float _patrolTimer = 0f;
 
     /// <summary>
     /// 敵の初期設定
@@ -20,12 +22,6 @@ public class Enemy : EnemyBase
         base.Start();
         _currentPatrolIndex = 0;
         _patrolTimer = 0f;
-        TransitionToState(new IdleState());
-    }
-
-    protected override void Update()
-    {
-        base.Update();
     }
 
     /// <summary>
@@ -37,7 +33,9 @@ public class Enemy : EnemyBase
 
         Transform targetPatrolPoint = _patrolPoints[_currentPatrolIndex];
         MoveTowards(targetPatrolPoint.position);
+        RotateTowards(targetPatrolPoint.position);
 
+        // 目標地点に近づいたら待機
         if (Vector3.Distance(transform.position, targetPatrolPoint.position) < 0.5f)
         {
             _patrolTimer += Time.deltaTime;

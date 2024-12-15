@@ -5,35 +5,31 @@ using UnityEngine;
 /// </summary>
 public class ChaseState : IEnemyState
 {
-    private System.Random random = new System.Random();
-
-    /// <summary>
-    /// 追跡状態に入る時に呼び出されるメソッド
-    /// </summary>
-    /// <param name="enemy">この状態に入る敵</param>
+    private float originalAnimatorSpeed;
     public void EnterState(EnemyBase enemy)
     {
+        originalAnimatorSpeed = enemy._animator.speed;
+        enemy._animator.speed = 1f;
         enemy._animator.SetBool("isMoving", true);
+        Debug.Log($"{enemy.name}: Enter ChaseState");
     }
 
-    /// <summary>
-    /// 追跡状態を更新するために呼び出されるメソッド
-    /// </summary>
-    /// <param name="enemy">この状態にある敵</param>
     public void UpdateState(EnemyBase enemy)
     {
-        //攻撃アニメーションが再生されていなければ追跡する
+        // 攻撃中でなければ追跡
         if (!enemy.GetIsAttacking())
         {
             enemy.MoveTowards(enemy._player.position);
             enemy.RotateTowards(enemy._player.position);
         }
 
-        // プレイヤーが攻撃範囲内であれば攻撃ステートに遷移
-        if (Vector3.Distance(enemy.transform.position, enemy._player.position) <= enemy.enemyData.attackRange)
+        float distanceToPlayer = Vector3.Distance(enemy.transform.position, enemy._player.position);
+
+        // 攻撃範囲内で攻撃中でなければ攻撃ステートに遷移
+        if (distanceToPlayer <= enemy.enemyData.attackRange && !enemy.GetIsAttacking())
         {
-            // 50%の確率で通常攻撃か強攻撃を選ぶ
-            if (random.Next(0, 2) == 0)
+            int attackChoice = Random.Range(0, 2); // 0 または 1
+            if (attackChoice == 0)
             {
                 enemy.TransitionToState(new AttackState());
             }
@@ -41,20 +37,20 @@ public class ChaseState : IEnemyState
             {
                 enemy.TransitionToState(new StrongAttackState());
             }
+            return;
         }
-        // プレイヤーが視界に入っていなければIdleに遷移
+
+        // プレイヤーが視界に入っていなければ IdleState に遷移
         if (!enemy.isPlayerInSight)
         {
             enemy.TransitionToState(new IdleState());
+            return;
         }
     }
 
-    /// <summary>
-    /// 追跡状態を退出する時に呼び出されるメソッド
-    /// </summary>
-    /// <param name="enemy">この状態を退出する敵</param>
     public void ExitState(EnemyBase enemy)
     {
         enemy._animator.SetBool("isMoving", false);
+        Debug.Log($"{enemy.name}: Exit ChaseState");
     }
 }

@@ -1,5 +1,6 @@
 using AbubuResouse.Singleton;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
 
@@ -44,7 +45,7 @@ public class TimellineManager: MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Z))
+        if (Input.GetKeyDown(KeyCode.Z) || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame))
         {
             SkipTimeline();
         }

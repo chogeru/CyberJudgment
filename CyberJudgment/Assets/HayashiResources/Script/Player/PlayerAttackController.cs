@@ -5,6 +5,7 @@ using R3.Triggers;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 
 public class PlayerAttackController : MonoBehaviour
@@ -65,6 +66,11 @@ public class PlayerAttackController : MonoBehaviour
         }
     }
 
+    public void SetAttackEnabled(bool enabled)
+    {
+        isAttack = enabled; 
+    }
+
     /// <summary>
     /// 入力により攻撃アニメーションを再生する処理
     /// </summary>
@@ -72,21 +78,51 @@ public class PlayerAttackController : MonoBehaviour
     {
         // 左クリックによる通常攻撃
         this.UpdateAsObservable()
-            .Where(_ => !StopManager.Instance.IsStopped)
-            .Where(_ => Input.GetMouseButtonDown(0))
-            .Where(_ => isAttack)
+            .Where(_ => !StopManager.Instance.IsStopped)       // 一時停止中でない
+            .Where(_ => isAttack)                              // 攻撃可能な状態
+            .Where(_ => !playerManager.IsHit && !playerManager.IsDead) // ヒット中・死亡中でない
+            .Where(_ => Input.GetMouseButtonDown(0))           // 入力を検出
             .Subscribe(_ => ExecuteAttack("NormalAttack", m_NomalAttackVoiceClipName, m_NomalAttackSE));
 
         // 右クリックによる強攻撃
         this.UpdateAsObservable()
+        .Where(_ => !StopManager.Instance.IsStopped)
+        .Where(_ => isAttack)
+        .Where(_ => !playerManager.IsHit && !playerManager.IsDead)
+        .Where(_ => Input.GetMouseButtonDown(1))
+        .Subscribe(_ => ExecuteAttack("StrongAttack", m_StringAttackVoiceClipName, m_StringAttackSE));
+
+        // コントローラーの左肩ボタンによる通常攻撃
+        this.UpdateAsObservable()
             .Where(_ => !StopManager.Instance.IsStopped)
-            .Where(_ => Input.GetMouseButtonDown(1))
             .Where(_ => isAttack)
-            .Subscribe(_ => ExecuteAttack("StrongAttack", m_StringAttackVoiceClipName, m_StringAttackSE));
+            .Where(_ => !playerManager.IsHit && !playerManager.IsDead)
+            .Where(_ => Gamepad.current != null && Gamepad.current.leftShoulder.wasPressedThisFrame)
+            .Subscribe(_ => ExecuteAttack("NormalAttack", m_NomalAttackVoiceClipName, m_NomalAttackSE))
+            .AddTo(this);
+
+        // コントローラーの右肩ボタンによる強攻撃
+        this.UpdateAsObservable()
+            .Where(_ => !StopManager.Instance.IsStopped)
+            .Where(_ => isAttack)
+            .Where(_ => !playerManager.IsHit && !playerManager.IsDead)
+            .Where(_ => Gamepad.current != null && Gamepad.current.rightShoulder.wasPressedThisFrame)
+            .Subscribe(_ => ExecuteAttack("StrongAttack", m_StringAttackVoiceClipName, m_StringAttackSE))
+            .AddTo(this);
 
         // マウスボタンのリリースを検知してIdleに移行
         this.UpdateAsObservable()
             .Where(_ => Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1))
+            .Subscribe(_ => CancelAttack());
+
+        // コントローラーの左肩ボタンのリリースを検知してIdleに移行
+        this.UpdateAsObservable()
+            .Where(_ => Gamepad.current != null && Gamepad.current.leftShoulder.wasReleasedThisFrame)
+            .Subscribe(_ => CancelAttack());
+
+        // コントローラーの右肩ボタンのリリースを検知してIdleに移行
+        this.UpdateAsObservable()
+            .Where(_ => Gamepad.current != null && Gamepad.current.rightShoulder.wasReleasedThisFrame)
             .Subscribe(_ => CancelAttack());
     }
 
@@ -171,7 +207,10 @@ public class PlayerAttackController : MonoBehaviour
     private async UniTaskVoid ResetAttackCooldown()
     {
         await UniTask.Delay((int)(m_AttackCoolDown * 1000));
-        isAttack = true;
+        if (!playerManager.IsHit && !playerManager.IsDead) // 状態チェックを追加
+        {
+            isAttack = true;
+        }
     }
 
     private void OnAnimatorMove()

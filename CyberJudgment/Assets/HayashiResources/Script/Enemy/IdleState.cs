@@ -5,29 +5,30 @@ using UnityEngine;
 /// </summary>
 public class IdleState : IEnemyState
 {
-    private System.Random random = new System.Random();
-
-    /// <summary>
-    /// 待機状態に入る時に呼び出されるメソッド
-    /// </summary>
-    /// <param name="enemy">この状態に入る敵</param>
+    private float originalAnimatorSpeed;
     public void EnterState(EnemyBase enemy)
     {
+        originalAnimatorSpeed = enemy._animator.speed;
+        enemy._animator.speed = 1f;
         enemy._animator.SetBool("isMoving", false);
-        enemy._animator.SetBool("Attack", false);
-        enemy._animator.SetBool("StrongAttack", false);
+        enemy._animator.SetBool("isRetreating", false);
+        enemy._animator.ResetTrigger("Attack");
+        enemy._animator.ResetTrigger("StrongAttack");
+        Debug.Log($"{enemy.name}: Enter IdleState");
     }
 
-    /// <summary>
-    /// 待機状態を更新するために呼び出されるメソッド
-    /// </summary>
-    /// <param name="enemy">この状態にある敵</param>
     public void UpdateState(EnemyBase enemy)
     {
-        if (Vector3.Distance(enemy.transform.position, enemy._player.position) <= enemy.enemyData.attackRange)
+        enemy.Patrol();
+
+        // プレイヤーとの距離をチェック
+        float distanceToPlayer = Vector3.Distance(enemy.transform.position, enemy._player.position);
+
+        // 攻撃範囲内で攻撃中でなければ攻撃ステートに遷移
+        if (distanceToPlayer <= enemy.enemyData.attackRange && !enemy.GetIsAttacking())
         {
-            // 50%の確率で通常攻撃か強攻撃を選ぶ
-            if (random.Next(0, 2) == 0)
+            int attackChoice = Random.Range(0, 2); // 0 または 1
+            if (attackChoice == 0)
             {
                 enemy.TransitionToState(new AttackState());
             }
@@ -35,19 +36,20 @@ public class IdleState : IEnemyState
             {
                 enemy.TransitionToState(new StrongAttackState());
             }
+            return;
         }
-        if (enemy.isPlayerInSight)
+
+        // プレイヤーが視界に入っていれば ChaseState に遷移
+        if (enemy.isPlayerInSight && !enemy.GetIsAttacking())
         {
             enemy.TransitionToState(new ChaseState());
+            return;
         }
+
     }
 
-
-    /// <summary>
-    /// 待機状態を退出する時に呼び出されるメソッド
-    /// </summary>
-    /// <param name="enemy">この状態を退出する敵</param>
     public void ExitState(EnemyBase enemy)
     {
+        Debug.Log($"{enemy.name}: Exit IdleState");
     }
 }

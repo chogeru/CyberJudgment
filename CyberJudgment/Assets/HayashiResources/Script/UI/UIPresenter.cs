@@ -20,6 +20,8 @@ namespace AbubuResouse.Singleton
         [SerializeField]
         private GameObject _settingUI;
         [SerializeField]
+        private CanvasGroup _playerCanvasGroup;
+        [SerializeField]
         private GameObject[] _linkedUIObjects;
 
         public bool IsMenuOpen => _model.IsMenuOpen.Value;
@@ -191,6 +193,7 @@ namespace AbubuResouse.Singleton
             _view.SetMenuVisibility(_menuUI, false);
             _view.SetSettingVisibility(_settingUI, true);
             StopManager.Instance.IsStopped = true;
+            SetPlayerCanvasAlpha(0);
         }
 
         /// <summary>
@@ -203,7 +206,27 @@ namespace AbubuResouse.Singleton
             _model.IsCursorVisible.Value = false;
             _view.SetMenuVisibility(_menuUI, true);
             _view.SetSettingVisibility(_settingUI, false);
+            SetPlayerCanvasAlpha(1);
         }
+
+        /// <summary>
+        /// プレイヤーキャンバスのアルファ値を設定
+        /// </summary>
+        /// <param name="alpha">設定するアルファ値</param>
+        private void SetPlayerCanvasAlpha(float alpha)
+        {
+            if (_playerCanvasGroup != null)
+            {
+                _playerCanvasGroup.alpha = alpha;
+                _playerCanvasGroup.interactable = alpha > 0;
+                _playerCanvasGroup.blocksRaycasts = alpha > 0;
+            }
+            else
+            {
+                DebugUtility.LogError("PlayerCanvasGroupが設定されていません！");
+            }
+        }
+
 
         /// <summary>
         /// メニューUIの表示/非表示を切り替える

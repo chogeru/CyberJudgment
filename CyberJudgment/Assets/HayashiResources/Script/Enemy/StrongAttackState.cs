@@ -5,49 +5,42 @@ using UnityEngine;
 /// </summary>
 public class StrongAttackState : IEnemyState
 {
-    private System.Random random = new System.Random();
-
-    /// <summary>
-    /// 強攻撃状態に入る時に呼び出されるメソッド
-    /// </summary>
-    /// <param name="enemy">この状態に入る敵</param>
+    private bool animationCompleted = false;
+    private float originalAnimatorSpeed;
     public void EnterState(EnemyBase enemy)
     {
-        if (!enemy.GetIsAttacking())
-        {
-            enemy.SetIsAttacking(true);
-            enemy._animator.SetBool("StrongAttack", true);
-        }
+        originalAnimatorSpeed = enemy._animator.speed;
+        enemy._animator.speed = 1f;
+        enemy.SetIsAttacking(true);
+        enemy._animator.SetBool("StrongAttack", true);
+        Debug.Log($"{enemy.name}: Enter StrongAttackState");
     }
 
-    /// <summary>
-    /// 強攻撃状態を更新するために呼び出されるメソッド
-    /// </summary>
-    /// <param name="enemy">この状態にある敵</param>
     public void UpdateState(EnemyBase enemy)
     {
-        if (!enemy.isPlayerInSight || Vector3.Distance(enemy.transform.position, enemy._player.position) > enemy.enemyData.attackRange)
+        float distanceToPlayer = Vector3.Distance(enemy.transform.position, enemy._player.position);
+
+        // プレイヤーが攻撃範囲外または視界から外れた場合は ChaseState に遷移
+        if (distanceToPlayer > enemy.enemyData.attackRange || !enemy.isPlayerInSight)
         {
+            enemy._animator.SetBool("StrongAttack", false);
             enemy.TransitionToState(new ChaseState());
+            return;
         }
-        else if (enemy.isPlayerInSight && !enemy.GetIsAttacking())
+
+        // アニメーションが終了したかを確認
+        AnimatorStateInfo stateInfo = enemy._animator.GetCurrentAnimatorStateInfo(0);
+        if (stateInfo.IsName("StrongAttack") && stateInfo.normalizedTime >= 1.0f && enemy.GetIsAttacking())
         {
-            if (random.Next(0, 2) == 0)
-            {
-                enemy.TransitionToState(new AttackState());
-            }
-            else
-            {
-                enemy.TransitionToState(new StrongAttackState());
-            }
+            enemy._animator.SetBool("StrongAttack", false);
+            enemy.TransitionToState(new RetreatState());
         }
     }
 
-    /// <summary>
-    /// 強攻撃状態を退出する時に呼び出されるメソッド
-    /// </summary>
-    /// <param name="enemy">この状態を退出する敵</param>
     public void ExitState(EnemyBase enemy)
     {
+        enemy.SetIsAttacking(false);
+        enemy._animator.SetBool("StrongAttack", false);
+        Debug.Log($"{enemy.name}: Exit StrongAttackState");
     }
 }

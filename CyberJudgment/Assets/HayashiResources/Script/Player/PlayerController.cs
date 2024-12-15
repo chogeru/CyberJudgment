@@ -46,6 +46,23 @@ public class PlayerController : MonoBehaviour
     private float m_GravityMultiplier = 9.81f;
     [SerializeField, Header("最大落下速度")]
     private float m_MaxFallSpeed = 50.0f;
+    [SerializeField, Header("走行のしきい値")]
+    private float m_RunThreshold = 0.7f;
+    [SerializeField, Header("ゲームパッドデッドゾーン")]
+    private float m_GamepadDeadZone = 0.2f;
+
+    [SerializeField, Header("スティック入力値 (ゲームパッド)")]
+    private Vector2 currentGamepadInput;
+
+    [SerializeField, Header("スティック入力値 (キーボード)")]
+    private Vector3 currentKeyboardInput;
+
+    [SerializeField, Header("結合されたスティック入力値")]
+    private Vector3 currentCombinedInput;
+
+    [SerializeField, Header("スティック入力の大きさ")]
+    private float currentInputMagnitude;
+
     [EndTab]
     #endregion
 
@@ -93,33 +110,103 @@ public class PlayerController : MonoBehaviour
     /// <returns></returns>
     private async UniTaskVoid InitializeMovement()
     {
-
-        // プレイヤーの移動入力をリアクティブに監視
         var moveStream = this.UpdateAsObservable()
-         .Select(_ => new Vector3(Gamepad.current?.leftStick.ReadValue().x ?? Input.GetAxis("Horizontal"),
-                                  0,
-                                  Gamepad.current?.leftStick.ReadValue().y ?? Input.GetAxis("Vertical")))
-         .Share();
+            .Select(_ =>
+            {
+                Vector2 gamepadInput = Gamepad.current?.leftStick.ReadValue() ?? Vector2.zero;
 
-        // Shiftキーを押しながらの走行を購読
+                // デッドゾーンの適用
+                if (gamepadInput.magnitude < m_GamepadDeadZone)
+                {
+                    gamepadInput = Vector2.zero; // デッドゾーン内ならゼロに正規化
+                }
+                else
+                {
+                    gamepadInput = gamepadInput.normalized * ((gamepadInput.magnitude - m_GamepadDeadZone) / (1 - m_GamepadDeadZone));
+                }
+
+                Vector3 keyboardInput = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+
+                // キーボード入力の微小値をゼロにする
+                if (keyboardInput.magnitude < 0.1f)
+                {
+                    keyboardInput = Vector3.zero;
+                }
+
+                // ゲームパッド入力が存在する場合はゲームパッド入力を優先
+                Vector3 combinedInput = (gamepadInput != Vector2.zero) ? new Vector3(gamepadInput.x, 0, gamepadInput.y) : keyboardInput;
+
+                // 入力が非常に小さい場合はゼロにする
+                if (combinedInput.magnitude < 0.01f)
+                {
+                    combinedInput = Vector3.zero;
+                }
+
+                float magnitude = combinedInput.magnitude;
+                currentGamepadInput = gamepadInput;
+                currentKeyboardInput = keyboardInput;
+                currentCombinedInput = combinedInput;
+                currentInputMagnitude = magnitude;
+
+                // デバッグ用ログ
+                DebugUtility.Log($"Input Magnitude: {magnitude}, CombinedInput: {combinedInput}");
+
+                return new { Movement = combinedInput, Magnitude = magnitude };
+            })
+            .Share();
+
+        // Run Command
         moveStream
-             .Where(_ => Input.GetKey(KeyCode.LeftShift) || (Gamepad.current?.leftTrigger.isPressed ?? false))
-             .Subscribe(movement => new RunCommand(this, movement).Execute());
+            .Where(input =>
+                (Gamepad.current != null && (input.Magnitude >= m_RunThreshold || Gamepad.current.leftTrigger.isPressed)) ||
+                (Gamepad.current == null && Input.GetKey(KeyCode.LeftShift))
+            )
+            .Where(input => input.Movement != Vector3.zero)
+            .Subscribe(input => {
+                var runCommand = new RunCommand(this, input.Movement);
+                if (runCommand.CanExecute())
+                {
+                    runCommand.Execute();
+                }
+            })
+            .AddTo(this);
 
-        // 通常の歩行を購読
+        // Walk Command
         moveStream
-            .Where(_ => !Input.GetKey(KeyCode.LeftShift) && !(Gamepad.current?.leftTrigger.isPressed ?? false))
-            .Subscribe(movement => new WalkCommand(this, movement).Execute());
+            .Where(input =>
+                (Gamepad.current != null && input.Magnitude >= 0.2f && input.Magnitude < m_RunThreshold && !Gamepad.current.leftTrigger.isPressed) ||
+                (Gamepad.current == null && !Input.GetKey(KeyCode.LeftShift))
+            )
+            .Where(input => input.Movement != Vector3.zero)
+            .Subscribe(input => {
+                var walkCommand = new WalkCommand(this, input.Movement);
+                if (walkCommand.CanExecute())
+                {
+                    walkCommand.Execute();
+                }
+            })
+            .AddTo(this);
 
-        // ジャンプの入力と地面に触れているかの確認
+        // Idle State
+        moveStream
+            .Where(input => input.Movement == Vector3.zero || input.Magnitude < 0.01f)
+            .Subscribe(_ => {
+                playerManager.UpdatePlayerState(PlayerState.Idle);
+                DebugUtility.Log("Player entered Idle state.");
+            })
+            .AddTo(this);
+
+        // Jump
         this.UpdateAsObservable()
-            .Where(_ => Input.GetButtonDown("Jump") || (Gamepad.current?.buttonSouth.isPressed ?? false)) // Bボタンもジャンプ
+            .Where(_ => Input.GetButtonDown("Jump") || (Gamepad.current?.buttonSouth.isPressed ?? false))
             .Where(_ => IsGrounded())
-            .Subscribe(_ => m_Rigidbody.AddForce(new Vector3(0.0f, m_JumpForce, 0.0f)));
+            .Subscribe(_ => m_Rigidbody.AddForce(new Vector3(0.0f, m_JumpForce, 0.0f)))
+            .AddTo(this);
 
         await UniTask.Yield();
-
     }
+
+
     void FixedUpdate()
     {
         UseGravity();
@@ -177,7 +264,7 @@ public class PlayerController : MonoBehaviour
     /// <param name="speed">移動速度</param>
     public void Move(Vector3 movement, float speed)
     {
-        if (!canMove)
+        if (!canMove || playerManager.IsHit || playerManager.IsDead)
         {
             return;
         }
@@ -190,20 +277,23 @@ public class PlayerController : MonoBehaviour
 
         if (isGrounded)
         {
-            HandleMovement(movement, speed);
-            HandleRotation(movement);
-
-            if (movement == Vector3.zero)
+            // 入力値がゼロなら確実にIdle状態に遷移
+            if (movement == Vector3.zero || movement.magnitude < 0.01f)
             {
                 playerManager.UpdatePlayerState(PlayerState.Idle);
                 GetComponentInChildren<PlayerCameraController>().OnActionEnd();
+                return; // 移動処理をスキップ
             }
-            else
-            {
-                playerManager.UpdatePlayerState(speed == m_RunSpeed ? PlayerState.Run : PlayerState.Walk);
-            }
+
+            // 入力値がゼロではない場合、移動と回転を処理
+            HandleMovement(movement, speed);
+            HandleRotation(movement);
+
+            // アニメーションをWalkまたはRunに設定
+            playerManager.UpdatePlayerState(speed == m_RunSpeed ? PlayerState.Run : PlayerState.Walk);
         }
     }
+
 
     /// <summary>
     /// 移動処理
@@ -212,8 +302,28 @@ public class PlayerController : MonoBehaviour
     /// <param name="speed">移動速度</param>
     private void HandleMovement(Vector3 movement, float speed)
     {
+        if (!canMove || playerManager.IsHit || playerManager.IsDead)
+        {
+            return;
+        }
+
+        if (StopManager.Instance.IsStopped)
+        {
+            playerManager.UpdatePlayerState(PlayerState.Idle);
+            return;
+        }
+
+        // 入力値がゼロまたは非常に小さい場合はIdle状態に遷移
+        if (movement == Vector3.zero || movement.magnitude < 0.01f)
+        {
+            playerManager.UpdatePlayerState(PlayerState.Idle);
+            GetComponentInChildren<PlayerCameraController>().OnActionEnd();
+            return; // 移動処理をスキップ
+        }
+
+        // カメラ基準での移動方向を計算
         Vector3 forward = m_CameraTransform.forward;
-        forward.y = 0;
+        forward.y = 0; // 水平方向に限定
         forward.Normalize();
 
         Vector3 right = Vector3.Cross(Vector3.up, forward);
@@ -223,7 +333,10 @@ public class PlayerController : MonoBehaviour
         ApplySlopeAdjustment(ref velocity, relativeMovement);
 
         m_Rigidbody.velocity = velocity;
+
+        DebugUtility.Log($"Player Moving. Speed: {speed}, Velocity: {velocity}");
     }
+
 
     /// <summary>
     /// プレイヤーの回転処理
