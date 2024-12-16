@@ -92,6 +92,7 @@ MonoBehaviour:
   serializeData:
     clothType: 1
     sourceRenderers: []
+    meshWriteMode: 0
     paintMode: 0
     paintMaps: []
     rootBones:
@@ -141,6 +142,11 @@ MonoBehaviour:
       cameraCullingMode: 30
       cameraCullingMethod: 0
       cameraCullingRenderers: []
+      distanceCullingLength:
+        value: 30
+        use: 0
+      distanceCullingFadeRatio: 0.2
+      distanceCullingReferenceObject: {fileID: 0}
     normalAxis: 1
     gravity: 0
     gravityDirection:
@@ -149,6 +155,7 @@ MonoBehaviour:
       z: 0
     gravityFalloff: 0
     stablizationTimeAfterReset: 0.1
+    blendWeight: 1
     damping:
       value: 0.5
       useCurve: 0
@@ -466,6 +473,95 @@ MonoBehaviour:
       normalLimitRatio: 1
       springNoise: 0
   serializeData2:
+    initData:
+      initVersion: 0
+      localHash: 0
+      globalHash: 0
+      clothType: 0
+      clothTransformRecord:
+        transform: {fileID: 0}
+        localPosition: {x: 0, y: 0, z: 0}
+        localRotation: {x: 0, y: 0, z: 0, w: 0}
+        position: {x: 0, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 0}
+        scale: {x: 0, y: 0, z: 0}
+        localToWorldMatrix:
+          e00: 0
+          e01: 0
+          e02: 0
+          e03: 0
+          e10: 0
+          e11: 0
+          e12: 0
+          e13: 0
+          e20: 0
+          e21: 0
+          e22: 0
+          e23: 0
+          e30: 0
+          e31: 0
+          e32: 0
+          e33: 0
+        worldToLocalMatrix:
+          e00: 0
+          e01: 0
+          e02: 0
+          e03: 0
+          e10: 0
+          e11: 0
+          e12: 0
+          e13: 0
+          e20: 0
+          e21: 0
+          e22: 0
+          e23: 0
+          e30: 0
+          e31: 0
+          e32: 0
+          e33: 0
+      normalAdjustmentTransformRecord:
+        transform: {fileID: 0}
+        localPosition: {x: 0, y: 0, z: 0}
+        localRotation: {x: 0, y: 0, z: 0, w: 0}
+        position: {x: 0, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 0}
+        scale: {x: 0, y: 0, z: 0}
+        localToWorldMatrix:
+          e00: 0
+          e01: 0
+          e02: 0
+          e03: 0
+          e10: 0
+          e11: 0
+          e12: 0
+          e13: 0
+          e20: 0
+          e21: 0
+          e22: 0
+          e23: 0
+          e30: 0
+          e31: 0
+          e32: 0
+          e33: 0
+        worldToLocalMatrix:
+          e00: 0
+          e01: 0
+          e02: 0
+          e03: 0
+          e10: 0
+          e11: 0
+          e12: 0
+          e13: 0
+          e20: 0
+          e21: 0
+          e22: 0
+          e23: 0
+          e30: 0
+          e31: 0
+          e32: 0
+          e33: 0
+      customSkinningBoneRecords: []
+      clothSetupDataList: []
     selectionData:
       positions:
       - x: 0.20935059
@@ -624,12 +720,14 @@ MonoBehaviour:
       animatedAxis: 0
       animatedShape: 0
       inertiaCenter: 1
+      customSkinningBone: 1
   animationPoseRatioProperty: 0
   gravityProperty: 0
   dampingProperty: 0
   worldInertiaProperty: 0
   localInertiaProperty: 0
   windInfluenceProperty: 0
+  blendWeightProperty: 0
 --- !u!1 &1939195363
 GameObject:
   m_ObjectHideFlags: 0
@@ -1490,6 +1588,7 @@ MonoBehaviour:
   center: {x: 0, y: -0.1, z: 0}
   size: {x: 0.05, y: 0.001, z: 0.33}
   direction: 1
+  reverseDirection: 0
   radiusSeparation: 0
   alignedOnCenter: 1
 --- !u!1 &1667101791886758666
@@ -1762,6 +1861,7 @@ MonoBehaviour:
   center: {x: 0, y: -0.05, z: 0}
   size: {x: 0.06, y: 0.001, z: 0.001}
   direction: 0
+  reverseDirection: 0
   radiusSeparation: 0
   alignedOnCenter: 1
 --- !u!1 &2360318321232759071
@@ -2779,6 +2879,7 @@ MonoBehaviour:
   center: {x: 0, y: 0.03, z: 0}
   size: {x: 0.09, y: 0.001, z: 0.001}
   direction: 0
+  reverseDirection: 0
   radiusSeparation: 0
   alignedOnCenter: 1
 --- !u!1 &4671542047085578437
@@ -3364,6 +3465,7 @@ MonoBehaviour:
   center: {x: -0.1, y: -0.05, z: 0}
   size: {x: 0.06, y: 0.001, z: 0.001}
   direction: 0
+  reverseDirection: 0
   radiusSeparation: 0
   alignedOnCenter: 1
 --- !u!1 &5880761109258550879
@@ -3926,7 +4028,64 @@ SkinnedMeshRenderer:
   - {fileID: 5563392094219491581}
   - {fileID: 3181927617241856425}
   - {fileID: 3399320625784205847}
-  m_BlendShapeWeights: []
+  m_BlendShapeWeights:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 1.3
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
   m_RootBone: {fileID: 1473646159720228865}
   m_AABB:
     m_Center: {x: 0.000000044703484, y: 1.4000084, z: 0.019722395}
@@ -4843,6 +5002,7 @@ MonoBehaviour:
   center: {x: 0.1, y: -0.05, z: 0}
   size: {x: 0.06, y: 0.001, z: 0.001}
   direction: 0
+  reverseDirection: 0
   radiusSeparation: 0
   alignedOnCenter: 1
 --- !u!1 &7667026851078471030
@@ -5175,9 +5335,15 @@ MonoBehaviour:
   m_RunSpeed: 10
   m_JumpForce: 300
   m_GravityMultiplier: 9.81
+  m_MaxFallSpeed: 50
+  m_RunThreshold: 0.7
+  m_GamepadDeadZone: 0.2
+  currentGamepadInput: {x: 0, y: 0}
+  currentKeyboardInput: {x: 0, y: 0, z: 0}
+  currentCombinedInput: {x: 0, y: 0, z: 0}
+  currentInputMagnitude: 0
   m_Rigidbody: {fileID: 9126141871417367007}
   m_CapsuleCollider: {fileID: 3516413507014893257}
-  m_Animator: {fileID: 9126141871417367003}
   m_CameraTransform: {fileID: 9126141871003576020}
   m_LayerMask:
     serializedVersion: 2
@@ -5334,6 +5500,7 @@ MonoBehaviour:
   center: {x: 0, y: -0.1, z: 0}
   size: {x: 0.05, y: 0.001, z: 0.33}
   direction: 1
+  reverseDirection: 0
   radiusSeparation: 0
   alignedOnCenter: 1
 --- !u!1 &8967134456135914861
@@ -5892,18 +6059,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca5f29d353981214c9d7eedd5cd70c7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_RunCameraOffsetMultiplier: 1.5
+  m_EnemyCameraOffsetMultiplier: 1.5
   m_Player: {fileID: 267646852606323845}
+  m_PlayerTransfrom: {fileID: 0}
   m_Sensitivity: 2
   m_GamepadSensitivity: 1
-  m_ZoomSensitivity: 0.1
   m_ObstacleMask:
     serializedVersion: 2
     m_Bits: 1
-  m_GamePadScrollSpeed: 0
-  m_MinDistance: 0.1
-  m_MaxDistance: 10
   m_SphereCastRadius: 0.5
-  m_SmoothTime: 0.2
+  m_VerticalRotationLimit: 80
+  m_RotationSmoothTime: 0.17
+  m_UITargetPosition: {x: 0, y: 0, z: 0}
+  m_UITargetRotation: {x: 0, y: 0, z: 0}
+  m_UIMoveDuration: 1
+  m_Offset: {x: 0, y: 0, z: 0}
+  m_EnemyLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  m_EnemyDetectionRange: 10
+  isHit: 0
 --- !u!1 &9147053763170702116
 GameObject:
   m_ObjectHideFlags: 0

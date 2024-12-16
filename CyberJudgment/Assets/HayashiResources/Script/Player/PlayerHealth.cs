@@ -1,132 +1,188 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
-using R3;
+using Cysharp.Threading.Tasks;
+using VInspector;
+using AbubuResouse.Singleton;
 
 public class PlayerHealth : MonoBehaviour
 {
-    [SerializeField, Header("アニメーター")]
-    private Animator _animator;
+    [Header("アニメーター")]
+    [SerializeField]
+    private Animator animator;
 
-    [SerializeField, Header("最大体力")]
-    private int _maxHealth = 100;
-    [SerializeField, Header("現在の体力")]
-    private int _currentHealth;
+    [Header("体力設定")]
+    [SerializeField]
+    private int maxHealth = 100;
 
-    // 体力が変化した際に通知するためのReactiveプロパティ
-    private ReactiveProperty<int> health;
-
-    [SerializeField, Header("体力スライダー")]
+    [Header("UI")]
+    [SerializeField]
     private Slider healthSlider;
+
+
+    [Tab("音声")]
+    [Foldout("音声設定")]
+    [SerializeField, Header("被弾ボイス")]
+    private string[] hitVoices;
+    [SerializeField, Header("死亡ボイス")]
+    private string[] deathVoices;
+    [Range(0f, 1f)]
+    [SerializeField, Header("音量")]
+    private float volume = 1f;
+    [EndFoldout]
+    [EndTab]
+
+    private int currentHealth;
+    private bool isDead = false;
+    private bool isHit = false;
+
+    public Action<int> OnHealthChanged;
+    public Action OnPlayerDeath; // プレイヤー死亡時のイベント
 
     private PlayerManager playerManager;
 
-    private bool isDead = false; // 死亡状態
-    private bool isHit = false; // 被ダメージ中の状態
-
     private void Awake()
     {
-        _currentHealth = _maxHealth;
+        currentHealth = maxHealth;
         playerManager = GetComponent<PlayerManager>();
-        health = new ReactiveProperty<int>(_currentHealth);
     }
 
     private void Start()
     {
-        if (healthSlider != null)
-        {
-            healthSlider.maxValue = _maxHealth;
-            healthSlider.value = _currentHealth;
-        }
+        InitializeHealthUI();
 
-        // 体力が変更されたときにUIを更新するなどの処理を購読
-        health.Subscribe(newHealth =>
-        {
-            UpdateHealthUI(newHealth);
-        }).AddTo(this);
+        // OnHealthChanged イベントに対する購読を行い、健康バーを更新
+        OnHealthChanged += UpdateHealthUI;
+    }
+
+    private void OnDestroy()
+    {
+        // イベントの購読解除
+        OnHealthChanged -= UpdateHealthUI;
     }
 
     /// <summary>
-    /// ダメージを受けるメソッド
+    /// 体力を初期化する
     /// </summary>
-    /// <param name="damageAmount">受けるダメージの量</param>
+    private void InitializeHealthUI()
+    {
+        if (healthSlider != null)
+        {
+            healthSlider.maxValue = maxHealth;
+            healthSlider.value = currentHealth;
+        }
+    }
+
+    /// <summary>
+    /// ダメージを受ける
+    /// </summary>
+    /// <param name="damageAmount">ダメージ量</param>
     public void TakeDamage(int damageAmount)
     {
-        if (isDead) return; // 既に死亡している場合は処理しない
+        if (isDead) return;
 
-        _currentHealth -= damageAmount;
-        _currentHealth = Mathf.Clamp(_currentHealth, 0, _maxHealth);
-        health.Value = _currentHealth;
+        int newHealth = Mathf.Clamp(currentHealth - damageAmount, 0, maxHealth);
+        currentHealth = newHealth;
+        OnHealthChanged?.Invoke(currentHealth);
 
-        if (_currentHealth > 0)
+        if (newHealth > 0)
         {
-            if (!isHit && !IsAnimationPlaying("GetHit"))
-            {
-                isHit = true;
-                playerManager.SetHitState(true);
-                _animator.SetBool("GetHit", true);
-            }
+            HandleHit().Forget();
         }
         else
         {
-            Die();
+            HandleDeath();
         }
     }
 
     /// <summary>
-    /// 現在のアニメーションステートが指定された名前かどうかをチェックするメソッド
-    /// </summary>
-    /// <param name="animationName">チェックするアニメーションの名前</param>
-    /// <returns>アニメーションが再生中であればtrue、そうでなければfalse</returns>
-    private bool IsAnimationPlaying(string animationName)
-    {
-        AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
-        bool isTransitioning = _animator.IsInTransition(0);
-        return stateInfo.IsName(animationName) || isTransitioning;
-    }
-
-    private void HitEnd()
-    {
-        isHit = false;
-        playerManager.SetHitState(false);
-        _animator.SetBool("GetHit", false);
-    }
-
-    /// <summary>
-    /// 体力を回復するメソッド
+    /// 体力を回復する
     /// </summary>
     /// <param name="healAmount">回復量</param>
     public void Heal(int healAmount)
     {
-        if (isDead) return; // 死亡後は回復させない
+        if (isDead) return;
 
-        _currentHealth += healAmount;
-        _currentHealth = Mathf.Clamp(_currentHealth, 0, _maxHealth);
-        health.Value = _currentHealth;
+        int newHealth = Mathf.Clamp(currentHealth + healAmount, 0, maxHealth);
+        currentHealth = newHealth;
+        OnHealthChanged?.Invoke(currentHealth);
     }
 
     /// <summary>
-    /// 死亡時の処理を行うメソッド
+    /// 被弾時の処理
     /// </summary>
-    private void Die()
+    private async UniTaskVoid HandleHit()
+    {
+        if (isHit || IsAnimationPlaying("GetHit")) return;
+
+        isHit = true;
+        playerManager.SetHitState(true);
+
+        PlayRandomSound(hitVoices);
+        animator.SetBool("GetHit", true);
+
+        // 一定時間後に被弾ステートを解除
+        await UniTask.Delay(TimeSpan.FromSeconds(0.5f));
+
+        isHit = false;
+        playerManager.SetHitState(false);
+        animator.SetBool("GetHit", false);
+    }
+
+    /// <summary>
+    /// 死亡時の処理
+    /// </summary>
+    private void HandleDeath()
     {
         if (isDead) return;
 
         isDead = true;
-        playerManager.SetDeadState(true);  // 死亡フラグをセット
-        _animator.CrossFade("Die", 0.5f);
-    }
+        playerManager.SetDeadState(true);
 
-    private void DieEnd()
-    {
-        // 死亡後の処理をここに追加
+        PlayRandomSound(deathVoices);
+        animator.CrossFade("Die", 0.5f);
+
+        OnPlayerDeath?.Invoke(); // 死亡を通知
     }
 
     /// <summary>
-    /// 体力が変化した際にUIを更新するメソッド
+    /// 指定したアニメーションが再生中かどうか確認
     /// </summary>
-    /// <param name="newHealth">更新後の体力</param>
+    private bool IsAnimationPlaying(string animationName)
+    {
+        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+        return stateInfo.IsName(animationName) || animator.IsInTransition(0);
+    }
+
+    /// <summary>
+    /// ランダムな音声を再生
+    /// </summary>
+    /// <param name="audioClips">音声クリップの配列</param>
+    private void PlayRandomSound(string[] audioClips)
+    {
+        if (audioClips == null || audioClips.Length == 0) return;
+
+        int randomIndex = UnityEngine.Random.Range(0, audioClips.Length);
+        string clip = audioClips[randomIndex];
+        VoiceManager.Instance.PlaySound(clip, volume);
+    }
+
+    /// <summary>
+    /// プレイヤーの状態をリセットします。リスポーン時に呼び出します。
+    /// </summary>
+    public void ResetState()
+    {
+        isDead = false;
+        currentHealth = maxHealth;
+        InitializeHealthUI();
+        playerManager.SetDeadState(false);
+        animator.CrossFade("Idle", 0.03f);
+    }
+
+    /// <summary>
+    /// 健康バーを更新します。
+    /// </summary>
+    /// <param name="newHealth">新しい健康値</param>
     private void UpdateHealthUI(int newHealth)
     {
         if (healthSlider != null)

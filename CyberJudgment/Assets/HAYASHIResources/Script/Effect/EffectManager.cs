@@ -30,7 +30,7 @@ namespace AbubuResouse.Singleton
                 DebugUtility.LogError($"エフェクトの生成に失敗!:名前＝＞{effectPrefab.name}");
                 return;
             }
-
+         
             ReturnEffectAfterDelay(effectInstance, delay).Forget();
         }
 
