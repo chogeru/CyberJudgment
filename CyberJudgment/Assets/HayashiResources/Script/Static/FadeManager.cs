@@ -11,7 +11,7 @@ namespace AbubuResouse.Singleton
     public class FadeManager : SingletonMonoBehaviour<FadeManager>
     {
         [SerializeField, Header("フェード用の画像")]
-        private Image m_FadeImage;
+        public Image m_FadeImage;
 
         /// <summary>
         /// 画面をフェードイン

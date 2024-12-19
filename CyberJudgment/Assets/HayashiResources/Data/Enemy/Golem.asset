@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Golem
   m_EditorClassIdentifier: 
   enemyID: 1
-  enemyName: Cyclops
+  enemyName: Golem
   health: 350
   moveSpeed: 1.2
   detectionRange: 10
@@ -21,14 +21,15 @@ MonoBehaviour:
   visionRange: 180
   attackRange: 2
   attackCooldown: 2
-  dropItemPrefab: {fileID: 0}
+  dropItemPrefab:
+  - {fileID: 0}
   dropItemCount: 1
   behaviorType: 0
   enemyAttribute: 1
   enemyType: 0
   weaponType: 5
-  meleeAttackPower: 30
-  meleeStringAttackpower: 50
+  meleeAttackPower: 10
+  meleeStringAttackpower: 25
   projectileSpeed: 0
   projectilePower: 0
   projectileCount: 0

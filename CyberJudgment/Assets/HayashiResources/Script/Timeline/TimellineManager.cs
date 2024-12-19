@@ -100,7 +100,6 @@ public class TimellineManager: MonoBehaviour
     {
         if (_playableDirector != null)
         {
-            FadeManager.Instance.FadeOut(0.5f);
             _playableDirector.time = _playableDirector.playableAsset.duration;
             _playableDirector.Evaluate();
             _playableDirector.Stop();

@@ -15,6 +15,9 @@ public class DeathEffect : MonoBehaviour
     [SerializeField]
     private GameObject dieAnimationObj;
 
+    [SerializeField]
+    private Animator dieAnimator;
+
     private void Awake()
     {
         // グローバルボリュームからDepthOfFieldを取得
@@ -47,10 +50,10 @@ public class DeathEffect : MonoBehaviour
             depthOfField.active = true;
             depthOfField.mode.value = DepthOfFieldMode.Bokeh;
 
-            float duration = 6f; // 5秒間かけて調整
+            float duration = 6f; // 調整
             float elapsed = 0f;
             float startFocalLength = 1f;  // 初期の焦点距離
-            float endFocalLength = 90f; // 最終の焦点距離
+            float endFocalLength = 80f; // 最終の焦点距離
 
             // 焦点距離を徐々に変更
             while (elapsed < duration)
@@ -69,21 +72,42 @@ public class DeathEffect : MonoBehaviour
         if (dieAnimationObj != null)
         {
             dieAnimationObj.SetActive(true);
+            if (dieAnimator != null)
+            {
+                dieAnimator.Play("DieAnimation", -1, 0f); // 再生開始
+                dieAnimator.speed = 1f; // 正再生
+            }
         }
     }
 
     /// <summary>
-    /// エフェクトをリセットします。
+    /// エフェクトをリセットします（アニメーション逆再生）。
     /// </summary>
     public void ResetEffect()
     {
         if (depthOfField != null)
         {
-            depthOfField.focalLength.value = 1f; // 初期の焦点距離に戻す
+            depthOfField.focalLength.value = 1f;
             depthOfField.mode.value = DepthOfFieldMode.Off;
             depthOfField.active = false;
         }
 
+        if (dieAnimationObj != null)
+        {
+            // アニメーションを逆再生
+            if (dieAnimator != null)
+            {
+                dieAnimator.Play("-DieAnimation");
+
+                // アニメーションの長さ分待機して非アクティブにする
+                float animationLength = dieAnimator.runtimeAnimatorController.animationClips[0].length;
+                Invoke(nameof(DisableAnimationObject), animationLength);
+            }
+        }
+    }
+
+    private void DisableAnimationObject()
+    {
         if (dieAnimationObj != null)
         {
             dieAnimationObj.SetActive(false);

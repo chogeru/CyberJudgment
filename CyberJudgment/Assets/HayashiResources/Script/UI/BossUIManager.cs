@@ -83,7 +83,7 @@ namespace AbubuResouse.Singleton
             if (_bossFrameImage != null && _bossFrameCanvasGroup != null && _sliderCanvasGroup != null)
             {
                 _bossFrameImage.gameObject.SetActive(true);
-                _healthSlider.gameObject.SetActive(true); // スライダーは最初非アクティブ
+                _healthSlider.gameObject.SetActive(false); // スライダーは最初非アクティブ
 
                 // ボスフレームのフェードイン
                 await FadeInCanvasGroup(_bossFrameCanvasGroup, 0f, 1f, _fadeDuration, _cts.Token);
@@ -93,12 +93,17 @@ namespace AbubuResouse.Singleton
 
                 // ボスフレームのフェードアウトとスライダーのフェードインを同時に行う
                 await UniTask.WhenAll(
-                    FadeOutCanvasGroup(_bossFrameCanvasGroup, 1f, 0f, _fadeDuration, _cts.Token),
-                    FadeInCanvasGroup(_sliderCanvasGroup, 0f, 1f, _fadeDuration, _cts.Token)
+                    FadeOutCanvasGroup(_bossFrameCanvasGroup, 1f, 0f, _fadeDuration, _cts.Token)
                 );
 
                 // フェードアウト完了後にボスフレームを非アクティブに
                 _bossFrameImage.gameObject.SetActive(false);
+                _healthSlider.gameObject.SetActive(true);
+                await UniTask.WhenAll(
+              FadeInCanvasGroup(_sliderCanvasGroup, 0f, 1f, _fadeDuration, _cts.Token)
+                  );
+
+
             }
             else
             {

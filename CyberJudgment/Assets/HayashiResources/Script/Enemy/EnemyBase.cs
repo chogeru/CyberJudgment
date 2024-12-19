@@ -1,4 +1,5 @@
 using AbubuResouse.Singleton;
+using System;
 using UnityEngine;
 
 /// <summary>
@@ -37,7 +38,8 @@ public abstract class EnemyBase : MonoBehaviour
     private IEnemyState _currentState;
 
     [Header("Œ»İ‚ÌHp")]
-    [SerializeField] private float _currentHealth;
+    [SerializeField] public float _currentHealth;
+    public event Action<float, float> OnHealthChanged;
 
     // UŒ‚ƒtƒ‰ƒO
     private bool isAttacking = false;
@@ -225,6 +227,7 @@ public abstract class EnemyBase : MonoBehaviour
             return;
 
         _currentHealth -= damage;
+        OnHealthChanged?.Invoke(_currentHealth, enemyData.health);
 
         if (_currentHealth <= 0)
         {

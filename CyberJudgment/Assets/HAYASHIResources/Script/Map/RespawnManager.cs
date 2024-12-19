@@ -51,7 +51,7 @@ public class RespawnManager : MonoBehaviour
     /// <summary>
     /// リスポーンシーケンスを開始します。
     /// </summary>
-    private void StartRespawnSequence()
+    public void StartRespawnSequence()
     {
         RespawnSequence().Forget();
     }

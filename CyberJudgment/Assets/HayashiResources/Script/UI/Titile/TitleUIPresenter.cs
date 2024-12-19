@@ -48,7 +48,7 @@ public class TitleUIPresenter : MonoBehaviour
 
         // キーボードのエンターキーとコントローラーの選択ボタンの購読
         Observable.EveryUpdate()
-            .Where(_ => Input.GetKeyDown(KeyCode.Return) || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame))
+            .Where(_ => Input.GetKeyDown(KeyCode.Return)||Input.GetKeyDown(KeyCode.A)||Input.GetKeyDown(KeyCode.Z) || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame))
             .Subscribe(_ => ExecuteSelectedButtonAction())
             .AddTo(this);
 

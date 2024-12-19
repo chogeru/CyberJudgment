@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1030979684}
   - component: {fileID: 1030979685}
   - component: {fileID: 7437451307068685208}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: SM_Lamp_post_LOD0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -99,7 +99,7 @@ GameObject:
   - component: {fileID: 1030979688}
   - component: {fileID: 1030979689}
   - component: {fileID: 1030979690}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: SM_Lamp_post_LOD0_LOD0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -184,7 +184,7 @@ GameObject:
   - component: {fileID: 1030979692}
   - component: {fileID: 1030979693}
   - component: {fileID: 1030979694}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: SM_Lamp_post_LOD0_LOD1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -269,7 +269,7 @@ GameObject:
   - component: {fileID: 1030979696}
   - component: {fileID: 1030979697}
   - component: {fileID: 1030979698}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: SM_Lamp_post_LOD0_LOD2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -354,7 +354,7 @@ GameObject:
   - component: {fileID: 2948555264508320733}
   - component: {fileID: 5733528686652678208}
   - component: {fileID: 8616406388332715113}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Impostor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -438,7 +438,7 @@ GameObject:
   - component: {fileID: 7680346935485874104}
   - component: {fileID: 2346195864341139681}
   - component: {fileID: 6408595720238074963}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Collider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -510,6 +510,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SM_Chochin_lamp
       objectReference: {fileID: 0}
+    - target: {fileID: 1030980748, guid: abc00000000014785366603515346324, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 1030980749, guid: abc00000000014785366603515346324, type: 3}
       propertyPath: m_RootOrder
       value: 4
@@ -554,9 +558,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1030980751, guid: abc00000000014785366603515346324, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 1030980753, guid: abc00000000014785366603515346324, type: 3}
       propertyPath: m_CastShadows
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2259039994493201324, guid: abc00000000014785366603515346324,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 3151071386307039855, guid: abc00000000014785366603515346324,
         type: 3}
@@ -592,6 +605,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Shadows.m_Type
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6201147839492189288, guid: abc00000000014785366603515346324,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: abc00000000014785366603515346324, type: 3}
