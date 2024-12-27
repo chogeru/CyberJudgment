@@ -3,8 +3,14 @@ using UnityEngine;
 
 public class WeaponAttack : MonoBehaviour
 {
+    [SerializeField]
+    private Animator playerAnimator;
     public void Attack(EnemyBase enemy, WeaponData weaponData)
     {
+        if (!IsInAttackAnimation())
+        {
+            return;
+        }
         if (enemy == null || weaponData == null) return;
 
         enemy.TakeDamage(weaponData._attackPower);
@@ -23,5 +29,13 @@ public class WeaponAttack : MonoBehaviour
             string randomSE = weaponData.SoundEffects[Random.Range(0, weaponData.SoundEffects.Count)];
             SEManager.Instance.PlaySound(randomSE, 1.0f);
         }
+    }
+    /// <summary>
+    /// プレイヤーの Animator を確認して、NormalAttackまたはStrongAttack状態かどうかを判定する
+    /// </summary>
+    private bool IsInAttackAnimation()
+    {
+        AnimatorStateInfo stateInfo = playerAnimator.GetCurrentAnimatorStateInfo(0);
+        return stateInfo.IsName("NormalAttack") || stateInfo.IsName("StrongAttack");
     }
 }

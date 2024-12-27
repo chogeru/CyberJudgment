@@ -78,6 +78,23 @@ public class PlayerController : MonoBehaviour
     [EndTab]
     #endregion
 
+    #region 音声
+    [Tab("音声")]
+    [SerializeField, Header("歩き音クリップ")]
+    private AudioClip walkClip;
+    [SerializeField, Header("走り音クリップ")]
+    private AudioClip runClip;
+
+    [SerializeField, Header("歩き時のAudio Pitch(速度)"), Range(0.5f, 3f)]
+    private float walkPitch = 1f;
+    [SerializeField, Header("走り時のAudio Pitch(速度)"), Range(0.5f, 3f)]
+    private float runPitch = 1.2f;
+
+    [SerializeField, Header("フットステップ用AudioSource")]
+    private AudioSource footstepAudioSource;
+    [EndTab]
+    #endregion
+
     #region カメラと衝突設定
     [Tab("カメラと衝突設定")]
     [SerializeField, Header("自身のカメラ")]
@@ -189,12 +206,19 @@ public class PlayerController : MonoBehaviour
 
         // Idle State
         moveStream
-            .Where(input => input.Movement == Vector3.zero || input.Magnitude < 0.01f)
-            .Subscribe(_ => {
-                playerManager.UpdatePlayerState(PlayerState.Idle);
-                DebugUtility.Log("Player entered Idle state.");
-            })
-            .AddTo(this);
+          .Where(input => input.Movement == Vector3.zero || input.Magnitude < 0.01f)
+          .Subscribe(_ => {
+              playerManager.UpdatePlayerState(PlayerState.Idle);
+              DebugUtility.Log("Player entered Idle state.");
+
+              //===== ▼ 追加: Idle時は足音を止める ▼ =====//
+              if (footstepAudioSource.isPlaying)
+              {
+                  footstepAudioSource.Stop();
+              }
+              //===== ▲ 追加: Idle時は足音を止める ▲=====//
+          })
+          .AddTo(this);
 
         // Jump
         this.UpdateAsObservable()
@@ -449,6 +473,19 @@ public class PlayerController : MonoBehaviour
             m_Player.UpdateState(PlayerState.Walk);
             m_Player.GetComponentInChildren<PlayerCameraController>().OnActionEnd();
             m_Player.Move(m_Direction, m_Player.m_WalkSpeed);
+       
+            AudioSource audioSource = m_Player.footstepAudioSource;
+            if (audioSource != null)
+            {
+                if (audioSource.clip != m_Player.walkClip || !audioSource.isPlaying)
+                {
+                    audioSource.Stop();
+                    audioSource.clip = m_Player.walkClip;
+                    audioSource.pitch = m_Player.walkPitch;
+                    audioSource.loop = true;
+                    audioSource.Play();
+                }
+            }
         }
     }
     // 走行を管理するコマンドクラス
@@ -472,6 +509,18 @@ public class PlayerController : MonoBehaviour
             m_Player.UpdateState(PlayerState.Run);
             m_Player.GetComponentInChildren<PlayerCameraController>().OnRunStart();
             m_Player.Move(m_Direction, m_Player.m_RunSpeed);
+            AudioSource audioSource = m_Player.footstepAudioSource;
+            if (audioSource != null)
+            {
+                if (audioSource.clip != m_Player.runClip || !audioSource.isPlaying)
+                {
+                    audioSource.Stop();
+                    audioSource.clip = m_Player.runClip;
+                    audioSource.pitch = m_Player.runPitch;
+                    audioSource.loop = true;
+                    audioSource.Play();
+                }
+            }
         }
     }
 

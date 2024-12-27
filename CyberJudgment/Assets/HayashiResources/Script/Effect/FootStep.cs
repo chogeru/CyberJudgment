@@ -36,9 +36,6 @@ public class FootStep : MonoBehaviour
     /// </summary>
     private void GenerateFootstep()
     {
-        // 足音の再生
-        SEManager.Instance.PlaySound("FootStep", 0.1f);
-
         // EffectManager を使用してエフェクトを再生
         Vector3 effectPosition = transform.position;
         EffectManager.Instance.PlayEffect(m_EffectPrefab, effectPosition, Quaternion.identity, 0.5f);
