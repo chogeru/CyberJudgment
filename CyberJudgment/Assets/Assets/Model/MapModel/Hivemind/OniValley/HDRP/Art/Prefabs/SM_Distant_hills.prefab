@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1030972086}
   - component: {fileID: 1030972087}
-  - component: {fileID: 1030972088}
   m_Layer: 0
   m_Name: SM_Distant_hills
   m_TagString: Untagged
@@ -45,16 +44,16 @@ LODGroup:
   m_GameObject: {fileID: 1030972085}
   serializedVersion: 2
   m_LocalReferencePoint: {x: 3.75289, y: 58.239887, z: -13.724297}
-  m_Size: 1077.3734
+  m_Size: 500
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
   m_LODs:
-  - screenRelativeHeight: 0.803241
+  - screenRelativeHeight: 0.94351476
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 1030972091}
-  - screenRelativeHeight: 0.600619
+  - screenRelativeHeight: 0.86124486
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 1030972095}
@@ -64,20 +63,6 @@ LODGroup:
     - renderer: {fileID: 1030972099}
     - renderer: {fileID: 0}
   m_Enabled: 1
---- !u!64 &1030972088
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1030972085}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 4
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 4300004, guid: abc00000000005771249017806223846, type: 3}
 --- !u!1 &1030972089
 GameObject:
   m_ObjectHideFlags: 0

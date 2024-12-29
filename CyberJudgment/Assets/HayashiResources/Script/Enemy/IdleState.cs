@@ -10,6 +10,7 @@ public class IdleState : IEnemyState
     {
         originalAnimatorSpeed = enemy._animator.speed;
         enemy._animator.speed = 1f;
+        enemy._animator.SetBool("Idle", true);
         enemy._animator.SetBool("isMoving", false);
         enemy._animator.SetBool("isRetreating", false);
         enemy._animator.ResetTrigger("Attack");

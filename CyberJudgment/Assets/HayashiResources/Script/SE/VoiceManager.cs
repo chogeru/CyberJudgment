@@ -1,8 +1,11 @@
 using System.Linq;
 using AbubuResouse.Log;
+using UnityEngine.Audio;
+using UnityEngine;
 
 namespace AbubuResouse.Singleton
 {
+
     /// <summary>
     /// ボイスの再生を管理するマネージャークラス
     /// </summary>

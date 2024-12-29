@@ -62,8 +62,9 @@ namespace AbubuResouse.Singleton
                 AudioClip clip = Resources.Load<AudioClip>(resourcePath);
                 if (clip != null)
                 {
-                    audioSource.PlayOneShot(clip);
+                    audioSource.clip = clip;
                     audioSource.volume = volume;
+                    audioSource.Play();
                     DebugUtility.Log($"サウンドクリップを再生: {resourcePath}");
                 }
                 else

@@ -1,13 +1,37 @@
 using UnityEngine;
-using AbubuResouse.Singleton;
+using UnityEngine.InputSystem;
+using AbubuResouse.MVP.Presenter;
+using AbubuResouse.Log;
 
-/// <summary>
-/// UIの戻るボタンがクリックされたときに設定画面を表示するためのクラス
-/// </summary>
-public class LinkedUI : MonoBehaviour
+namespace AbubuResouse.MVP.View
 {
-    public void OnBackButtonClicked()
+    /// <summary>
+    /// UIの戻るボタンがクリックされたときに設定画面を表示するクラス
+    /// </summary>
+    public class LinkedUI : MonoBehaviour
     {
-        UIPresenter.Instance.ShowSettingUI();
+        private void Update()
+        {
+            HandleGamepadInput();
+        }
+
+        /// <summary>
+        /// ゲームパッドの入力を処理
+        /// </summary>
+        private void HandleGamepadInput()
+        {
+            var gamepad = Gamepad.current;
+            if (gamepad == null) return;
+
+            // Bボタンが押されたとき
+            if (gamepad.buttonEast.wasPressedThisFrame) // Bボタン (East button)
+            {
+                OnBackButtonClicked();
+            }
+        }
+        public void OnBackButtonClicked()
+        {
+            UIPresenter.Instance.ShowSettingUI();
+        }
     }
 }

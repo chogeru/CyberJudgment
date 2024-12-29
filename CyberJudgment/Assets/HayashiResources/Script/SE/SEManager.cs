@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using AbubuResouse.Log;
 using UnityEngine;
+using UnityEngine.Audio;
 
 namespace AbubuResouse.Singleton
 {
@@ -19,14 +20,32 @@ namespace AbubuResouse.Singleton
         protected override void Awake()
         {
             base.Awake();
-            // 必要な数のAudioSourceを生成してプールに追加
-            for (int i = 0; i < _audioSourceSize; i++)
+
+            // 自身のオブジェクトにアタッチされているすべての AudioSource を取得
+            AudioSource[] existingSources = GetComponents<AudioSource>();
+            if (existingSources.Length == 0)
             {
-                AudioSource source = gameObject.AddComponent<AudioSource>();
-                source.loop = false;
-                source.playOnAwake = false;
+                DebugUtility.LogError("AudioSource が見つかりません。オブジェクトにあらかじめ AudioSource を設定してください。");
+                return;
+            }
+
+            // 既存のAudioSourceをプールに追加
+            foreach (var source in existingSources)
+            {
                 _audioSources.Add(source);
             }
+
+            DebugUtility.Log($"既存のAudioSourceをプールに追加しました: {existingSources.Length}個");
+
+            // 不足している分の AudioSource を生成して追加
+            int sourcesToAdd = _audioSourceSize - _audioSources.Count;
+            for (int i = 0; i < sourcesToAdd; i++)
+            {
+                AudioSource newSource = gameObject.AddComponent<AudioSource>();
+                _audioSources.Add(newSource);
+            }
+
+            DebugUtility.Log($"{_audioSourceSize}個のAudioSourceを確保しました（既存: {existingSources.Length}個, 追加: {sourcesToAdd}個）。");
         }
 
         /// <summary>

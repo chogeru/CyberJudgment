@@ -1,5 +1,6 @@
 using UnityEngine;
 using AbubuResouse.Singleton;
+using AbubuResouse.MVP.Presenter;
 
 /// <summary>
 /// ボタンがクリックされたときに、

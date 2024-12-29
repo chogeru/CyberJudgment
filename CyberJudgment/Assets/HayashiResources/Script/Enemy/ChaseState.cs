@@ -11,6 +11,7 @@ public class ChaseState : IEnemyState
         originalAnimatorSpeed = enemy._animator.speed;
         enemy._animator.speed = 1f;
         enemy._animator.SetBool("isMoving", true);
+        enemy._animator.SetBool("TakeDamage", false);
         Debug.Log($"{enemy.name}: Enter ChaseState");
     }
 

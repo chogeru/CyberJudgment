@@ -12,6 +12,9 @@ namespace AbubuResouse.Singleton
         [SerializeField, Header("ボスの名前を表示するText")]
         private TMP_Text _bossNameText;
 
+        [SerializeField, Header("追加のボスの名前を表示するText")]
+        private TMP_Text _sliderBossNameText;
+
         [SerializeField, Header("ボスの残り体力を表示するスライダー")]
         private Slider _healthSlider;
 
@@ -46,9 +49,10 @@ namespace AbubuResouse.Singleton
         /// <param name="bossName">表示するボスの名前</param>
         public void SetBossName(string bossName)
         {
-            if (_bossNameText != null)
+            if (_bossNameText != null&&_sliderBossNameText!=null)
             {
                 _bossNameText.text = bossName;
+                _sliderBossNameText.text = bossName;
             }
             else
             {
@@ -61,55 +65,72 @@ namespace AbubuResouse.Singleton
         /// </summary>
         /// <param name="currentHealth">現在の体力</param>
         /// <param name="maxHealth">最大体力</param>
-        public void SetBossHealth(float currentHealth, float maxHealth)
+        public async UniTask SetBossHealth(float currentHealth, float maxHealth, float duration = 0.5f)
         {
-            if (_healthSlider != null)
-            {
-                _healthSlider.maxValue = maxHealth;
-                _healthSlider.value = currentHealth;
-            }
-            else
+            if (_healthSlider == null)
             {
                 Debug.LogError("体力Sliderが設定されていない！");
+                return;
             }
+
+            _healthSlider.maxValue = maxHealth;
+
+            float startValue = _healthSlider.value;
+            float endValue = currentHealth;
+            float elapsedTime = 0f;
+            var token = _cts.Token;
+
+            while (elapsedTime < duration)
+            {
+                // キャンセルされていれば中断
+                if (token.IsCancellationRequested) return;
+
+                elapsedTime += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsedTime / duration);
+                _healthSlider.value = Mathf.Lerp(startValue, endValue, t);
+
+                // 次のフレームまで待つ
+                await UniTask.Yield(PlayerLoopTiming.Update, token);
+            }
+
+            _healthSlider.value = endValue;
         }
 
         /// <summary>
         /// ボスUIを開始する
         /// </summary>
         [ContextMenu("StartBossUI")]
-        public async UniTask StartBossUI()
+        public async UniTask StartBossUI(float initialHealth = 0, float maxHealth = 0)
         {
             if (_bossFrameImage != null && _bossFrameCanvasGroup != null && _sliderCanvasGroup != null)
             {
-                _bossFrameImage.gameObject.SetActive(true);
-                _healthSlider.gameObject.SetActive(false); // スライダーは最初非アクティブ
+                // スライダーの初期化
+                if (_healthSlider != null)
+                {
+                    _healthSlider.maxValue = maxHealth;
+                    _healthSlider.value = initialHealth; 
+                }
 
-                // ボスフレームのフェードイン
+                _healthSlider.gameObject.SetActive(true);
+                _sliderCanvasGroup.alpha = 0f;
+
+                _bossFrameImage.gameObject.SetActive(true);
+
                 await FadeInCanvasGroup(_bossFrameCanvasGroup, 0f, 1f, _fadeDuration, _cts.Token);
 
-                // 3秒待機
                 await UniTask.Delay(3000, cancellationToken: _cts.Token);
 
-                // ボスフレームのフェードアウトとスライダーのフェードインを同時に行う
-                await UniTask.WhenAll(
-                    FadeOutCanvasGroup(_bossFrameCanvasGroup, 1f, 0f, _fadeDuration, _cts.Token)
-                );
-
-                // フェードアウト完了後にボスフレームを非アクティブに
+                await FadeOutCanvasGroup(_bossFrameCanvasGroup, 1f, 0f, _fadeDuration, _cts.Token);
                 _bossFrameImage.gameObject.SetActive(false);
-                _healthSlider.gameObject.SetActive(true);
-                await UniTask.WhenAll(
-              FadeInCanvasGroup(_sliderCanvasGroup, 0f, 1f, _fadeDuration, _cts.Token)
-                  );
 
-
+                await FadeInCanvasGroup(_sliderCanvasGroup, 0f, 1f, _fadeDuration, _cts.Token);
             }
             else
             {
                 Debug.LogError("UI要素が設定されていない！");
             }
         }
+
 
         /// <summary>
         /// ボスUIをリセットする

@@ -17,9 +17,11 @@ public class BossEnemyUISignal : MonoBehaviour
         }
 
         // 初期UIのセットアップ
+        // 初期UIのセットアップ
         BossUIManager.Instance.SetBossName(_enemy.enemyData.enemyName);
-        BossUIManager.Instance.SetBossHealth(_enemy._currentHealth, _enemy.enemyData.health);
-        await BossUIManager.Instance.StartBossUI();
+        await BossUIManager.Instance.StartBossUI(_enemy._currentHealth, _enemy.enemyData.health);
+        await BossUIManager.Instance.SetBossHealth(_enemy._currentHealth, _enemy.enemyData.health);
+
         // Enemyの体力変更イベントを登録
         _enemy.OnHealthChanged += UpdateBossHealthUI;
     }
@@ -38,8 +40,8 @@ public class BossEnemyUISignal : MonoBehaviour
     /// </summary>
     /// <param name="currentHealth">現在の体力</param>
     /// <param name="maxHealth">最大体力</param>
-    private void UpdateBossHealthUI(float currentHealth, float maxHealth)
+    private async void UpdateBossHealthUI(float currentHealth, float maxHealth)
     {
-        BossUIManager.Instance.SetBossHealth(currentHealth, maxHealth);
+        await BossUIManager.Instance.SetBossHealth(currentHealth, maxHealth);
     }
 }

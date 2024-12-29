@@ -237,10 +237,9 @@ public abstract class EnemyBase : MonoBehaviour
         {
             SEManager.Instance.PlaySound(_getHitVoiceSE, _volume);
             _animator.SetBool("TakeDamage", true);
-
             SetIsAttacking(false);
             _animator.SetBool("Attack", false);
-            _animator.SetBool("StrongAttack", false);
+            _animator.SetTrigger("StrongAttack");
         }
     }
 
@@ -251,7 +250,6 @@ public abstract class EnemyBase : MonoBehaviour
     {
         // アニメーションイベントで呼び出す
         TransitionToState(new IdleState());
-        _animator.SetBool("TakeDamage", false);
     }
 
     /// <summary>
@@ -292,7 +290,6 @@ public abstract class EnemyBase : MonoBehaviour
         SetIsAttacking(false);
         _animator.SetBool("Attack", false);
         _animator.SetBool("StrongAttack", false);
-        _animator.SetBool("TakeDamage", false);
         TransitionToState(new IdleState());
     }
 

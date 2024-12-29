@@ -251,12 +251,20 @@ public class PlayerAttackController : MonoBehaviour
     {
         if (nearestEnemy != null)
         {
-            // 敵の方向に回転
-            Vector3 direction = (nearestEnemy.position - transform.position).normalized;
-            Quaternion targetRotation = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
+            // 敵の方向ベクトルを計算し、Y成分をゼロにする
+            Vector3 direction = (nearestEnemy.position - transform.position);
+            direction.y = 0f; // 縦方向の回転を防ぐためにY成分を除去
 
-            // 敵と接触しているか確認
+            // 方向ベクトルがゼロでないことを確認
+            if (direction != Vector3.zero)
+            {
+                direction.Normalize();
+                Quaternion targetRotation = Quaternion.LookRotation(direction);
+                // スムーズに回転するためにSlerpを使用
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
+            }
+
+            // 敵との距離をチェックしてルートモーションを有効または無効にする
             float distanceToEnemy = Vector3.Distance(transform.position, nearestEnemy.position);
             if (distanceToEnemy <= 1.0f)
             {

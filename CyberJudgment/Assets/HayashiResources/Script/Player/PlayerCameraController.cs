@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 using System;
 using AbubuResouse.Singleton;
 using VInspector;
+using AbubuResouse.MVP.Presenter;
 
 /// <summary>
 /// プレイヤーカメラを制御するクラス

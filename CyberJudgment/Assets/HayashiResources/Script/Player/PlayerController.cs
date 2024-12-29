@@ -165,9 +165,6 @@ public class PlayerController : MonoBehaviour
                 currentCombinedInput = combinedInput;
                 currentInputMagnitude = magnitude;
 
-                // デバッグ用ログ
-                DebugUtility.Log($"Input Magnitude: {magnitude}, CombinedInput: {combinedInput}");
-
                 return new { Movement = combinedInput, Magnitude = magnitude };
             })
             .Share();
@@ -358,7 +355,6 @@ public class PlayerController : MonoBehaviour
 
         m_Rigidbody.velocity = velocity;
 
-        DebugUtility.Log($"Player Moving. Speed: {speed}, Velocity: {velocity}");
     }
 
 

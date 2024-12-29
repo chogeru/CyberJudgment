@@ -235,7 +235,7 @@ namespace NoMercyStudios.BoundariesPro
                     this.BoundaryRendererMaterial.SetVectorArray("_MaskCentersArray", maskCenters);
             }
 
-//#if UNITY_EDITOR
+            //#if UNITY_EDITOR
             //if (Application.isPlaying == false)
             {
                 // Update tiling
@@ -249,7 +249,7 @@ namespace NoMercyStudios.BoundariesPro
                     this.appliedTilingFactor = this.tilingFactor;
                 }
             }
-//#endif
+            //#endif
         }
 
         public void UpdateMeshShape(LevelBoundaryShape shape)
@@ -259,8 +259,8 @@ namespace NoMercyStudios.BoundariesPro
                 // Clear collider (if current shape is custom?)
                 if (this.currentShape == LevelBoundaryShape.Custom)
                 {
-                 //   MeshCollider meshFilterCollider = this.gameObject.GetComponent<MeshCollider>();
-                  //  GameObject.DestroyImmediate(meshFilterCollider);
+                    //   MeshCollider meshFilterCollider = this.gameObject.GetComponent<MeshCollider>();
+                    //  GameObject.DestroyImmediate(meshFilterCollider);
 
                     //// TODO: Clear mesh shape?
                     //if (this.BoundaryMeshFilter.sharedMesh != null)
@@ -378,28 +378,5 @@ namespace NoMercyStudios.BoundariesPro
             }
         }
 
-#if UNITY_EDITOR
-        // Debug
-        void OnDrawGizmos()
-        {
-            // Double layered boundaries, display also the inside
-            if (drawSphereMaskingGizmo)
-            {
-                Gizmos.color = Color.green;
-                // Draw sphere on each tracked object
-                List<LevelBoundaryTrackedObject> trackedObjects = LevelBoundariesManager.Instance.TrackedObjects;
-                if (trackedObjects != null && trackedObjects.Count > 0)
-                {
-                    foreach (LevelBoundaryTrackedObject trackedObject in trackedObjects)
-                    {
-                        if (trackedObject != null && trackedObject.UseForChaperone)
-                        {
-                            Gizmos.DrawWireSphere(trackedObject.transform.position, this.sphereMaskingRange);
-                        }
-                    }
-                }
-            }
-        }
     }
-#endif
 }

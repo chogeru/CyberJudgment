@@ -1,6 +1,11 @@
 using Zenject;
 using UnityEngine;
 using AbubuResouse.Singleton;
+using AbubuResouse.MVP.Presenter;
+using AbubuResouse.MVP.Model;
+using AbubuResouse.MVP.View;
+using AbubuResouse.MVP.Repository;
+
 public class UIInstaller : MonoInstaller
 {
     public override void InstallBindings()
