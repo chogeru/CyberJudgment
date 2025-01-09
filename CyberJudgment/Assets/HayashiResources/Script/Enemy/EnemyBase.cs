@@ -279,6 +279,7 @@ public abstract class EnemyBase : MonoBehaviour
     protected virtual void DieEnd()
     {
         Instantiate(_dieEffect, transform.position, Quaternion.identity);
+        DropItem();
         Destroy(this.gameObject);
     }
 
@@ -309,6 +310,18 @@ public abstract class EnemyBase : MonoBehaviour
     /// </summary>
     protected virtual void DropItem()
     {
+        foreach (var itemInfo in enemyData.dropItemPrefab)
+        {
+            if (UnityEngine.Random.value <= 100)
+            {
+                int dropCount = UnityEngine.Random.Range(0, 8);
+
+                for (int i = 0; i < dropCount; i++)
+                {
+                    Instantiate(itemInfo, transform.position + UnityEngine.Random.insideUnitSphere, Quaternion.identity);
+                }
+            }
+        }
     }
 
     private void OnAnimatorMove()

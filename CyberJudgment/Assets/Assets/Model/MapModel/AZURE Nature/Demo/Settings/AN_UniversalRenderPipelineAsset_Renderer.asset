@@ -1,5 +1,19 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-5987161015551411530
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0af2abd085f80f4f9a9d752783da070, type: 3}
+  m_Name: DLSSScriptableRenderFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  IsEnabled: 0
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19,7 +33,8 @@ MonoBehaviour:
   - {fileID: 5577894837982965297}
   - {fileID: 6745756496545238371}
   - {fileID: 3166946523877269723}
-  m_RendererFeatureMap: 31ae755ccda9684d63cddc05cbbd9d5ddbe05c921541f32b
+  - {fileID: -5987161015551411530}
+  m_RendererFeatureMap: 31ae755ccda9684d63cddc05cbbd9d5ddbe05c921541f32bb6bafd16c754e9ac
   m_UseNativeRenderPass: 1
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
@@ -90,25 +105,25 @@ MonoBehaviour:
   stripBeautifyLUT: 1
   stripBeautifyLUT3D: 1
   stripBeautifyColorTweaks: 1
-  stripBeautifyBloom: 0
-  stripBeautifyLensDirt: 0
+  stripBeautifyBloom: 1
+  stripBeautifyLensDirt: 1
   stripBeautifyChromaticAberration: 1
   stripBeautifyDoF: 1
   stripBeautifyDoFTransparentSupport: 1
   stripBeautifyEyeAdaptation: 1
   stripBeautifyPurkinje: 1
-  stripBeautifyVignetting: 0
+  stripBeautifyVignetting: 1
   stripBeautifyOutline: 1
   stripBeautifyNightVision: 1
   stripBeautifyThermalVision: 1
   stripBeautifyFrame: 1
-  stripUnityFilmGrain: 0
-  stripUnityDithering: 0
-  stripUnityTonemapping: 0
-  stripUnityBloom: 0
-  stripUnityChromaticAberration: 0
-  stripUnityDistortion: 0
-  stripUnityDebugVariants: 0
+  stripUnityFilmGrain: 1
+  stripUnityDithering: 1
+  stripUnityTonemapping: 1
+  stripUnityBloom: 1
+  stripUnityChromaticAberration: 1
+  stripUnityDistortion: 1
+  stripUnityDebugVariants: 1
 --- !u!114 &5577894837982965297
 MonoBehaviour:
   m_ObjectHideFlags: 0

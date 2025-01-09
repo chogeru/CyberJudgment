@@ -190,4 +190,11 @@ public class PlayerHealth : MonoBehaviour
             healthSlider.value = newHealth;
         }
     }
+
+    public void HpRecovery(int hpRecovery)
+    {
+        currentHealth += hpRecovery;
+        currentHealth = Mathf.Min(currentHealth, maxHealth);
+        UpdateHealthUI(currentHealth);
+    }
 }
