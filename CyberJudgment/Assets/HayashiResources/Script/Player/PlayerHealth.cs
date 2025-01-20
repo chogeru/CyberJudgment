@@ -79,7 +79,7 @@ public class PlayerHealth : MonoBehaviour
     /// <param name="damageAmount">ダメージ量</param>
     public void TakeDamage(int damageAmount)
     {
-        if (isDead) return;
+        if (isDead||playerManager.IsGuarding) return;
 
         int newHealth = Mathf.Clamp(currentHealth - damageAmount, 0, maxHealth);
         currentHealth = newHealth;
@@ -93,19 +93,6 @@ public class PlayerHealth : MonoBehaviour
         {
             HandleDeath();
         }
-    }
-
-    /// <summary>
-    /// 体力を回復する
-    /// </summary>
-    /// <param name="healAmount">回復量</param>
-    public void Heal(int healAmount)
-    {
-        if (isDead) return;
-
-        int newHealth = Mathf.Clamp(currentHealth + healAmount, 0, maxHealth);
-        currentHealth = newHealth;
-        OnHealthChanged?.Invoke(currentHealth);
     }
 
     /// <summary>
@@ -142,7 +129,7 @@ public class PlayerHealth : MonoBehaviour
         PlayRandomSound(deathVoices);
         animator.CrossFade("Die", 0.5f);
 
-        OnPlayerDeath?.Invoke(); // 死亡を通知
+        OnPlayerDeath?.Invoke();
     }
 
     /// <summary>

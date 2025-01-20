@@ -66,6 +66,31 @@ public class PlayerController : MonoBehaviour
     [EndTab]
     #endregion
 
+    [Tab("シールド設定")]
+    [Header("シールド設定")]
+    [SerializeField, Header("シールドobject")]
+    private GameObject shieldObject;
+    [SerializeField, Header("シールド展開エフェクトのプレハブ")]
+    private GameObject shieldActivateEffectPrefab;
+    [SerializeField, Header("シールド解除エフェクトのプレハブ")]
+    private GameObject shieldDeactivateEffectPrefab;
+    [SerializeField, Header("シールドアクティブ時に表示するオブジェクト")]
+    private GameObject shieldActiveObject;
+    [SerializeField, Header("シールド展開時消費マナ")]
+    private float guardInitialCost = 10f;
+    [SerializeField]
+    private float guardSustainCostPerSecond = 3f;
+    [SerializeField]
+    private float manaRecoveryPerSecond = 3f;
+
+    [Header("Guard Audio")]
+    [SerializeField]
+    private string guardStartSound;
+    [SerializeField]
+    private string guardStopSound;
+
+    [EndTab]
+
     #region 各コンポーネント
     [Tab("各コンポーネント")]
     [SerializeField, Header("プレイヤーのRigidbody")]
@@ -119,6 +144,7 @@ public class PlayerController : MonoBehaviour
         m_Rigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
 
         InitializeMovement().Forget();
+        InitializeGuarding().Forget();
     }
 
     /// <summary>
@@ -132,10 +158,9 @@ public class PlayerController : MonoBehaviour
             {
                 Vector2 gamepadInput = Gamepad.current?.leftStick.ReadValue() ?? Vector2.zero;
 
-                // デッドゾーンの適用
                 if (gamepadInput.magnitude < m_GamepadDeadZone)
                 {
-                    gamepadInput = Vector2.zero; // デッドゾーン内ならゼロに正規化
+                    gamepadInput = Vector2.zero;
                 }
                 else
                 {
@@ -144,16 +169,13 @@ public class PlayerController : MonoBehaviour
 
                 Vector3 keyboardInput = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
 
-                // キーボード入力の微小値をゼロにする
                 if (keyboardInput.magnitude < 0.1f)
                 {
                     keyboardInput = Vector3.zero;
                 }
 
-                // ゲームパッド入力が存在する場合はゲームパッド入力を優先
                 Vector3 combinedInput = (gamepadInput != Vector2.zero) ? new Vector3(gamepadInput.x, 0, gamepadInput.y) : keyboardInput;
 
-                // 入力が非常に小さい場合はゼロにする
                 if (combinedInput.magnitude < 0.01f)
                 {
                     combinedInput = Vector3.zero;
@@ -169,14 +191,18 @@ public class PlayerController : MonoBehaviour
             })
             .Share();
 
-        // Run Command
+        // RunCommandのサブスクリプションにガード中でないことを追加
         moveStream
             .Where(input =>
-                (Gamepad.current != null && (input.Magnitude >= m_RunThreshold || Gamepad.current.leftTrigger.isPressed)) ||
-                (Gamepad.current == null && Input.GetKey(KeyCode.LeftShift))
+                !playerManager.IsGuarding && // 追加: ガード中でないこと
+                (
+                    (Gamepad.current != null && (input.Magnitude >= m_RunThreshold || Gamepad.current.leftTrigger.isPressed)) ||
+                    (Gamepad.current == null && Input.GetKey(KeyCode.LeftShift))
+                )
             )
             .Where(input => input.Movement != Vector3.zero)
-            .Subscribe(input => {
+            .Subscribe(input =>
+            {
                 var runCommand = new RunCommand(this, input.Movement);
                 if (runCommand.CanExecute())
                 {
@@ -185,14 +211,18 @@ public class PlayerController : MonoBehaviour
             })
             .AddTo(this);
 
-        // Walk Command
+        // WalkCommandのサブスクリプションにガード中でないことを追加
         moveStream
             .Where(input =>
-                (Gamepad.current != null && input.Magnitude >= 0.2f && input.Magnitude < m_RunThreshold && !Gamepad.current.leftTrigger.isPressed) ||
-                (Gamepad.current == null && !Input.GetKey(KeyCode.LeftShift))
+                !playerManager.IsGuarding && // 追加: ガード中でないこと
+                (
+                    (Gamepad.current != null && input.Magnitude >= 0.2f && input.Magnitude < m_RunThreshold && !Gamepad.current.leftTrigger.isPressed) ||
+                    (Gamepad.current == null && !Input.GetKey(KeyCode.LeftShift))
+                )
             )
             .Where(input => input.Movement != Vector3.zero)
-            .Subscribe(input => {
+            .Subscribe(input =>
+            {
                 var walkCommand = new WalkCommand(this, input.Movement);
                 if (walkCommand.CanExecute())
                 {
@@ -201,23 +231,24 @@ public class PlayerController : MonoBehaviour
             })
             .AddTo(this);
 
-        // Idle State
+        // Idleのサブスクリプションにガード中でないことを追加
         moveStream
-          .Where(input => input.Movement == Vector3.zero || input.Magnitude < 0.01f)
-          .Subscribe(_ => {
-              playerManager.UpdatePlayerState(PlayerState.Idle);
-              DebugUtility.Log("Player entered Idle state.");
+            .Where(input =>
+                !playerManager.IsGuarding && // 追加: ガード中でないこと
+                (input.Movement == Vector3.zero || input.Magnitude < 0.01f)
+            )
+            .Subscribe(_ =>
+            {
+                playerManager.UpdatePlayerState(PlayerState.Idle);
+                DebugUtility.Log("Player entered Idle state.");
 
-              //===== ▼ 追加: Idle時は足音を止める ▼ =====//
-              if (footstepAudioSource.isPlaying)
-              {
-                  footstepAudioSource.Stop();
-              }
-              //===== ▲ 追加: Idle時は足音を止める ▲=====//
-          })
-          .AddTo(this);
+                if (footstepAudioSource.isPlaying)
+                {
+                    footstepAudioSource.Stop();
+                }
+            })
+            .AddTo(this);
 
-        // Jump
         this.UpdateAsObservable()
             .Where(_ => Input.GetButtonDown("Jump") || (Gamepad.current?.buttonSouth.isPressed ?? false))
             .Where(_ => IsGrounded())
@@ -227,6 +258,133 @@ public class PlayerController : MonoBehaviour
         await UniTask.Yield();
     }
 
+    /// <summary>
+    /// ガード機能を非同期的に初期化します。
+    /// </summary>
+    private async UniTaskVoid InitializeGuarding()
+    {
+        // ガード開始の入力を監視（Cキー押下）
+        this.UpdateAsObservable()
+            .Where(_ => !StopManager.Instance.IsStopped)
+            .Where(_ => Input.GetKeyDown(KeyCode.C))
+            .Subscribe(_ => TryStartGuard())
+            .AddTo(this);
+
+        // ガード終了の入力を監視（Cキーリリース）
+        this.UpdateAsObservable()
+            .Where(_ => Input.GetKeyUp(KeyCode.C))
+            .Subscribe(_ => StopGuard())
+            .AddTo(this);
+
+        // MPの消費と回復を管理
+        while (true)
+        {
+            if (playerManager.IsGuarding)
+            {
+                if (playerManager.playerMP.ConsumeMP(guardSustainCostPerSecond * Time.deltaTime))
+                {
+                    // ガード継続中
+                }
+                else
+                {
+                    // ガードを維持するのに十分なMPがないためガードを停止
+                    StopGuard();
+                }
+            }
+            else
+            {
+                // ガードしていない間はMPを回復
+                playerManager.playerMP.RecoverMP(manaRecoveryPerSecond * Time.deltaTime);
+            }
+
+            await UniTask.Yield();
+        }
+    }
+
+
+
+    /// <summary>
+    /// ガードを開始します。
+    /// </summary>
+    private void TryStartGuard()
+    {
+        if (playerManager.playerMP.ConsumeMP(guardInitialCost))
+        {
+            playerManager.SetGuarding(true);
+            ActivateShield();
+            playerManager.UpdatePlayerState(PlayerState.Guard);
+            PlayGuardSound(true);
+            if (shieldActivateEffectPrefab != null && shieldObject != null)
+            {
+                EffectManager.Instance.PlayEffect(shieldActivateEffectPrefab, shieldObject.transform.position, Quaternion.identity);
+            }
+        }
+        else
+        {
+            // MP不足時のフィードバック
+            Debug.Log("MPが不足しているため、ガードできません。");
+        }
+    }
+
+    /// <summary>
+    /// ガードを停止します。
+    /// </summary>
+    private void StopGuard()
+    {
+        if (playerManager.IsGuarding)
+        {
+            playerManager.SetGuarding(false);
+            DeactivateShield();
+            playerManager.UpdatePlayerState(PlayerState.Idle);
+            PlayGuardSound(false);
+            if (shieldDeactivateEffectPrefab != null && shieldObject != null)
+            {
+                EffectManager.Instance.PlayEffect(shieldDeactivateEffectPrefab, shieldObject.transform.position, Quaternion.identity);
+            }
+        }
+    }
+
+    /// <summary>
+    /// シールドエフェクトを有効化します。
+    /// </summary>
+    private void ActivateShield()
+    {
+        if (shieldObject != null)
+        {
+            shieldObject.SetActive(true);
+        }
+        if (shieldActiveObject != null)
+        {
+            shieldActiveObject.SetActive(true);
+        }
+    }
+
+    /// <summary>
+    /// シールドエフェクトを無効化します。
+    /// </summary>
+    private void DeactivateShield()
+    {
+        if (shieldObject != null)
+        {
+            shieldObject.SetActive(false);
+        }
+        if (shieldActiveObject != null)
+        {
+            shieldActiveObject.SetActive(false);
+        }
+    }
+
+    /// <summary>
+    /// ガード開始/停止時のサウンドを再生します。
+    /// </summary>
+    /// <param name="isGuarding">ガード中かどうか</param>
+    private void PlayGuardSound(bool isGuarding)
+    {
+        if (SEManager.Instance != null)
+        {
+            SEManager.Instance.PlaySound(isGuarding ? guardStartSound : guardStopSound, 1);
+        }
+    }
 
     void FixedUpdate()
     {
@@ -285,7 +443,7 @@ public class PlayerController : MonoBehaviour
     /// <param name="speed">移動速度</param>
     public void Move(Vector3 movement, float speed)
     {
-        if (!canMove || playerManager.IsHit || playerManager.IsDead)
+        if (!canMove || playerManager.IsHit || playerManager.IsDead || playerManager.IsGuarding)
         {
             return;
         }
@@ -469,7 +627,7 @@ public class PlayerController : MonoBehaviour
             m_Player.UpdateState(PlayerState.Walk);
             m_Player.GetComponentInChildren<PlayerCameraController>().OnActionEnd();
             m_Player.Move(m_Direction, m_Player.m_WalkSpeed);
-       
+
             AudioSource audioSource = m_Player.footstepAudioSource;
             if (audioSource != null)
             {

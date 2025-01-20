@@ -15,11 +15,37 @@ namespace AbubuResouse.Singleton
         private GameObject damageTextPrefab;
 
         private Camera mainCamera;
+        private float baseFontSize;
 
         private void Start()
         {
             CacheMainCamera();
+            InitializeBaseFontSize();
         }
+
+        /// <summary>
+        /// 基本フォントサイズを初期化
+        /// </summary>
+        private void InitializeBaseFontSize()
+        {
+            if (damageTextPrefab != null)
+            {
+                TMP_Text textComponent = damageTextPrefab.GetComponentInChildren<TMP_Text>();
+                if (textComponent != null)
+                {
+                    baseFontSize = textComponent.fontSize;
+                }
+                else
+                {
+                    Debug.LogError($"TMP_Textが{damageTextPrefab.name}に存在しない");
+                }
+            }
+            else
+            {
+                Debug.LogError("DamageTextPrefabがアタッチされていない！");
+            }
+        }
+
 
         /// <summary>
         /// メインカメラのキャッシュを保持
@@ -34,8 +60,9 @@ namespace AbubuResouse.Singleton
         /// </summary>
         /// <param name="value">表示する数値</param>
         /// <param name="position">表示位置</param>
+        /// <param name="isCritical">クリティカルダメージかどうか</param>
         /// <param name="duration">表示時間</param>
-        public void ShowDamageText(int value, Vector3 position, float duration = 1.5f)
+        public void ShowDamageText(int value, Vector3 position, bool isCritical = false, float duration = 1.5f)
         {
             if (!IsPrefabValid())
                 return;
@@ -44,7 +71,7 @@ namespace AbubuResouse.Singleton
             if (damageTextInstance == null)
                 return;
 
-            TMP_Text textComponent = SetupTextComponent(damageTextInstance, value);
+            TMP_Text textComponent = SetupTextComponent(damageTextInstance, value, isCritical);
             if (textComponent == null)
                 return;
 
@@ -87,8 +114,9 @@ namespace AbubuResouse.Singleton
         /// </summary>
         /// <param name="damageTextInstance">ダメージテキストのインスタンス</param>
         /// <param name="value">表示する数値</param>
+        /// <param name="isCritical">クリティカルダメージかどうか</param>
         /// <returns>設定されたTMP_Text</returns>
-        private TMP_Text SetupTextComponent(GameObject damageTextInstance, int value)
+        private TMP_Text SetupTextComponent(GameObject damageTextInstance, int value, bool isCritical)
         {
             TMP_Text textComponent = damageTextInstance.GetComponentInChildren<TMP_Text>();
             if (textComponent == null)
@@ -98,10 +126,16 @@ namespace AbubuResouse.Singleton
                 return null;
             }
 
+            textComponent.fontSize = baseFontSize + (isCritical ? 11 : 9);
+
+            textComponent.color = isCritical ? Color.yellow : Color.white;
+
             textComponent.alpha = 1;
             textComponent.text = value.ToString();
+
             return textComponent;
         }
+
 
         /// <summary>
         /// ダメージテキストにアニメーションを適用

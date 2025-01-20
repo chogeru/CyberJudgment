@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 using VInspector;
 
 [CreateAssetMenu(fileName = "NewEnemy", menuName = "敵/敵データ作成")]
@@ -12,8 +13,11 @@ public class EnemyData : ScriptableObject
     public string enemyName;
 
     [Tab("ステータス")]
-    [SerializeField, Header("体力")]
-    public float health;
+    [SerializeField, Header("最小体力")]
+    public int minHealth;
+
+    [SerializeField, Header("最大体力")]
+    public int maxHealth;
 
     [SerializeField, Header("移動速度")]
     public float moveSpeed;
@@ -33,12 +37,15 @@ public class EnemyData : ScriptableObject
     [SerializeField, Header("攻撃間隔")]
     public float attackCooldown = 2f;
 
-    [Tab("ドロップ情報")]
-    [SerializeField, Header("ドロップアイテムのプレハブ")]
-    public GameObject[] dropItemPrefab;
+    // もし「固定体力」フィールドが不要であれば削除してください
+    [SerializeField, Header("固定体力(不要なら削除可能)")]
+    public float health;
 
-    [SerializeField, Header("ドロップアイテムの数")]
-    public int dropItemCount;
+    [Tab("ドロップ情報")]
+    [SerializeField, Header("ドロップアイテム情報リスト")]
+    public ItemDropInfo[] dropItemInfos;
+    [Header("武器ドロップ情報")]
+    public WeaponDropInfo weaponDropInfo;
 
     [Tab("戦闘設定")]
     [SerializeField, Header("行動タイプ")]
@@ -93,6 +100,7 @@ public enum EnemyType
     Ground,
     Air
 }
+
 public enum BehaviorType
 {
     Patrol,

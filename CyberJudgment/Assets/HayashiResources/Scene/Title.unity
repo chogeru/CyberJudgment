@@ -729,6 +729,52 @@ Transform:
   m_Father: {fileID: 444179684}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: -7.072, y: 22.93, z: 5.514}
+--- !u!1 &49784114
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 49784116}
+  - component: {fileID: 49784115}
+  m_Layer: 0
+  m_Name: WeaponGeneratorManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &49784115
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 49784114}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec53deabbbe5fca4caec9e6ccc448bf4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weaponNamesByRarity: {fileID: 11400000, guid: 7daa219575c7e9f4abcd8d2ff21d5c8b,
+    type: 2}
+--- !u!4 &49784116
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 49784114}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 16
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &50113923
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5227,8 +5273,8 @@ MonoBehaviour:
   mode: 0
   size: {x: 10, y: 10, z: 10}
   radius: 10
-  main: 3
-  turbulence: 0.5
+  main: 1
+  turbulence: 1
   directionAngleX: 0
   directionAngleY: 0
   attenuation:
@@ -71864,26 +71910,8 @@ MonoBehaviour:
     rootBones:
     - {fileID: 2682208952484128517}
     - {fileID: 6589378925381934889}
-    - {fileID: 8599291564294059504}
-    - {fileID: 5297461491768659952}
-    - {fileID: 8700345583005212823}
-    - {fileID: 6988433172560369966}
-    - {fileID: 3657090157679479401}
-    - {fileID: 5529534525235497169}
     - {fileID: 3474469059741155379}
     - {fileID: 6573913508282642865}
-    - {fileID: 8599291564294059504}
-    - {fileID: 5297461491768659952}
-    - {fileID: 8700345583005212823}
-    - {fileID: 6988433172560369966}
-    - {fileID: 3657090157679479401}
-    - {fileID: 5529534525235497169}
-    - {fileID: 3019874610396064611}
-    - {fileID: 8885524446745053424}
-    - {fileID: 8286200372638026225}
-    - {fileID: 2588428085481438671}
-    - {fileID: 1169149086248118708}
-    - {fileID: 8190409449864388555}
     connectionMode: 0
     rotationalInterpolation: 0.1
     rootRotation: 0.1
@@ -71917,13 +71945,13 @@ MonoBehaviour:
     gravity: 0
     gravityDirection:
       x: 0
-      y: 1
+      y: -1
       z: 0
     gravityFalloff: 0
     stablizationTimeAfterReset: 0.1
     blendWeight: 1
     damping:
-      value: 0.5
+      value: 0.05
       useCurve: 0
       curve:
         serializedVersion: 2
@@ -71979,21 +72007,21 @@ MonoBehaviour:
     inertiaConstraint:
       anchor: {fileID: 0}
       anchorInertia: 0
-      worldInertia: 0.15
-      movementInertiaSmoothing: 0.5
+      worldInertia: 1
+      movementInertiaSmoothing: 0.4
       movementSpeedLimit:
-        value: 2
+        value: 5
         use: 1
       rotationSpeedLimit:
         value: 720
         use: 1
       localInertia: 1
       localMovementSpeedLimit:
-        value: 5
-        use: 0
+        value: 3
+        use: 1
       localRotationSpeedLimit:
-        value: 720
-        use: 0
+        value: 360
+        use: 1
       depthInertia: 0
       centrifualAcceleration: 0
       particleSpeedLimit:
@@ -72003,7 +72031,7 @@ MonoBehaviour:
       teleportDistance: 0.5
       teleportRotation: 90
     tetherConstraint:
-      distanceCompression: 0.8
+      distanceCompression: 0.5
     distanceConstraint:
       stiffness:
         value: 1
@@ -72193,7 +72221,7 @@ MonoBehaviour:
           m_PostInfinity: 2
           m_RotationOrder: 4
     selfCollisionConstraint:
-      selfMode: 2
+      selfMode: 0
       surfaceThickness:
         value: 0.005
         useCurve: 0
@@ -72221,11 +72249,11 @@ MonoBehaviour:
           m_PreInfinity: 2
           m_PostInfinity: 2
           m_RotationOrder: 4
-      syncMode: 2
+      syncMode: 0
       syncPartner: {fileID: 0}
       clothMass: 0
     wind:
-      influence: 1
+      influence: 0.2
       frequency: 1
       turbulence: 1
       blend: 0.7
@@ -72234,8 +72262,8 @@ MonoBehaviour:
       movingWind: 0
     springConstraint:
       useSpring: 1
-      springPower: 0.04
-      limitDistance: 0.1
+      springPower: 0.01
+      limitDistance: 0.05
       normalLimitRatio: 1
       springNoise: 0
   serializeData2:
@@ -84933,7 +84961,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1167871497024407610}
-  m_LocalRotation: {x: 0.00000001490116, y: 0.12309149, z: 0.12309151, w: 0.9847319}
+  m_LocalRotation: {x: 0.000000014901163, y: 0.12309149, z: 0.12309153, w: 0.9847319}
   m_LocalPosition: {x: -0.0033863783, y: -0.009891391, z: 0.015776921}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -85809,14 +85837,14 @@ MonoBehaviour:
   m_RendererIndex: -1
   m_VolumeLayerMask:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 2147483647
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
   m_RenderPostProcessing: 1
-  m_Antialiasing: 0
+  m_Antialiasing: 2
   m_AntialiasingQuality: 2
-  m_StopNaN: 0
-  m_Dithering: 0
+  m_StopNaN: 1
+  m_Dithering: 1
   m_ClearDepth: 1
   m_AllowXRRendering: 1
   m_RequiresDepthTexture: 0
@@ -88183,7 +88211,7 @@ Camera:
   m_FOVAxisMode: 0
   m_SensorSize: {x: 36, y: 24}
   m_LensShift: {x: 0, y: 0}
-  m_FocalLength: 50
+  m_FocalLength: 20.78461
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0
@@ -88192,7 +88220,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 60
+  field of view: 60.000004
   orthographic: 0
   orthographic size: 5
   m_Depth: -1

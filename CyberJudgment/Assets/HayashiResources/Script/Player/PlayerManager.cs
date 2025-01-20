@@ -1,3 +1,4 @@
+using R3;
 using UnityEngine;
 
 public class PlayerManager : MonoBehaviour
@@ -6,11 +7,16 @@ public class PlayerManager : MonoBehaviour
     public PlayerAnimationController PlayerAnimationController { get; private set; }
     public PlayerAttackController PlayerAttackController { get; private set; }
 
+    public PlayerMP playerMP { get; private set; }
+
     private bool isAttacking;
     private bool isHit;
     private bool isDead;
 
+    private readonly ReactiveProperty<bool> isGuarding = new ReactiveProperty<bool>(false);
+
     public bool IsHit => isHit;
+    public bool IsGuarding => isGuarding.Value;
     public bool IsDead => isDead;
 
     private PlayerState currentState;
@@ -20,6 +26,18 @@ public class PlayerManager : MonoBehaviour
         PlayerController = GetComponent<PlayerController>();
         PlayerAnimationController = GetComponent<PlayerAnimationController>();
         PlayerAttackController = GetComponent<PlayerAttackController>();
+        playerMP = GetComponent<PlayerMP>();
+    }
+
+
+    /// <summary>
+    /// ÉKÅ[ÉhèÛë‘Çê›íËÇµÇ‹Ç∑ÅB
+    /// </summary>
+    public void SetGuarding(bool guarding)
+    {
+        isGuarding.Value = guarding;
+        PlayerController.SetMovementEnabled(!guarding);
+        PlayerAttackController.SetAttackEnabled(!guarding);
     }
 
     /// <summary>
@@ -67,6 +85,15 @@ public class PlayerManager : MonoBehaviour
         isDead = dead;
         PlayerController.SetMovementEnabled(!dead);
         PlayerAttackController.SetAttackEnabled(!dead);
+
+        if (dead)
+        {
+            UpdatePlayerState(PlayerState.Dead);
+        }
+        else
+        {
+            UpdatePlayerState(PlayerState.Idle);
+        }
     }
 }
 /// <summary>
@@ -76,6 +103,8 @@ public enum PlayerState
 {
     Idle,
     Walk,
-    Run
+    Run,
+    Guard,
+    Dead
 }
 

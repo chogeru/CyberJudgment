@@ -16,13 +16,10 @@ public class BossEnemyUISignal : MonoBehaviour
             return;
         }
 
-        // 初期UIのセットアップ
-        // 初期UIのセットアップ
         BossUIManager.Instance.SetBossName(_enemy.enemyData.enemyName);
         await BossUIManager.Instance.StartBossUI(_enemy._currentHealth, _enemy.enemyData.health);
         await BossUIManager.Instance.SetBossHealth(_enemy._currentHealth, _enemy.enemyData.health);
 
-        // Enemyの体力変更イベントを登録
         _enemy.OnHealthChanged += UpdateBossHealthUI;
     }
 

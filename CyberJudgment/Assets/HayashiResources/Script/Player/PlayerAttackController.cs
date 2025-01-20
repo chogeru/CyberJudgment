@@ -72,57 +72,54 @@ public class PlayerAttackController : MonoBehaviour
     }
 
     /// <summary>
-    /// 入力により攻撃アニメーションを再生する処理
+    /// 攻撃入力をバインドします。
     /// </summary>
     private void BindAttackInput()
     {
-        // 左クリックによる通常攻撃
-        this.UpdateAsObservable()
-            .Where(_ => !StopManager.Instance.IsStopped)       // 一時停止中でない
-            .Where(_ => isAttack)                              // 攻撃可能な状態
-            .Where(_ => !playerManager.IsHit && !playerManager.IsDead) // ヒット中・死亡中でない
-            .Where(_ => Input.GetMouseButtonDown(0))           // 入力を検出
-            .Subscribe(_ => ExecuteAttack("NormalAttack", m_NomalAttackVoiceClipName, m_NomalAttackSE));
-
-        // 右クリックによる強攻撃
-        this.UpdateAsObservable()
-        .Where(_ => !StopManager.Instance.IsStopped)
-        .Where(_ => isAttack)
-        .Where(_ => !playerManager.IsHit && !playerManager.IsDead)
-        .Where(_ => Input.GetMouseButtonDown(1))
-        .Subscribe(_ => ExecuteAttack("StrongAttack", m_StringAttackVoiceClipName, m_StringAttackSE));
-
-        // コントローラーの左肩ボタンによる通常攻撃
+        // ノーマル攻撃
         this.UpdateAsObservable()
             .Where(_ => !StopManager.Instance.IsStopped)
             .Where(_ => isAttack)
             .Where(_ => !playerManager.IsHit && !playerManager.IsDead)
+            .Where(_ => !playerManager.IsGuarding) // ガード中は攻撃できない
+            .Where(_ => Input.GetMouseButtonDown(0))
+            .Subscribe(_ => ExecuteAttack("NormalAttack", m_NomalAttackVoiceClipName, m_NomalAttackSE));
+
+        // 強力攻撃
+        this.UpdateAsObservable()
+            .Where(_ => !StopManager.Instance.IsStopped)
+            .Where(_ => isAttack)
+            .Where(_ => !playerManager.IsHit && !playerManager.IsDead)
+            .Where(_ => !playerManager.IsGuarding) // ガード中は攻撃できない
+            .Where(_ => Input.GetMouseButtonDown(1))
+            .Subscribe(_ => ExecuteAttack("StrongAttack", m_StringAttackVoiceClipName, m_StringAttackSE));
+
+        // ゲームパッドのボタンによる攻撃
+        this.UpdateAsObservable()
+            .Where(_ => !StopManager.Instance.IsStopped)
+            .Where(_ => isAttack)
+            .Where(_ => !playerManager.IsHit && !playerManager.IsDead)
+            .Where(_ => !playerManager.IsGuarding) // ガード中は攻撃できない
             .Where(_ => Gamepad.current != null && Gamepad.current.leftShoulder.wasPressedThisFrame)
             .Subscribe(_ => ExecuteAttack("NormalAttack", m_NomalAttackVoiceClipName, m_NomalAttackSE))
             .AddTo(this);
 
-        // コントローラーの右肩ボタンによる強攻撃
         this.UpdateAsObservable()
             .Where(_ => !StopManager.Instance.IsStopped)
             .Where(_ => isAttack)
             .Where(_ => !playerManager.IsHit && !playerManager.IsDead)
+            .Where(_ => !playerManager.IsGuarding) // ガード中は攻撃できない
             .Where(_ => Gamepad.current != null && Gamepad.current.rightShoulder.wasPressedThisFrame)
             .Subscribe(_ => ExecuteAttack("StrongAttack", m_StringAttackVoiceClipName, m_StringAttackSE))
             .AddTo(this);
 
-        // マウスボタンのリリースを検知してIdleに移行
+        // 攻撃キャンセルの入力
         this.UpdateAsObservable()
             .Where(_ => Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1))
             .Subscribe(_ => CancelAttack());
 
-        // コントローラーの左肩ボタンのリリースを検知してIdleに移行
         this.UpdateAsObservable()
-            .Where(_ => Gamepad.current != null && Gamepad.current.leftShoulder.wasReleasedThisFrame)
-            .Subscribe(_ => CancelAttack());
-
-        // コントローラーの右肩ボタンのリリースを検知してIdleに移行
-        this.UpdateAsObservable()
-            .Where(_ => Gamepad.current != null && Gamepad.current.rightShoulder.wasReleasedThisFrame)
+            .Where(_ => Gamepad.current != null && (Gamepad.current.leftShoulder.wasReleasedThisFrame || Gamepad.current.rightShoulder.wasReleasedThisFrame))
             .Subscribe(_ => CancelAttack());
     }
 

@@ -1,30 +1,37 @@
 using UnityEngine;
 
 /// <summary>
-/// 敵がプレイヤーから距離を取る状態
+/// 攻撃後、プレイヤーから離れる (後退) 状態
 /// </summary>
 public class RetreatState : IEnemyState
 {
-    private float retreatDuration; // 後退時間
-    private float timer; // 経過時間
-    private Vector3 retreatDirection; // 後退方向
-    private float originalAnimatorSpeed; // 元のアニメーション速度
+    private float retreatDuration;   // 後退時間
+    private float timer;             // 経過時間
+    private Vector3 retreatDirection;
+    private float originalAnimatorSpeed;
 
     public void EnterState(EnemyBase enemy)
     {
-        // 1.5～3秒のランダム時間を設定
-        retreatDuration = Random.Range(5f, 10f);
+        // 1.5～3秒のランダム時間
+        retreatDuration = Random.Range(1.5f, 3f);
         timer = 0f;
 
-        // プレイヤーの反対方向に後退
-        retreatDirection = (enemy.transform.position - enemy._player.position).normalized;
+        // プレイヤーの反対方向へ
+        if (enemy._player != null)
+        {
+            retreatDirection = (enemy.transform.position - enemy._player.position).normalized;
+        }
+        else
+        {
+            retreatDirection = -enemy.transform.forward;
+        }
 
-        // 移動アニメーションの再生
+        // 後退アニメっぽく isMoving = true
         enemy._animator.SetBool("isMoving", true);
 
-        // アニメーションを逆再生するために速度を-1に設定
+        // アニメ速度を通常に
         originalAnimatorSpeed = enemy._animator.speed;
-        enemy._animator.speed = -1f;
+        enemy._animator.speed = 1f;
 
         Debug.Log($"{enemy.name}: Enter RetreatState");
     }
@@ -33,7 +40,7 @@ public class RetreatState : IEnemyState
     {
         timer += Time.deltaTime;
 
-        // 壁が後方にない場合は後退する
+        // 後方に壁がなければ後退
         if (!IsWallBehind(enemy))
         {
             Vector3 retreatPosition = enemy.transform.position + retreatDirection * enemy.enemyData.moveSpeed * Time.deltaTime;
@@ -42,25 +49,23 @@ public class RetreatState : IEnemyState
         }
         else
         {
-            // 壁が後方にある場合は攻撃状態に移行
-            if (enemy.isPlayerInSight && !enemy.GetIsAttacking())
+            // 壁がある場合 → 攻撃 or Idleへ戻るなど
+            if (enemy.isPlayerInSight && !enemy.GetIsAttacking() && enemy.CanAttack())
             {
-                int attackChoice = Random.Range(0, 2); // 0 または 1
+                int attackChoice = Random.Range(0, 2);
                 if (attackChoice == 0)
-                {
-                    enemy._animator.SetBool("Attack", true);
                     enemy.TransitionToState(new AttackState());
-                }
                 else
-                {
-                    enemy._animator.SetBool("StrongAttack", true);
                     enemy.TransitionToState(new StrongAttackState());
-                }
+            }
+            else
+            {
+                enemy.TransitionToState(new IdleState());
             }
             return;
         }
 
-        // 後退時間が終了したら IdleState に遷移
+        // 指定時間後退したらIdleへ
         if (timer >= retreatDuration)
         {
             enemy.TransitionToState(new IdleState());
@@ -69,31 +74,25 @@ public class RetreatState : IEnemyState
 
     public void ExitState(EnemyBase enemy)
     {
-        // 移動アニメーションの停止
         enemy._animator.SetBool("isMoving", false);
-
-        // アニメーション速度を元に戻す
         enemy._animator.speed = originalAnimatorSpeed;
 
         Debug.Log($"{enemy.name}: Exit RetreatState");
     }
 
     /// <summary>
-    /// 敵の後方に壁があるかを判定するメソッド
+    /// 後方に壁があるかチェック
     /// </summary>
-    /// <param name="enemy">現在の敵</param>
-    /// <returns>後方に壁がある場合はtrue</returns>
     private bool IsWallBehind(EnemyBase enemy)
     {
         Vector3 raycastOrigin = enemy.transform.position + Vector3.up * 1f;
-        Vector3 raycastDirection = -enemy.transform.forward; // 敵の後方方向
-        float raycastDistance = 1f; // レイキャストの距離
+        Vector3 raycastDirection = -enemy.transform.forward;
+        float raycastDistance = 1f;
 
-        RaycastHit hit;
-        if (Physics.Raycast(raycastOrigin, raycastDirection, out hit, raycastDistance))
+        if (Physics.Raycast(raycastOrigin, raycastDirection, out RaycastHit hit, raycastDistance))
         {
-            // 壁に当たった場合
-            if (hit.collider.CompareTag("Default"))
+            // Tag は環境に合わせる
+            if (hit.collider.CompareTag("Wall") || hit.collider.CompareTag("Default"))
             {
                 return true;
             }

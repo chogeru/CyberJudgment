@@ -1,9 +1,10 @@
-using AbubuResouse.Singleton;
-using System;
 using UnityEngine;
+using System;
+using System.Linq;
+using AbubuResouse.Singleton;
 
 /// <summary>
-/// 敵の基本動作を定義する抽象クラス
+/// 敵のベースクラス (基底クラス)
 /// </summary>
 public abstract class EnemyBase : MonoBehaviour
 {
@@ -13,64 +14,74 @@ public abstract class EnemyBase : MonoBehaviour
     [Header("死亡時エフェクト")]
     [SerializeField] private GameObject _dieEffect;
 
-    [Header("被ダメージ時のVoice")]
+    [Header("被弾時Voice")]
     [SerializeField] private string _getHitVoiceSE;
 
-    [Header("死亡時Voice")]
+    [Header("死亡Voice")]
     [SerializeField] private string _dieVoiceSE;
 
-    [Header("音量")]
+    [Header("SE音量")]
     [SerializeField] private float _volume = 1f;
 
-    // プレイヤーのTransform
     public Transform _player { get; private set; }
 
-    // プレイヤーが視界に入っているか
-    public bool isPlayerInSight { get; private set; }
+    public bool isPlayerInSight { get; protected set; }
 
-    // Rigidbody と Animator
+    protected bool isCollidingWithPlayer = false;
 
     private Collider _collider;
     public Rigidbody _rb { get; private set; }
     public Animator _animator { get; private set; }
 
-    // 現在のステート
     private IEnemyState _currentState;
 
-    [Header("現在のHp")]
+    [Header("現在のHP")]
     [SerializeField] public float _currentHealth;
+    [SerializeField] private float _maxHealth;
     public event Action<float, float> OnHealthChanged;
 
-    // 攻撃フラグ
     private bool isAttacking = false;
 
-    // 死亡フラグ
     private bool isDie = false;
 
+    private float _nextAttackTime = 0f;
+
     /// <summary>
-    /// 敵の初期設定
+    /// 現在攻撃できるか判定
+    /// </summary>
+    public bool CanAttack()
+    {
+        return Time.time >= _nextAttackTime;
+    }
+
+    /// <summary>
+    /// 攻撃クールダウンを開始 (現在時刻 + attackCooldown)
+    /// </summary>
+    public void ResetAttackCooldown()
+    {
+        _nextAttackTime = Time.time + enemyData.attackCooldown;
+    }
+
+    /// <summary>
+    /// 初期化
     /// </summary>
     protected virtual void Start()
     {
-        // 初期HP設定
-        _currentHealth = enemyData.health;
+        _currentHealth = UnityEngine.Random.Range(enemyData.minHealth, enemyData.maxHealth + 1);
+        _maxHealth = _currentHealth;
 
-        // プレイヤーの取得
-        _player = GameObject.FindGameObjectWithTag("Player").transform;
-
-        // RigidbodyとAnimatorの取得
+        _player = GameObject.FindGameObjectWithTag("Player")?.transform;
         _rb = GetComponent<Rigidbody>();
         _collider = GetComponent<Collider>();
-
         _animator = GetComponent<Animator>();
 
-        // 初期ステートの設定
+        // 開始時は IdleState
         _currentState = new IdleState();
         _currentState.EnterState(this);
     }
 
     /// <summary>
-    /// 毎フレームの更新処理
+    /// 毎フレーム更新
     /// </summary>
     protected virtual void Update()
     {
@@ -79,47 +90,48 @@ public abstract class EnemyBase : MonoBehaviour
             _currentState.UpdateState(this);
         }
 
-        // 攻撃アニメーションが再生されていなければ攻撃状態を解除
+        // 攻撃アニメではない場合は isAttacking を解除
         if (!_animator.GetCurrentAnimatorStateInfo(0).IsName("Attack") &&
             !_animator.GetCurrentAnimatorStateInfo(0).IsName("StrongAttack"))
         {
             SetIsAttacking(false);
         }
 
-        // プレイヤーの検出
         DetectPlayer();
     }
 
     /// <summary>
-    /// ステートを遷移するメソッド
+    /// ステート切り替え
     /// </summary>
-    /// <param name="newState">遷移する新しいステート</param>
     public void TransitionToState(IEnemyState newState)
     {
-        Debug.Log($"{this.name}: Transitioning from {_currentState.GetType().Name} to {newState.GetType().Name}");
+        Debug.Log($"{this.name}: Transition from {_currentState.GetType().Name} to {newState.GetType().Name}");
         _currentState.ExitState(this);
         _currentState = newState;
         _currentState.EnterState(this);
     }
 
     /// <summary>
-    /// 巡回動作を実装する抽象メソッド
+    /// パトロール動作は派生クラスで実装
     /// </summary>
     public abstract void Patrol();
 
     /// <summary>
-    /// プレイヤーを検出するためのメソッド
+    /// プレイヤーを探知する
     /// </summary>
     protected void DetectPlayer()
     {
+        if (_player == null) return;
+
         Vector3 directionToPlayer = _player.position - transform.position;
         float distanceToPlayer = directionToPlayer.magnitude;
 
         if (distanceToPlayer <= enemyData.detectionRange)
         {
             RaycastHit hit;
-            Vector3 raycastOrigin = transform.position + Vector3.up * 1f; // 高さ1の位置からレイキャストを発射
+            Vector3 raycastOrigin = transform.position + Vector3.up * 1f;
 
+            // Raycastで視界チェック
             if (Physics.Raycast(raycastOrigin, directionToPlayer.normalized, out hit, enemyData.visionRange))
             {
                 if (hit.collider.CompareTag("Player"))
@@ -130,8 +142,10 @@ public abstract class EnemyBase : MonoBehaviour
                     }
                     isPlayerInSight = true;
 
-                    // 既に追跡中、攻撃中でなければ ChaseState に遷移
-                    if (!(_currentState is ChaseState) && !(_currentState is AttackState) && !(_currentState is StrongAttackState))
+                    // まだChase/Attack系ステートでない場合はChaseへ
+                    if (!(_currentState is ChaseState) &&
+                        !(_currentState is AttackState) &&
+                        !(_currentState is StrongAttackState))
                     {
                         TransitionToState(new ChaseState());
                     }
@@ -148,30 +162,33 @@ public abstract class EnemyBase : MonoBehaviour
     }
 
     /// <summary>
-    /// 目標地点に向かって移動するメソッド
+    /// targetPositionに向かって移動
     /// </summary>
-    /// <param name="targetPosition">目標地点の座標</param>
     public void MoveTowards(Vector3 targetPosition)
     {
-        if (GetIsAttacking())
+        if (GetIsAttacking() || isCollidingWithPlayer)
         {
+            _animator.SetBool("isMoving", false);
             return;
         }
 
         Vector3 direction = (targetPosition - transform.position).normalized;
+
+        if (direction.magnitude > 0.1f)
+            _animator.SetBool("isMoving", true);
+        else
+            _animator.SetBool("isMoving", false);
+
         _rb.MovePosition(transform.position + direction * enemyData.moveSpeed * Time.deltaTime);
     }
 
+
     /// <summary>
-    /// 目標地点に向かって回転するメソッド
+    /// targetPositionの方向へ回転
     /// </summary>
-    /// <param name="targetPosition">目標地点の座標</param>
     public void RotateTowards(Vector3 targetPosition)
     {
-        if (GetIsAttacking())
-        {
-            return;
-        }
+        if (GetIsAttacking()) return;
 
         Vector3 direction = (targetPosition - transform.position).normalized;
         if (direction != Vector3.zero)
@@ -183,30 +200,23 @@ public abstract class EnemyBase : MonoBehaviour
     }
 
     /// <summary>
-    /// 攻撃フラグを設定するメソッド
+    /// 攻撃中フラグ Getter/Setter
     /// </summary>
-    /// <param name="value">設定する値</param>
     public void SetIsAttacking(bool value)
     {
         isAttacking = value;
     }
-
-    /// <summary>
-    /// 攻撃フラグを取得するメソッド
-    /// </summary>
-    /// <returns>攻撃フラグの値</returns>
     public bool GetIsAttacking()
     {
         return isAttacking;
     }
 
     /// <summary>
-    /// 攻撃が完了した時の処理
+    /// Attackアニメ終了時に呼ばれる想定(アニメイベントなど)
     /// </summary>
     public void AttackFinished()
     {
         float distanceToPlayer = Vector3.Distance(_player.position, transform.position);
-
         if (distanceToPlayer <= enemyData.attackRange)
         {
             TransitionToState(new ChaseState());
@@ -218,16 +228,14 @@ public abstract class EnemyBase : MonoBehaviour
     }
 
     /// <summary>
-    /// ダメージを受けた時の処理
+    /// ダメージを受ける
     /// </summary>
-    /// <param name="damage">受けるダメージ量</param>
     public virtual void TakeDamage(float damage)
     {
-        if (isDie)
-            return;
+        if (isDie) return;
 
         _currentHealth -= damage;
-        OnHealthChanged?.Invoke(_currentHealth, enemyData.health);
+        OnHealthChanged?.Invoke(_currentHealth, _maxHealth);
 
         if (_currentHealth <= 0)
         {
@@ -235,56 +243,73 @@ public abstract class EnemyBase : MonoBehaviour
         }
         else
         {
-            SEManager.Instance.PlaySound(_getHitVoiceSE, _volume);
-            _animator.SetBool("TakeDamage", true);
+            // 被弾SE
+            if (!string.IsNullOrEmpty(_getHitVoiceSE))
+                SEManager.Instance.PlaySound(_getHitVoiceSE, _volume);
+
+            // ダメージアニメ再生用トリガー
+            _animator.SetTrigger("TakeDamage");
+
+            // 攻撃フラグ下げ
             SetIsAttacking(false);
             _animator.SetBool("Attack", false);
-            _animator.SetTrigger("StrongAttack");
+            _animator.SetBool("StrongAttack", false);
         }
     }
 
     /// <summary>
-    /// ダメージアニメーション終了後に呼び出す
+    /// ダメージアニメが終わったタイミングで呼ばれる想定
     /// </summary>
     protected virtual void HitEnd()
     {
-        // アニメーションイベントで呼び出す
+        // Idleへ
         TransitionToState(new IdleState());
     }
 
     /// <summary>
-    /// 敵が死亡した際の処理
+    /// 死亡処理
     /// </summary>
     protected virtual void Die()
     {
         isDie = true;
-        SEManager.Instance.PlaySound(_dieVoiceSE, _volume);
+
+        // 死亡SE
+        if (!string.IsNullOrEmpty(_dieVoiceSE))
+            SEManager.Instance.PlaySound(_dieVoiceSE, _volume);
+
+        // 死亡アニメへ
         _animator.CrossFade("Die", 0.05f);
+
+        // 物理・衝突を無効化
         if (_rb != null)
         {
             _rb.isKinematic = true;
             _rb.detectCollisions = false;
         }
-
         if (_collider != null)
         {
             _collider.enabled = false;
         }
-
     }
 
     /// <summary>
-    /// 死亡アニメーション終了後に呼び出す
+    /// 死亡アニメ終了 (アニメイベント) 
     /// </summary>
     protected virtual void DieEnd()
     {
-        Instantiate(_dieEffect, transform.position, Quaternion.identity);
+        // エフェクト生成
+        if (_dieEffect != null)
+            Instantiate(_dieEffect, transform.position, Quaternion.identity);
+
+        // アイテムドロップ
         DropItem();
+
+        // 本体破棄
         Destroy(this.gameObject);
     }
 
     /// <summary>
-    /// アニメーション終了後に呼び出し、IdleStateに遷移するメソッド
+    /// 攻撃アニメやダメージアニメ終了後、強制Idleへ
     /// </summary>
     public void EndAnimation()
     {
@@ -295,7 +320,7 @@ public abstract class EnemyBase : MonoBehaviour
     }
 
     /// <summary>
-    /// アニメーションイベントから呼び出すメソッド
+    /// Attack/StrongAttackアニメイベント終了時に呼ばれる想定
     /// </summary>
     public void OnAttackAnimationEnd()
     {
@@ -306,25 +331,112 @@ public abstract class EnemyBase : MonoBehaviour
     }
 
     /// <summary>
-    /// アイテムドロップの実装
+    /// アイテムドロップ処理
     /// </summary>
     protected virtual void DropItem()
     {
-        foreach (var itemInfo in enemyData.dropItemPrefab)
+        // 通常アイテムのドロップ
+        foreach (var dropInfo in enemyData.dropItemInfos)
         {
-            if (UnityEngine.Random.value <= 100)
+            float randValue = UnityEngine.Random.Range(0f, 100f);
+            if (randValue <= dropInfo.dropRate)
             {
-                int dropCount = UnityEngine.Random.Range(0, 8);
-
+                int dropCount = UnityEngine.Random.Range(dropInfo.minDropCount, dropInfo.maxDropCount + 1);
                 for (int i = 0; i < dropCount; i++)
                 {
-                    Instantiate(itemInfo, transform.position + UnityEngine.Random.insideUnitSphere, Quaternion.identity);
+                    Vector3 spawnPosition = transform.position + Vector3.up * 1.0f;
+                    spawnPosition += UnityEngine.Random.insideUnitSphere * 0.5f;
+
+                    GameObject dropItem = Instantiate(
+                        dropInfo.itemPrefab,
+                        spawnPosition,
+                        Quaternion.identity
+                    );
+
+                    Rigidbody rb = dropItem.GetComponent<Rigidbody>();
+                    if (rb != null)
+                    {
+                        Vector3 forceDirection = (Vector3.up + new Vector3(
+                            UnityEngine.Random.Range(-0.5f, 0.5f),
+                            0,
+                            UnityEngine.Random.Range(-0.5f, 0.5f))
+                        ).normalized;
+
+                        float forceMagnitude = UnityEngine.Random.Range(2f, 5f);
+                        rb.AddForce(forceDirection * forceMagnitude, ForceMode.Impulse);
+                    }
                 }
+            }
+        }
+
+        // 武器ドロップ (レアリティ抽選)
+        WeaponDropInfo weaponDrop = enemyData.weaponDropInfo;
+        float weaponRandValue = UnityEngine.Random.Range(0f, 100f);
+        if (weaponRandValue <= weaponDrop.dropRate)
+        {
+            WeaponRarity selectedRarity = DetermineWeaponRarity(weaponDrop);
+
+            GameObject rarityOrbPrefab = GetRarityOrbPrefab(selectedRarity);
+            if (rarityOrbPrefab != null)
+            {
+                Vector3 orbSpawnPosition = transform.position + Vector3.up * 1.0f;
+                orbSpawnPosition += UnityEngine.Random.insideUnitSphere * 0.5f;
+
+                Instantiate(rarityOrbPrefab, orbSpawnPosition, Quaternion.identity);
+                Debug.Log($"レアリティ {selectedRarity} の武器オーブがドロップしました。");
             }
         }
     }
 
+    private WeaponRarity DetermineWeaponRarity(WeaponDropInfo weaponDrop)
+    {
+        float rand = UnityEngine.Random.Range(0f, 100f);
+        float cumulative = 0f;
+        foreach (var rarityProb in weaponDrop.rarityProbabilities)
+        {
+            cumulative += rarityProb.probability;
+            if (rand <= cumulative)
+                return rarityProb.rarity;
+        }
+        return WeaponRarity.Common;
+    }
+
+    private GameObject GetRarityOrbPrefab(WeaponRarity rarity)
+    {
+        var rarityData = enemyData.weaponDropInfo.rarityWeaponPrefabs
+            .FirstOrDefault(rp => rp.rarity == rarity);
+        if (rarityData != null && rarityData.rarityOrbPrefab != null)
+        {
+            return rarityData.rarityOrbPrefab;
+        }
+        return null;
+    }
+
     private void OnAnimatorMove()
     {
+        // 必要に応じてルートモーション処理
     }
+
+    /// <summary>
+    /// プレイヤーとぶつかったらフラグを立てる
+    /// </summary>
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            isCollidingWithPlayer = true;
+        }
+    }
+
+    /// <summary>
+    /// プレイヤーとの接触が離れたらフラグを下げる
+    /// </summary>
+    private void OnCollisionExit(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            isCollidingWithPlayer = false;
+        }
+    }
+
 }

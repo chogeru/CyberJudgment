@@ -402,15 +402,29 @@ namespace MagicaCloth2
 
                             // 親からの基本姿勢
                             var bv = bpos - pbpos;
-                            Develop.Assert(math.length(bv) > 0.0f);
-                            var v = math.normalize(bv);
-                            var ipq = math.inverse(pbrot);
-                            float3 localPos = math.mul(ipq, v);
-                            quaternion localRot = math.mul(ipq, brot);
+                            float bvlen = math.length(bv);
+                            if (vlen < Define.System.Epsilon || bvlen < Define.System.Epsilon)
+                            {
+                                // length=0
+                                //Debug.Log($"NG1");
+                                //エッジ長０対処
+                                lengthBufferArray[pindex] = 0;
+                                localPosBufferArray[pindex] = 0;
+                                localRotBufferArray[pindex] = quaternion.identity;
+                            }
+                            else
+                            {
+                                //Develop.Assert(math.length(bv) > 0.0f);
+                                //var v = math.normalize(bv);
+                                var v = bv / bvlen;
+                                var ipq = math.inverse(pbrot);
+                                float3 localPos = math.mul(ipq, v);
+                                quaternion localRot = math.mul(ipq, brot);
 
-                            lengthBufferArray[pindex] = vlen;
-                            localPosBufferArray[pindex] = localPos;
-                            localRotBufferArray[pindex] = localRot;
+                                lengthBufferArray[pindex] = vlen;
+                                localPosBufferArray[pindex] = localPos;
+                                localRotBufferArray[pindex] = localRot;
+                            }
                         }
 
                         if (useAngleRestoration)
@@ -479,16 +493,43 @@ namespace MagicaCloth2
 
                             // 現在のベクトル
                             float3 v = cpos - ppos;
+                            float vlen = math.length(v);
+                            if (vlen < Define.System.Epsilon)
+                            {
+                                //エッジ長０対処
+                                //Debug.Log($"NG2");
+                                goto EndAngleLimit;
+                            }
 
                             // 復元すべきベクトル
                             float3 tv = math.mul(prot, localPos);
+                            float tvlen = math.length(tv);
+                            if (tvlen < Define.System.Epsilon)
+                            {
+                                //エッジ長０対処
+                                //Debug.Log($"NG3");
+                                float3 add = ppos - cpos;
+                                nextPosArray[pindex] = ppos;
+                                velocityPosArray[pindex] = velocityPosArray[pindex] + add;
+                                rotationBufferArray[pindex] = math.mul(prot, localRot);
+                                goto EndAngleLimit;
+                            }
+
+                            v /= vlen;
+                            tv /= tvlen;
 
                             // ベクトル長修正
-                            float vlen = math.length(v);
                             float blen = lengthBufferArray[pindex];
                             vlen = math.lerp(vlen, blen, 0.5f); // 計算前の距離に徐々に近づける
-                            Develop.Assert(vlen > 0.0f);
-                            v = math.normalize(v) * vlen;
+                            if (blen < Define.System.Epsilon || vlen < Define.System.Epsilon)
+                            {
+                                //エッジ長０対処
+                                //Debug.Log($"NG4");
+                                goto EndAngleLimit;
+                            }
+                            //Develop.Assert(vlen > 0.0f);
+                            //v = math.normalize(v) * vlen;
+                            v = v * vlen;
 
                             // ベクトル角度クランプ
                             float maxAngleDeg = angleParam.limitCurveData.MC2EvaluateCurve(cdepth);
@@ -538,11 +579,22 @@ namespace MagicaCloth2
 
                             // 回転補正
                             v = cpos - ppos;
+                            vlen = math.length(v);
+                            if (vlen < Define.System.Epsilon)
+                            {
+                                //エッジ長０対処
+                                //Debug.Log($"NG5");
+                                goto EndAngleLimit;
+                            }
+                            v /= vlen;
                             var nrot = math.mul(prot, localRot);
-                            var q = MathUtility.FromToRotation(tv, v);
+                            //var q = MathUtility.FromToRotation(tv, v);
+                            var q = MathUtility.FromToRotationWithoutNormalize(tv, v);
                             nrot = math.mul(q, nrot);
                             rotationBufferArray[pindex] = nrot;
                         }
+
+                        EndAngleLimit:
 
                         //=====================================================
                         // Angle Restoration
@@ -551,11 +603,28 @@ namespace MagicaCloth2
                         {
                             //Debug.Log($"pindex:{pindex}, p_pindex:{p_pindex}");
 
-                            // 現在のベクトル
-                            float3 v = cpos - ppos;
-
                             // 復元すべきベクトル
                             float3 tv = restorationVectorBufferArray[pindex];
+                            float tvlen = math.length(tv);
+                            if (tvlen < Define.System.Epsilon)
+                            {
+                                //エッジ長０対処
+                                //Debug.Log($"NG6");
+                                float3 add = ppos - cpos;
+                                nextPosArray[pindex] = ppos;
+                                velocityPosArray[pindex] = velocityPosArray[pindex] + add;
+                                continue;
+                            }
+
+                            // 現在のベクトル
+                            float3 v = cpos - ppos;
+                            float vlen = math.length(v);
+                            if (vlen < Define.System.Epsilon)
+                            {
+                                //エッジ長０対処
+                                //Debug.Log($"NG7");
+                                continue;
+                            }
 
                             // 復元力
                             float restorationStiffness = angleParam.restorationStiffness.MC2EvaluateCurveClamp01(cdepth);
@@ -568,7 +637,7 @@ namespace MagicaCloth2
                             restorationStiffness *= gravityFalloff;
 
                             // 球面線形補間
-                            var q = MathUtility.FromToRotation(v, tv, restorationStiffness);
+                            var q = MathUtility.FromToRotationWithoutNormalize(v / vlen, tv / tvlen, restorationStiffness);
                             float3 rv = math.mul(q, v);
 
                             // 回転中心割合

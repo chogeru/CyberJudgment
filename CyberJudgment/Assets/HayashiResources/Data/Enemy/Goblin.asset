@@ -14,16 +14,40 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyID: 2
   enemyName: Goblin
-  health: 100
+  minHealth: 625
+  maxHealth: 825
   moveSpeed: 2
   detectionRange: 10
   patrolPointWaitTime: 0
   visionRange: 200
   attackRange: 1.6
   attackCooldown: 2
-  dropItemPrefab:
-  - {fileID: 2796556744000761754, guid: 04a91c3db4d352340bc76b66a0d8a293, type: 3}
-  dropItemCount: 5
+  health: 100
+  dropItemInfos:
+  - itemPrefab: {fileID: 2796556744000761754, guid: 04a91c3db4d352340bc76b66a0d8a293,
+      type: 3}
+    minDropCount: 2
+    maxDropCount: 5
+    dropRate: 90
+  weaponDropInfo:
+    dropRate: 50
+    rarityProbabilities:
+    - rarity: 0
+      probability: 90
+    - rarity: 1
+      probability: 60
+    - rarity: 2
+      probability: 20
+    rarityWeaponPrefabs:
+    - rarity: 0
+      rarityOrbPrefab: {fileID: 7581467683277396823, guid: e9a61902ec4cb8f42b1b2a59fe27cf07,
+        type: 3}
+    - rarity: 1
+      rarityOrbPrefab: {fileID: 4794875759502162923, guid: f51b227dfe314b64c8ab0880a1926f1b,
+        type: 3}
+    - rarity: 2
+      rarityOrbPrefab: {fileID: 5043167619198549530, guid: 2f2d4e6b133dd204b98d767461befc6d,
+        type: 3}
   behaviorType: 0
   enemyAttribute: 0
   enemyType: 0

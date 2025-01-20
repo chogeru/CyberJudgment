@@ -224,6 +224,45 @@ namespace MagicaCloth2
         }
 
         /// <summary>
+        /// fromからtoへ回転させるクォータニオンを返します(単位化なし)
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <param name="t">補間率(0.0-1.0)</param>
+        /// <returns></returns>
+        public static quaternion FromToRotationWithoutNormalize(in float3 v1, in float3 v2, float t = 1.0f)
+        {
+            //float3 v1 = math.normalize(from);
+            //float3 v2 = math.normalize(to);
+
+            float c = Clamp1(math.dot(v1, v2));
+            float angle = math.acos(c);
+            float3 axis = math.cross(v1, v2);
+
+            if (math.abs(1.0f + c) < 1e-06f)
+            {
+                angle = (float)math.PI;
+
+                if (v1.x > v1.y && v1.x > v1.z)
+                {
+                    axis = math.cross(v1, new float3(0, 1, 0));
+                }
+                else
+                {
+                    axis = math.cross(v1, new float3(1, 0, 0));
+                }
+            }
+            else if (math.abs(1.0f - c) < 1e-06f)
+            {
+                //angle = 0.0f;
+                //axis = new float3(1, 0, 0);
+                return quaternion.identity;
+            }
+
+            return quaternion.AxisAngle(math.normalize(axis), angle * t);
+        }
+
+        /// <summary>
         /// fromからtoへ回転させるクォータニオンを返します
         /// </summary>
         /// <param name="from"></param>

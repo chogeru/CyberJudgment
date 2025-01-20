@@ -4826,6 +4826,7 @@ GameObject:
   - component: {fileID: 2796556744000761755}
   - component: {fileID: -5841882670579818330}
   - component: {fileID: 4555242534890946431}
+  - component: {fileID: 8352829093282220082}
   m_Layer: 0
   m_Name: RecoveryOrb
   m_TagString: Untagged
@@ -4908,8 +4909,8 @@ SphereCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2796556744000761754}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
+  m_Material: {fileID: 13400000, guid: 017f5f28e6177ff46b4415269c176f96, type: 2}
+  m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.5
@@ -4932,7 +4933,8 @@ MonoBehaviour:
   hitEffect: {fileID: 4369787680043664565, guid: 80c5d45c40500f74e8688f4601e70a9d,
     type: 3}
   itemHitSE: "\u56DE\u5FA9"
-  volume: 1
+  volume: 0.2
+  effectHeightOffset: 0
 --- !u!114 &4555242534890946431
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4947,6 +4949,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_TargetTag: Player
   m_Speed: 30
+  m_YOffset: 1
+--- !u!54 &8352829093282220082
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2796556744000761754}
+  serializedVersion: 2
+  m_Mass: 30
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 10
+  m_CollisionDetection: 2
 --- !u!1 &2796556745085772107
 GameObject:
   m_ObjectHideFlags: 0
