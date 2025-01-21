@@ -7,17 +7,42 @@ namespace AbubuResouse.Singleton
 {
     /// <summary>
     /// サウンド関連の基本機能クラス
+    /// （フィルタ制御を AudioFilterManager に委譲し、プロパティでキャッシュを公開）
     /// </summary>
     public abstract class AudioManagerBase<T> : SingletonMonoBehaviour<T> where T : SingletonMonoBehaviour<T>
     {
         protected AudioSource audioSource;
         protected SQLiteConnection connection;
 
+        /// <summary>
+        /// AudioFilterManager を一度だけ取得してキャッシュ
+        /// </summary>
+        private AudioFilterManager filterManager;
+
+        /// <summary>
+        /// フィルタ制御用のプロパティ。
+        /// 呼び出し側はこれを通してフィルタを設定できる。
+        /// </summary>
+        public AudioFilterManager FilterManager => filterManager;
+
         protected override void Awake()
         {
             base.Awake();
+
             audioSource = GetComponent<AudioSource>();
+            if (audioSource == null)
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+            }
+
+            // データベース初期化
             InitializeDatabase(GetDatabaseName());
+
+            filterManager = GetComponent<AudioFilterManager>();
+            if (filterManager == null)
+            {
+                filterManager = gameObject.AddComponent<AudioFilterManager>();
+            }
         }
 
         /// <summary>

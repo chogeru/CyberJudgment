@@ -74,6 +74,8 @@ public class PlayerController : MonoBehaviour
     private GameObject shieldActivateEffectPrefab;
     [SerializeField, Header("シールド解除エフェクトのプレハブ")]
     private GameObject shieldDeactivateEffectPrefab;
+    [SerializeField,Header("シールド時非アクティブオブジェクト")]
+    private GameObject shieldDeactiveObject;
     [SerializeField, Header("シールドアクティブ時に表示するオブジェクト")]
     private GameObject shieldActiveObject;
     [SerializeField, Header("シールド展開時消費マナ")]
@@ -318,6 +320,7 @@ public class PlayerController : MonoBehaviour
             {
                 EffectManager.Instance.PlayEffect(shieldActivateEffectPrefab, shieldObject.transform.position, Quaternion.identity);
             }
+            shieldDeactiveObject.SetActive(false);
         }
         else
         {
@@ -341,6 +344,7 @@ public class PlayerController : MonoBehaviour
             {
                 EffectManager.Instance.PlayEffect(shieldDeactivateEffectPrefab, shieldObject.transform.position, Quaternion.identity);
             }
+            shieldDeactiveObject.SetActive(true);
         }
     }
 
