@@ -46,6 +46,10 @@ public abstract class EnemyBase : MonoBehaviour
 
     private float _nextAttackTime = 0f;
 
+    [Header("HPバー設定")]
+    [SerializeField] private GameObject hpBarPrefab;
+    private EnemyHPBar hpBar;
+
     /// <summary>
     /// 現在攻撃できるか判定
     /// </summary>
@@ -74,7 +78,19 @@ public abstract class EnemyBase : MonoBehaviour
         _rb = GetComponent<Rigidbody>();
         _collider = GetComponent<Collider>();
         _animator = GetComponent<Animator>();
-
+        if (hpBarPrefab != null)
+        {
+            hpBar = hpBarPrefab.GetComponent<EnemyHPBar>();
+            if (hpBar != null)
+            {
+                hpBar.UpdateHPBar(_currentHealth, _maxHealth, enemyData.enemyName); // 名前も渡す
+                hpBar.SetVisibility(true);
+            }
+        }
+        else
+        {
+            Debug.LogError("hpBarPrefabがアサインされていません。Inspectorで設定してください。");
+        }
         // 開始時は IdleState
         _currentState = new IdleState();
         _currentState.EnterState(this);
@@ -236,6 +252,11 @@ public abstract class EnemyBase : MonoBehaviour
 
         _currentHealth -= damage;
         OnHealthChanged?.Invoke(_currentHealth, _maxHealth);
+
+        if (hpBar != null)
+        {
+            hpBar.UpdateHPBar(_currentHealth, _maxHealth, enemyData.enemyName); // 名前も渡す
+        }
 
         if (_currentHealth <= 0)
         {
@@ -438,5 +459,24 @@ public abstract class EnemyBase : MonoBehaviour
             isCollidingWithPlayer = false;
         }
     }
+    /// <summary>
+    /// HPが変化したときに呼び出される
+    /// </summary>
+    private void OnEnable()
+    {
+        OnHealthChanged += HandleHealthChanged;
+    }
 
+    private void OnDisable()
+    {
+        OnHealthChanged -= HandleHealthChanged;
+    }
+
+    private void HandleHealthChanged(float currentHealth, float maxHealth)
+    {
+        if (hpBar != null)
+        {
+            hpBar.UpdateHPBar(currentHealth, maxHealth, enemyData.enemyName); // 名前も渡す
+        }
+    }
 }
