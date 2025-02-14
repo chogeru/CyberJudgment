@@ -1,4 +1,4 @@
-﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
 
 Shader "Custom/UI/Blur Fast" {
     Properties {
@@ -18,8 +18,8 @@ Shader "Custom/UI/Blur Fast" {
         SubShader {
        
             // Horizontal blur
-            GrabPass {                     
-                Tags { "LightMode" = "Always" }
+           /*  GrabPass {                     
+                Tags { "LightMode" = "Always" } */
             }
             Pass {
                 Tags { "LightMode" = "Always" }
@@ -81,8 +81,8 @@ Shader "Custom/UI/Blur Fast" {
             }
  
             // Vertical blur
-            GrabPass {                         
-                Tags { "LightMode" = "Always" }
+           /*  GrabPass {                         
+                Tags { "LightMode" = "Always" } */
             }
             Pass {
                 Tags { "LightMode" = "Always" }
@@ -146,8 +146,8 @@ Shader "Custom/UI/Blur Fast" {
             }
            
             // Distortion
-            GrabPass {                         
-                Tags { "LightMode" = "Always" }
+           /*  GrabPass {                         
+                Tags { "LightMode" = "Always" } */
             }
             Pass {
                 Tags { "LightMode" = "Always" }

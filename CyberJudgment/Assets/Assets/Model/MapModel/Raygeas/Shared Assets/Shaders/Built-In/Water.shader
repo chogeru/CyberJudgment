@@ -25,7 +25,7 @@ Shader "Raygeas/Built-In/Water"
 	{
 		Tags{ "RenderType" = "Transparent"  "Queue" = "Transparent+0" "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True" }
 		Cull Off
-		GrabPass{ }
+	/* 	GrabPass{ } */
 		CGPROGRAM
 		#include "UnityStandardUtils.cginc"
 		#include "UnityShaderVariables.cginc"

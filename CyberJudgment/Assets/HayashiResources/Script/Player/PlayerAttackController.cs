@@ -129,6 +129,8 @@ public class PlayerAttackController : MonoBehaviour
     /// <param name="animationTrigger">再生するアニメーションのトリガー名</param>
     private void ExecuteAttack(string animationTrigger, string voiceClipName, string attackSEClipName)
     {
+        if (!isAttack) return;
+        isAttack = false;
         playerManager.SetAttacking(true);
         enableRootMotion = true;
         nearestEnemy = FindNearestEnemy();
@@ -153,6 +155,7 @@ public class PlayerAttackController : MonoBehaviour
         if ((currentState.IsName("NormalAttack") || currentState.IsName("StrongAttack")) && currentState.normalizedTime >= 1.0f)
         {
             TransitionToIdle();
+            isAttack = true;
         }
     }
 
@@ -172,6 +175,10 @@ public class PlayerAttackController : MonoBehaviour
 
     private void TransitionToIdle()
     {
+        if (playerManager.IsDead)
+        {
+            return;
+        }
         enableRootMotion = false;
         nearestEnemy = null;
 

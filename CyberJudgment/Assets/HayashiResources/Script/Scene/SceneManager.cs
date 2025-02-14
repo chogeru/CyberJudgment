@@ -58,6 +58,7 @@ namespace AbubuResouse.Singleton
             {
                 UpdateLoadingScreen(_nextScene);
                 _loadingCanvas.SetActive(true);
+                await UniTask.Yield();
                 await SceneTransitionAsync(_nextScene);
                 _loadingCanvas.SetActive(false);
             }

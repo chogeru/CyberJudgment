@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 2796556743723085713}
   - component: {fileID: 2796556743723085727}
   - component: {fileID: 2796556743723085726}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Particle System
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4827,7 +4827,7 @@ GameObject:
   - component: {fileID: -5841882670579818330}
   - component: {fileID: 4555242534890946431}
   - component: {fileID: 8352829093282220082}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: RecoveryOrb
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4976,7 +4976,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2796556745085772104}
   - component: {fileID: 2796556745085772105}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Trail
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5114,6 +5114,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: LootPickup_HoveringCircular_Green
       objectReference: {fileID: 0}
+    - target: {fileID: 1052643578210625554, guid: adeae228a08c8e04ba80d75c2d686d42,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 3527736703207364649, guid: adeae228a08c8e04ba80d75c2d686d42,
         type: 3}
       propertyPath: InitialModule.startColor.maxColor.a
@@ -5201,8 +5206,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7846764002768739605, guid: adeae228a08c8e04ba80d75c2d686d42,
         type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7846764002768739605, guid: adeae228a08c8e04ba80d75c2d686d42,
+        type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8797761118676362388, guid: adeae228a08c8e04ba80d75c2d686d42,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: adeae228a08c8e04ba80d75c2d686d42, type: 3}

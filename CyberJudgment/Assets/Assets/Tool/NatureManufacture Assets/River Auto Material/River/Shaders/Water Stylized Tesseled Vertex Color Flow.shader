@@ -100,7 +100,7 @@ Shader "NatureManufacture Shaders/Water/Water Stylized Tesseled Vertex Color Flo
 		ZTest LEqual
 		Blend SrcAlpha OneMinusSrcAlpha , SrcAlpha OneMinusSrcAlpha
 		BlendOp Add , Add
-		GrabPass{ "_WaterGrab" }
+	/* 	GrabPass{ "_WaterGrab" } */
 		CGPROGRAM
 		#include "UnityShaderVariables.cginc"
 		#include "UnityStandardUtils.cginc"

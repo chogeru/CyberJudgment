@@ -28,7 +28,7 @@ Shader "DLNK Shaders/ASE/Nature/WaterSimple"
 		Tags{ "RenderType" = "Opaque"  "Queue" = "Transparent+0" "IgnoreProjector" = "True" }
 		Cull Back
 		AlphaToMask On
-		GrabPass{ }
+	/* 	GrabPass{ } */
 		CGPROGRAM
 		#include "UnityStandardUtils.cginc"
 		#include "UnityShaderVariables.cginc"

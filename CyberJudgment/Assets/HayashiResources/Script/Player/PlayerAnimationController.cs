@@ -42,6 +42,18 @@ public class PlayerAnimationController : MonoBehaviour
     /// <param name="state"></param>
     private void UpdateAnimator(PlayerState state)
     {
+        if (state == PlayerState.Dead)
+        {
+            m_Animator.SetBool("Dead", true);
+            m_Animator.SetBool("Guard", false);
+            m_Animator.SetBool("Idle", false);
+            m_Animator.SetBool("Walk", false);
+            m_Animator.SetBool("Run", false);
+            m_Animator.ResetTrigger("NormalAttack");
+            m_Animator.ResetTrigger("StrongAttack");
+            return;
+        }
+
         // Guardó‘Ô‚ğÅ—Dæ‚Éˆ—
         if (state == PlayerState.Guard)
         {

@@ -49,7 +49,7 @@ namespace AbubuResouse.Singleton
         /// <param name="bossName">表示するボスの名前</param>
         public void SetBossName(string bossName)
         {
-            if (_bossNameText != null&&_sliderBossNameText!=null)
+            if (_bossNameText != null && _sliderBossNameText != null)
             {
                 _bossNameText.text = bossName;
                 _sliderBossNameText.text = bossName;
@@ -108,7 +108,7 @@ namespace AbubuResouse.Singleton
                 if (_healthSlider != null)
                 {
                     _healthSlider.maxValue = maxHealth;
-                    _healthSlider.value = initialHealth; 
+                    _healthSlider.value = initialHealth;
                 }
 
                 _healthSlider.gameObject.SetActive(true);

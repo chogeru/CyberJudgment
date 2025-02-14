@@ -1,4 +1,4 @@
-﻿Shader "GAPH Custom Shader/Distortion Effect" {
+Shader "GAPH Custom Shader/Distortion Effect" {
 	Properties {
 		_TintColor ("Tint Color", Color) = (1,1,1,1)
 		_Mask ("Mask",2D) = "black"{}
@@ -8,9 +8,9 @@
 	}
 
 	SubShader{
-		GrabPass{
+	/* 	GrabPass{
 			"_GrabTexture"
-			}
+			} */
 
 			Tags{ "Queue" = "Transparent"  "IgnoreProjector" = "True"  "RenderType" = "Transparent" }
 			Blend SrcAlpha OneMinusSrcAlpha

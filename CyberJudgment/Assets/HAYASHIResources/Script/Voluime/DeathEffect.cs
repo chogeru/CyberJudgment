@@ -53,7 +53,7 @@ public class DeathEffect : MonoBehaviour
             float duration = 6f; // 調整
             float elapsed = 0f;
             float startFocalLength = 1f;  // 初期の焦点距離
-            float endFocalLength = 80f; // 最終の焦点距離
+            float endFocalLength = 300f; // 最終の焦点距離
 
             // 焦点距離を徐々に変更
             while (elapsed < duration)

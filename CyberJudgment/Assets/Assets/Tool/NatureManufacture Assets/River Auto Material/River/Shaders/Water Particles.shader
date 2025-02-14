@@ -19,7 +19,7 @@ Shader "NatureManufacture Shaders/Water/Water Particles"
 	{
 		Tags{ "RenderType" = "Transparent"  "Queue" = "Transparent+0" "IgnoreProjector" = "True" "IsEmissive" = "true"  }
 		Cull Off
-		GrabPass{ }
+	/* 	GrabPass{ } */
 		CGINCLUDE
 		#include "UnityStandardUtils.cginc"
 		#include "UnityPBSLighting.cginc"

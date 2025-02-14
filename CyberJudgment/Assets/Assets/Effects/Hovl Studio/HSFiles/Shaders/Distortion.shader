@@ -17,7 +17,7 @@ Shader "Hovl/Particles/Distortion"
 			Lighting Off 
 			ZWrite Off
 			Fog { Mode Off}
-			GrabPass{ }
+		/* 	GrabPass{ } */
 
 			Pass {		
 				CGPROGRAM
