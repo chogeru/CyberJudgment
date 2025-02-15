@@ -70,7 +70,9 @@ Shader "Hidden/Amplify Impostors/Octahedron Impostor URP"
 			#pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
 			#pragma multi_compile_fragment _ _LIGHT_LAYERS
 			#pragma multi_compile_fragment _ _LIGHT_COOKIES
-			#pragma multi_compile _ _CLUSTERED_RENDERING
+			#pragma multi_compile _ _FORWARD_PLUS
+
+			#pragma multi_compile_fragment _ _WRITE_RENDERING_LAYERS
 
 			#pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
 			#pragma multi_compile _ SHADOWS_SHADOWMASK
@@ -90,6 +92,9 @@ Shader "Hidden/Amplify Impostors/Octahedron Impostor URP"
 
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+			#if defined(LOD_FADE_CROSSFADE)
+				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/LODCrossFade.hlsl"
+			#endif
 
 			#define AI_RENDERPIPELINE
 
@@ -151,7 +156,7 @@ Shader "Hidden/Amplify Impostors/Octahedron Impostor URP"
 				IN.clipPos.zw = clipPos.zw;
 
 				#ifdef LOD_FADE_CROSSFADE
-					LODDitheringTransition( IN.clipPos.xyz, unity_LODFade.x );
+					LODFadeCrossFade( IN.clipPos );
 				#endif
 
 				InputData inputData;
@@ -206,6 +211,8 @@ Shader "Hidden/Amplify Impostors/Octahedron Impostor URP"
 			#pragma multi_compile_fragment _ _LIGHT_LAYERS
 			#pragma multi_compile_fragment _ _RENDER_PASS_ENABLED
 
+			#pragma multi_compile_fragment _ _WRITE_RENDERING_LAYERS
+
 			#pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
 
 			#pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
@@ -225,6 +232,9 @@ Shader "Hidden/Amplify Impostors/Octahedron Impostor URP"
 
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/UnityGBuffer.hlsl"
+			#if defined(LOD_FADE_CROSSFADE)
+				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/LODCrossFade.hlsl"
+			#endif
 
 			#define AI_RENDERPIPELINE
 
@@ -280,7 +290,7 @@ Shader "Hidden/Amplify Impostors/Octahedron Impostor URP"
 				IN.clipPos.zw = clipPos.zw;
 
 				#ifdef LOD_FADE_CROSSFADE
-					LODDitheringTransition( IN.clipPos.xyz, unity_LODFade.x );
+					LODFadeCrossFade( IN.clipPos );
 				#endif
 
 				InputData inputData;
@@ -335,6 +345,9 @@ Shader "Hidden/Amplify Impostors/Octahedron Impostor URP"
 			#pragma fragment frag
 
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+			#if defined(LOD_FADE_CROSSFADE)
+				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/LODCrossFade.hlsl"
+			#endif
 
 			#define AI_RENDERPIPELINE
 
@@ -387,7 +400,7 @@ Shader "Hidden/Amplify Impostors/Octahedron Impostor URP"
 				IN.clipPos.zw = clipPos.zw;
 
 				#ifdef LOD_FADE_CROSSFADE
-					LODDitheringTransition( IN.clipPos.xyz, unity_LODFade.x );
+					LODFadeCrossFade( IN.clipPos );
 				#endif
 
 				outDepth = clipPos.z;
@@ -415,6 +428,9 @@ Shader "Hidden/Amplify Impostors/Octahedron Impostor URP"
 			#pragma fragment frag
 
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+			#if defined(LOD_FADE_CROSSFADE)
+				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/LODCrossFade.hlsl"
+			#endif
 
 			#define AI_RENDERPIPELINE
 
@@ -467,7 +483,7 @@ Shader "Hidden/Amplify Impostors/Octahedron Impostor URP"
 				IN.clipPos.zw = clipPos.zw;
 
 				#ifdef LOD_FADE_CROSSFADE
-					LODDitheringTransition( IN.clipPos.xyz, unity_LODFade.x );
+					LODFadeCrossFade( IN.clipPos );
 				#endif
 
 				outDepth = clipPos.z;
@@ -496,6 +512,9 @@ Shader "Hidden/Amplify Impostors/Octahedron Impostor URP"
 			#pragma fragment frag
 
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+			#if defined(LOD_FADE_CROSSFADE)
+				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/LODCrossFade.hlsl"
+			#endif
 
 			#define AI_RENDERPIPELINE
 
@@ -548,7 +567,7 @@ Shader "Hidden/Amplify Impostors/Octahedron Impostor URP"
 				IN.clipPos.zw = clipPos.zw;
 
 				#ifdef LOD_FADE_CROSSFADE
-					LODDitheringTransition( IN.clipPos.xyz, unity_LODFade.x );
+					LODFadeCrossFade( IN.clipPos );
 				#endif
 
 				outDepth = clipPos.z;

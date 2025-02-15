@@ -23,6 +23,8 @@ Material:
   m_Name: M_BigFlags
   m_Shader: {fileID: -6465566751694194690, guid: f2079865c4f635a45b83d9054f046bec,
     type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _ALPHATEST_ON
   - _BUILTIN_ALPHATEST_ON
@@ -34,7 +36,7 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2225
+  m_CustomRenderQueue: 3000
   stringTagMap:
     MotionVector: User
     RenderType: Transparent
@@ -45,6 +47,7 @@ Material:
   - RayTracingPrepass
   - MOTIONVECTORS
   - DepthOnly
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -100,6 +103,7 @@ Material:
     - _Bend_Strength: 0
     - _Blend: 0
     - _BlendMode: 0
+    - _BlendModePreserveSpecular: 0
     - _CastShadows: 1
     - _ConservativeDepthOffsetEnable: 0
     - _Contrast: 1
@@ -176,7 +180,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  version: 5
+  version: 7
 --- !u!114 &8883244425373012096
 MonoBehaviour:
   m_ObjectHideFlags: 11

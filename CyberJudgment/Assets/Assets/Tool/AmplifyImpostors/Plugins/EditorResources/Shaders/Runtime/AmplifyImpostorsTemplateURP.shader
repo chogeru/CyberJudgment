@@ -119,7 +119,7 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 			"RenderPipeline" = "UniversalPipeline"
 			"RenderType"="Opaque"
 			"Queue"="Geometry"
-			"UniversalMaterialType"="Lit"
+			"UniversalMaterialType" = "Lit"
 		}
 
 		Cull Back
@@ -175,7 +175,7 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 			//#pragma multi_compile_fragment _ _DBUFFER_MRT1 _DBUFFER_MRT2 _DBUFFER_MRT3
 			#pragma multi_compile_fragment _ _LIGHT_LAYERS
 			#pragma multi_compile_fragment _ _LIGHT_COOKIES
-			#pragma multi_compile _ _CLUSTERED_RENDERING
+			#pragma multi_compile _ _FORWARD_PLUS
 			//#pragma shader_feature_local _RECEIVE_SHADOWS_OFF
 			//#pragma shader_feature_local_fragment _SPECULARHIGHLIGHTS_OFF
 			//#pragma shader_feature_local_fragment _ENVIRONMENTREFLECTIONS_OFF
@@ -186,6 +186,7 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 			//#pragma multi_compile _ LIGHTMAP_ON
 			//#pragma multi_compile _ DYNAMICLIGHTMAP_ON
 			//#pragma multi_compile_fragment _ DEBUG_DISPLAY
+			#pragma multi_compile_fragment _ _WRITE_RENDERING_LAYERS
 
 			#pragma vertex vert
 			#pragma fragment frag
@@ -201,6 +202,10 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DBuffer.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShaderPass.hlsl"
+
+			#if defined(LOD_FADE_CROSSFADE)
+				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/LODCrossFade.hlsl"
+			#endif
 
 			/*ase_pragma*/
 
@@ -273,8 +278,13 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
         		return o;
         	}
 
-        	half4 frag (VertexOutput IN, out float outDepth : SV_Depth /*ase_frag_input*/) : SV_Target
-            {
+        	half4 frag (VertexOutput IN
+						, out float outDepth : SV_Depth
+						#ifdef _WRITE_RENDERING_LAYERS
+						, out float4 outRenderingLayers : SV_Target1
+						#endif
+						/*ase_frag_input*/) : SV_Target			
+			{
             	UNITY_SETUP_INSTANCE_ID(IN);
 				UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
 
@@ -302,7 +312,7 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 				IN.positionCS.zw = positionCS.zw;
 
 				#ifdef LOD_FADE_CROSSFADE
-					LODDitheringTransition(IN.positionCS.xyz, unity_LODFade.x);
+					LODFadeCrossFade( IN.positionCS );
 				#endif
 
 				float3 WorldSpaceViewDirection = SafeNormalize( _WorldSpaceCameraPos.xyz - positionWS );
@@ -350,23 +360,40 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 				{
 					float shadow = /*ase_inline_begin*/_TransmissionShadow/*ase_inline_end*/;
 
-					Light mainLight = GetMainLight( inputData.shadowCoord );
-					float3 mainAtten = mainLight.color * mainLight.distanceAttenuation;
-					mainAtten = lerp( mainAtten, mainAtten * mainLight.shadowAttenuation, shadow );
-					half3 mainTransmission = max(0 , -dot(inputData.normalWS, mainLight.direction)) * mainAtten * Transmission;
-					color.rgb += Albedo * mainTransmission;
+					#define SUM_LIGHT_TRANSMISSION(Light)\
+						float3 atten = Light.color * Light.distanceAttenuation;\
+						atten = lerp( atten, atten * Light.shadowAttenuation, shadow );\
+						half3 transmission = max( 0, -dot( inputData.normalWS, Light.direction ) ) * atten * Transmission;\
+						color.rgb += Albedo * transmission;
 
-					#ifdef _ADDITIONAL_LIGHTS
-						int transPixelLightCount = GetAdditionalLightsCount();
-						for (int i = 0; i < transPixelLightCount; ++i)
+					SUM_LIGHT_TRANSMISSION(GetMainLight(inputData.shadowCoord));
+
+					#if defined(_ADDITIONAL_LIGHTS)
+						uint meshRenderingLayers = GetMeshRenderingLayer();
+						uint pixelLightCount = GetAdditionalLightsCount();
+						#if USE_FORWARD_PLUS
+						for (uint lightIndex = 0; lightIndex < min(URP_FP_DIRECTIONAL_LIGHTS_COUNT, MAX_VISIBLE_LIGHTS); lightIndex++)
 						{
-							Light light = GetAdditionalLight(i, inputData.positionWS);
-							float3 atten = light.color * light.distanceAttenuation;
-							atten = lerp( atten, atten * light.shadowAttenuation, shadow );
+							FORWARD_PLUS_SUBTRACTIVE_LIGHT_CHECK
 
-							half3 transmission = max(0 , -dot(inputData.normalWS, light.direction)) * atten * Transmission;
-							color.rgb += Albedo * transmission;
+							Light light = GetAdditionalLight(lightIndex, inputData.positionWS);
+							#ifdef _LIGHT_LAYERS
+							if (IsMatchingLightLayer(light.layerMask, meshRenderingLayers))
+							#endif
+							{
+								SUM_LIGHT_TRANSMISSION(light);
+							}
 						}
+						#endif
+						LIGHT_LOOP_BEGIN(pixelLightCount)
+							Light light = GetAdditionalLight(lightIndex, inputData.positionWS);
+							#ifdef _LIGHT_LAYERS
+							if (IsMatchingLightLayer(light.layerMask, meshRenderingLayers))
+							#endif
+							{
+								SUM_LIGHT_TRANSMISSION(light);
+							}
+						LIGHT_LOOP_END
 					#endif
 				}
 				#endif
@@ -380,28 +407,42 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 					float ambient = /*ase_inline_begin*/_TransAmbient/*ase_inline_end*/;
 					float strength = /*ase_inline_begin*/_TransStrength/*ase_inline_end*/;
 
-					Light mainLight = GetMainLight( inputData.shadowCoord );
-					float3 mainAtten = mainLight.color * mainLight.distanceAttenuation;
-					mainAtten = lerp( mainAtten, mainAtten * mainLight.shadowAttenuation, shadow );
+					#define SUM_LIGHT_TRANSLUCENCY(Light)\
+						float3 atten = Light.color * Light.distanceAttenuation;\
+						atten = lerp( atten, atten * Light.shadowAttenuation, shadow );\
+						half3 lightDir = Light.direction + inputData.normalWS * normal;\
+						half VdotL = pow( saturate( dot( inputData.viewDirectionWS, -lightDir ) ), scattering );\
+						half3 translucency = atten * ( VdotL * direct + inputData.bakedGI * ambient ) * Translucency;\
+						color.rgb += Albedo * translucency * strength;
 
-					half3 mainLightDir = mainLight.direction + inputData.normalWS * normal;
-					half mainVdotL = pow( saturate( dot( inputData.viewDirectionWS, -mainLightDir ) ), scattering );
-					half3 mainTranslucency = mainAtten * ( mainVdotL * direct + inputData.bakedGI * ambient ) * Translucency;
-					color.rgb += Albedo * mainTranslucency * strength;
+					SUM_LIGHT_TRANSLUCENCY(GetMainLight(inputData.shadowCoord));
 
-					#ifdef _ADDITIONAL_LIGHTS
-						int transPixelLightCount = GetAdditionalLightsCount();
-						for (int i = 0; i < transPixelLightCount; ++i)
-						{
-							Light light = GetAdditionalLight(i, inputData.positionWS);
-							float3 atten = light.color * light.distanceAttenuation;
-							atten = lerp( atten, atten * light.shadowAttenuation, shadow );
+					#if defined(_ADDITIONAL_LIGHTS)
+						uint meshRenderingLayers = GetMeshRenderingLayer();
+						uint pixelLightCount = GetAdditionalLightsCount();
+						#if USE_FORWARD_PLUS
+							for (uint lightIndex = 0; lightIndex < min(URP_FP_DIRECTIONAL_LIGHTS_COUNT, MAX_VISIBLE_LIGHTS); lightIndex++)
+							{
+								FORWARD_PLUS_SUBTRACTIVE_LIGHT_CHECK
 
-							half3 lightDir = light.direction + inputData.normalWS * normal;
-							half VdotL = pow( saturate( dot( inputData.viewDirectionWS, -lightDir ) ), scattering );
-							half3 translucency = atten * ( VdotL * direct + inputData.bakedGI * ambient ) * Translucency;
-							color.rgb += Albedo * translucency * strength;
-						}
+								Light light = GetAdditionalLight(lightIndex, inputData.positionWS);
+								#ifdef _LIGHT_LAYERS
+								if (IsMatchingLightLayer(light.layerMask, meshRenderingLayers))
+								#endif
+								{
+									SUM_LIGHT_TRANSLUCENCY(light);
+								}
+							}
+						#endif
+						LIGHT_LOOP_BEGIN(pixelLightCount)
+							Light light = GetAdditionalLight(lightIndex, inputData.positionWS);
+							#ifdef _LIGHT_LAYERS
+							if (IsMatchingLightLayer(light.layerMask, meshRenderingLayers))
+							#endif
+							{
+								SUM_LIGHT_TRANSLUCENCY(light);
+							}
+						LIGHT_LOOP_END
 					#endif
 				}
 				#endif
@@ -413,6 +454,12 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 				color.rgb = MixFog(color.rgb, IN.fogFactorAndVertexLight.x);
 
 				outDepth = IN.positionCS.z;
+
+				#ifdef _WRITE_RENDERING_LAYERS
+					uint renderingLayers = GetMeshRenderingLayer();
+					outRenderingLayers = float4(EncodeMeshRenderingLayer(renderingLayers), 0, 0, 0);
+				#endif
+
         		return color;
             }
 
@@ -449,6 +496,10 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShaderPass.hlsl"
+
+			#if defined(LOD_FADE_CROSSFADE)
+				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/LODCrossFade.hlsl"
+			#endif
 
 			/*ase_pragma*/
 
@@ -544,7 +595,7 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 				IN.positionCS.zw = positionCS.zw;
 
 				#ifdef LOD_FADE_CROSSFADE
-					LODDitheringTransition(IN.positionCS.xyz, unity_LODFade.x);
+					LODFadeCrossFade( IN.positionCS );
 				#endif
 
 				float Alpha = /*ase_frag_out:Alpha;Float;0;-1;_Alpha*/1/*end*/;
@@ -587,6 +638,10 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShaderPass.hlsl"
+
+			#if defined(LOD_FADE_CROSSFADE)
+				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/LODCrossFade.hlsl"
+			#endif
 
 			/*ase_pragma*/
 
@@ -660,7 +715,7 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 				IN.positionCS.zw = positionCS.zw;
 
 				#ifdef LOD_FADE_CROSSFADE
-					LODDitheringTransition(IN.positionCS.xyz, unity_LODFade.x);
+					LODFadeCrossFade( IN.positionCS );
 				#endif
 
 				float Alpha = /*ase_frag_out:Alpha;Float;0;-1;_Alpha*/1/*end*/;
@@ -942,6 +997,8 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 
 			#pragma multi_compile_instancing
 
+			#pragma multi_compile_fragment _ _WRITE_RENDERING_LAYERS
+
 			#define SHADERPASS SHADERPASS_DEPTHNORMALSONLY
 
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
@@ -949,6 +1006,10 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShaderPass.hlsl"
+
+			#if defined(LOD_FADE_CROSSFADE)
+				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/LODCrossFade.hlsl"
+			#endif
 
 			/*ase_pragma*/
 
@@ -1009,7 +1070,13 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 				return o;
 			}
 
-			half4 frag(VertexOutput IN, out float outDepth : SV_Depth /*ase_frag_input*/) : SV_TARGET
+			void frag(VertexOutput IN
+				, out half4 outNormalWS : SV_Target0
+				, out float outDepth : SV_Depth
+				#ifdef _WRITE_RENDERING_LAYERS
+				, out float4 outRenderingLayers : SV_Target1
+				#endif
+				/*ase_frag_input*/)
 			{
 				UNITY_SETUP_INSTANCE_ID(IN);
 				UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
@@ -1023,7 +1090,7 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 				IN.positionCS.zw = positionCS.zw;
 
 				#ifdef LOD_FADE_CROSSFADE
-					LODDitheringTransition(IN.positionCS.xyz, unity_LODFade.x);
+					LODFadeCrossFade( IN.positionCS );
 				#endif
 
 				float3 Normal = /*ase_frag_out:World Normal;Float3;5;-1;_FragNormal*/float3(0, 0, 1)/*end*/;
@@ -1039,9 +1106,14 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 					float2 octNormalWS = PackNormalOctQuadEncode(Normal);
 					float2 remappedOctNormalWS = saturate(octNormalWS * 0.5 + 0.5);
 					half3 packedNormalWS = PackFloat2To888(remappedOctNormalWS);
-					return half4(packedNormalWS, 0.0);
+					outNormalWS = half4(packedNormalWS, 0.0);
 				#else
-					return half4(NormalizeNormalPerPixel(Normal), 0.0);
+					outNormalWS = half4(NormalizeNormalPerPixel(Normal), 0.0);
+				#endif
+
+				#ifdef _WRITE_RENDERING_LAYERS
+					uint renderingLayers = GetMeshRenderingLayer();
+					outRenderingLayers = float4( EncodeMeshRenderingLayer( renderingLayers ), 0, 0, 0 );
 				#endif
 			}
 			ENDHLSL
@@ -1097,6 +1169,11 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/UnityGBuffer.hlsl"
+			#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShaderPass.hlsl"
+
+			#if defined(LOD_FADE_CROSSFADE)
+				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/LODCrossFade.hlsl"
+			#endif
 
 			/*ase_pragma*/
 
@@ -1199,7 +1276,7 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 				IN.positionCS.zw = positionCS.zw;
 
 				#ifdef LOD_FADE_CROSSFADE
-					LODDitheringTransition(IN.positionCS.xyz, unity_LODFade.x);
+					LODFadeCrossFade( IN.positionCS );
 				#endif
 
 				float3 WorldSpaceViewDirection = SafeNormalize(_WorldSpaceCameraPos.xyz - positionWS);
@@ -1268,8 +1345,6 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 			/*ase_hide_pass*/
 			Name "ScenePickingPass"
 			Tags{ "LightMode" = "Picking" }
-
-			Cull Back
 
 			HLSLPROGRAM
 

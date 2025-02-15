@@ -1,5 +1,41 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-6192282293391989391
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2df16983cdbc45e59623974172f2908b, type: 3}
+  m_Name: VolFxProc
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  _event: 550
+  _format:
+    enabled: 1
+    value: 0
+  _volumeMask:
+    enabled: 0
+    value:
+      serializedVersion: 2
+      m_Bits: 0
+  _source:
+    _source: 0
+    _sourceTex: _inputTex
+    _renderTex: {fileID: 0}
+    _buffer: {fileID: 0}
+    _render:
+      serializedVersion: 2
+      m_Bits: 0
+    _output: 0
+    _screenOutput: 0
+    _outputTex: _outputTex
+  _passes:
+    m_List: []
+  _blitShader: {fileID: 4800000, guid: a8a709d9db2241741ab3032b946ef258, type: 3}
 --- !u!114 &-5987161015551411530
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14,6 +50,53 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 1
   IsEnabled: 0
+--- !u!114 &-4210118116757516128
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16e5102fba2e1b745b1f31671b71c3a1, type: 3}
+  m_Name: DepthNormalsByLayerSMURPRainLIteFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  settings:
+    layerMask:
+      serializedVersion: 2
+      m_Bits: 0
+--- !u!114 &-3319011800905468210
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0be45b36e8e16542a7790a1760c76a8, type: 3}
+  m_Name: BlitSunShaftsSRP
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  settings:
+    Event: 300
+    blitMaterial: {fileID: 0}
+    blitMaterialPassIndex: -1
+    destination: 0
+    textureId: _BlitPassTexture
+    blend: 0.5
+    resolution: 1
+    screenBlendMode: 0
+    sunTransform: {x: 0, y: 0, z: 0}
+    radialBlurIterations: 2
+    sunColor: {r: 1, g: 1, b: 1, a: 1}
+    sunThreshold: {r: 0.87, g: 0.74, b: 0.65, a: 1}
+    sunShaftBlurRadius: 2.5
+    sunShaftIntensity: 1.15
+    maxRadius: 0.75
+    useDepthTexture: 1
 --- !u!114 &-2774887620095378844
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -36,6 +119,21 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 2147483647
   ignoreReflectionProbes: 1
+--- !u!114 &-348127757138876933
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f61da571db4a6b499443747826c2c3e, type: 3}
+  m_Name: VolFxBuffers
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  _list:
+    m_List: []
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -51,12 +149,20 @@ MonoBehaviour:
   debugShaders:
     debugReplacementPS: {fileID: 4800000, guid: cf852408f2e174538bcd9b7fda1c5ae7,
       type: 3}
+    hdrDebugViewPS: {fileID: 4800000, guid: 573620ae32aec764abd4d728906d2587, type: 3}
   m_RendererFeatures:
   - {fileID: 5577894837982965297}
   - {fileID: 3166946523877269723}
   - {fileID: -5987161015551411530}
   - {fileID: -2774887620095378844}
-  m_RendererFeatureMap: 31ae755ccda9684ddbe05c921541f32bb6bafd16c754e9ac64fa9558699e7dd9
+  - {fileID: 6403211767078068997}
+  - {fileID: -348127757138876933}
+  - {fileID: -6192282293391989391}
+  - {fileID: 1494569184506001206}
+  - {fileID: -3319011800905468210}
+  - {fileID: 6879602339691583239}
+  - {fileID: -4210118116757516128}
+  m_RendererFeatureMap: 31ae755ccda9684ddbe05c921541f32bb6bafd16c754e9ac64fa9558699e7dd905234a2e2dc7dc58fba5483ba6332bfb71e56df10f9810aa36b7b936c1c6bd14ce36b3195a80f0d1075743d5e041795fa0503b04e1a792c5
   m_UseNativeRenderPass: 1
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
@@ -68,13 +174,17 @@ MonoBehaviour:
     samplingPS: {fileID: 4800000, guid: 04c410c9937594faa893a11dceb85f7e, type: 3}
     stencilDeferredPS: {fileID: 4800000, guid: e9155b26e1bc55942a41e518703fe304, type: 3}
     fallbackErrorPS: {fileID: 4800000, guid: e6e9a19c3678ded42a3bc431ebef7dbd, type: 3}
+    fallbackLoadingPS: {fileID: 4800000, guid: 7f888aff2ac86494babad1c2c5daeee2, type: 3}
     materialErrorPS: {fileID: 4800000, guid: 5fd9a8feb75a4b5894c241777f519d4e, type: 3}
     coreBlitPS: {fileID: 4800000, guid: 93446b5c5339d4f00b85c159e1159b7c, type: 3}
     coreBlitColorAndDepthPS: {fileID: 4800000, guid: d104b2fc1ca6445babb8e90b0758136b,
       type: 3}
+    blitHDROverlay: {fileID: 4800000, guid: a89bee29cffa951418fc1e2da94d1959, type: 3}
     cameraMotionVector: {fileID: 4800000, guid: c56b7e0d4c7cb484e959caeeedae9bbf,
       type: 3}
     objectMotionVector: {fileID: 4800000, guid: 7b3ede40266cd49a395def176e1bc486,
+      type: 3}
+    dataDrivenLensFlare: {fileID: 4800000, guid: 6cda457ac28612740adb23da5d39ea92,
       type: 3}
   m_AssetVersion: 2
   m_OpaqueLayerMask:
@@ -95,9 +205,34 @@ MonoBehaviour:
   m_DepthPrimingMode: 0
   m_CopyDepthMode: 0
   m_AccurateGbufferNormals: 0
-  m_ClusteredRendering: 0
-  m_TileSize: 32
   m_IntermediateTextureMode: 0
+--- !u!114 &1494569184506001206
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bac1b73383ae410d8e277450af64d970, type: 3}
+  m_Name: Analytical Volumetric Lighting
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  _settings:
+    ClusteringShader: {fileID: 0}
+    RenderingShader: {fileID: 0}
+    DebugShader: {fileID: 0}
+    renderingQuality: 0.5
+    enableHDR: 1
+    maxLights: 4096
+    maxMasks: 128
+    enableUpscaling: 1
+    enableDepthCulling: 1
+    cullingClusterSizeX: 16
+    cullingClusterSizeY: 9
+    debugMode: 0
+    debugOpacity: 0.04
 --- !u!114 &3166946523877269723
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -159,8 +294,8 @@ MonoBehaviour:
   m_Name: ScreenSpaceAmbientOcclusion
   m_EditorClassIdentifier: 
   m_Active: 1
-  m_Shader: {fileID: 4800000, guid: 0849e84e3d62649e8882e9d6f056a017, type: 3}
   m_Settings:
+    AOMethod: 1
     Downsample: 1
     AfterOpaque: 1
     Source: 1
@@ -168,7 +303,49 @@ MonoBehaviour:
     Intensity: 0.25
     DirectLightingStrength: 0
     Radius: 0.7
-    SampleCount: 20
+    Samples: 0
+    BlurQuality: 0
+    Falloff: 100
+    SampleCount: -1
+  m_BlueNoise256Textures:
+  - {fileID: 2800000, guid: 36f118343fc974119bee3d09e2111500, type: 3}
+  - {fileID: 2800000, guid: 4b7b083e6b6734e8bb2838b0b50a0bc8, type: 3}
+  - {fileID: 2800000, guid: c06cc21c692f94f5fb5206247191eeee, type: 3}
+  - {fileID: 2800000, guid: cb76dd40fa7654f9587f6a344f125c9a, type: 3}
+  - {fileID: 2800000, guid: e32226222ff144b24bf3a5a451de54bc, type: 3}
+  - {fileID: 2800000, guid: 3302065f671a8450b82c9ddf07426f3a, type: 3}
+  - {fileID: 2800000, guid: 56a77a3e8d64f47b6afe9e3c95cb57d5, type: 3}
+  m_Shader: {fileID: 4800000, guid: 0849e84e3d62649e8882e9d6f056a017, type: 3}
+--- !u!114 &6403211767078068997
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b544a44c65d7be14a9f172e20405e254, type: 3}
+  m_Name: Comic
+  m_EditorClassIdentifier: 
+  m_Active: 0
+  settings:
+    intensity: 0.3
+    scale: 0.4
+    colorBlend: 0
+    edge: 3
+    edgeColor: {r: 0, g: 0, b: 0, a: 1}
+    edgeColorBlend: 15
+    cmykPattern: {x: 15, y: 214, z: 242, w: 150}
+    brightness: 0
+    contrast: 0.5
+    gamma: 1
+    hue: 0.05
+    saturation: 1
+    affectSceneView: 1
+    enableProfiling: 1
+    filterMode: 2
+    whenToInsert: 550
 --- !u!114 &6745756496545238371
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -182,9 +359,35 @@ MonoBehaviour:
   m_Name: Analytical Volumetric Lighting
   m_EditorClassIdentifier: 
   m_Active: 1
-  _settings: {ClusteringShader: {fileID: 7200000, guid: 9c1586f774fa47c7a62565dafa7c1cbf,
-      type: 3}, RenderingShader: {fileID: 4800000, guid: 2d7019988494484596b679d293a0dfeb,
-      type: 3}, DebugShader: {fileID: 4800000, guid: e2a515e7e7c24926abfaa53800afd988,
-      type: 3}, renderingQuality: 1, enableHDR: 1, maxLights: 4096, maxMasks: 128,
-    enableUpscaling: 1, enableDepthCulling: 1, cullingClusterSizeX: 16, cullingClusterSizeY: 9,
-    debugMode: 0, debugOpacity: 0.04}
+  _settings:
+    ClusteringShader: {fileID: 7200000, guid: 9c1586f774fa47c7a62565dafa7c1cbf, type: 3}
+    RenderingShader: {fileID: 4800000, guid: 2d7019988494484596b679d293a0dfeb, type: 3}
+    DebugShader: {fileID: 4800000, guid: e2a515e7e7c24926abfaa53800afd988, type: 3}
+    renderingQuality: 1
+    enableHDR: 1
+    maxLights: 4096
+    maxMasks: 128
+    enableUpscaling: 1
+    enableDepthCulling: 1
+    cullingClusterSizeX: 16
+    cullingClusterSizeY: 9
+    debugMode: 0
+    debugOpacity: 0.04
+--- !u!114 &6879602339691583239
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0744ee02174b510448450de9adb449a9, type: 3}
+  m_Name: ScreenSpaceRainLITE_SM_URPFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  settings:
+    outlineMaterial: {fileID: 0}
+    outlineMaterialNEW: {fileID: 0}
+    blitMaterial: {fileID: 0}
+  renderPassEvent: 300
