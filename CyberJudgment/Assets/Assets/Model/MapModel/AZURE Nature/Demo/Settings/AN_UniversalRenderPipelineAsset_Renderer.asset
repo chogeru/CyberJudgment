@@ -190,7 +190,8 @@ MonoBehaviour:
   - {fileID: 6879602339691583239}
   - {fileID: -4210118116757516128}
   - {fileID: -8971507827900692024}
-  m_RendererFeatureMap: 31ae755ccda9684ddbe05c921541f32bb6bafd16c754e9ac64fa9558699e7dd905234a2e2dc7dc58fba5483ba6332bfb71e56df10f9810aa36b7b936c1c6bd14ce36b3195a80f0d1075743d5e041795fa0503b04e1a792c5c8c957e229cd7e83
+  - {fileID: 3158313040006646541}
+  m_RendererFeatureMap: 31ae755ccda9684ddbe05c921541f32bb6bafd16c754e9ac64fa9558699e7dd905234a2e2dc7dc58fba5483ba6332bfb71e56df10f9810aa36b7b936c1c6bd14ce36b3195a80f0d1075743d5e041795fa0503b04e1a792c5c8c957e229cd7e830d8b14f7f994d42b
   m_UseNativeRenderPass: 1
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
@@ -261,6 +262,51 @@ MonoBehaviour:
     cullingClusterSizeY: 9
     debugMode: 0
     debugOpacity: 0.04
+--- !u!114 &3158313040006646541
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b12b67238e2b07e48a59844364f187f5, type: 3}
+  m_Name: ColorIsolation
+  m_EditorClassIdentifier: 
+  m_Active: 0
+  settings:
+    intensity: 1
+    isolatedColor: {r: 0.8396226, g: 0.7089266, b: 0.7089266, a: 1}
+    isolatedThreshold: 1
+    factorLAB: {x: 1, y: 1, z: 1}
+    isolatedColorBlend: 16
+    isolatedColorBlendStrength: 1
+    isolatedTint: {r: 1, g: 1, b: 1, a: 1}
+    isolatedSaturation: 1
+    isolatedBrightness: 0
+    isolatedContrast: 0
+    isolatedGamma: 1
+    isolatedHue: 0
+    isolatedInvert: 0
+    notIsolatedColorBlend: 16
+    notIsolatedColorBlendStrength: 1
+    notIsolatedTint: {r: 1, g: 1, b: 1, a: 1}
+    notIsolatedSaturation: 0
+    notIsolatedBrightness: 0
+    notIsolatedContrast: 1
+    notIsolatedGamma: 1
+    notIsolatedHue: 0
+    notIsolatedInvert: 0
+    brightness: 0
+    contrast: 1
+    gamma: 1
+    hue: 0
+    saturation: 1
+    affectSceneView: 0
+    enableProfiling: 0
+    filterMode: 1
+    whenToInsert: 550
 --- !u!114 &3166946523877269723
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -356,20 +402,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b544a44c65d7be14a9f172e20405e254, type: 3}
   m_Name: Comic
   m_EditorClassIdentifier: 
-  m_Active: 0
+  m_Active: 1
   settings:
-    intensity: 0.3
-    scale: 0.4
-    colorBlend: 0
-    edge: 3
+    intensity: 1
+    scale: 0.36
+    colorBlend: 14
+    edge: 5.54
     edgeColor: {r: 0, g: 0, b: 0, a: 1}
-    edgeColorBlend: 15
-    cmykPattern: {x: 15, y: 214, z: 242, w: 150}
+    edgeColorBlend: 19
+    cmykPattern: {x: 0, y: 75, z: 242, w: 45}
     brightness: 0
     contrast: 0.5
     gamma: 1
-    hue: 0.05
-    saturation: 1
+    hue: 1
+    saturation: 0
     affectSceneView: 1
     enableProfiling: 1
     filterMode: 2
