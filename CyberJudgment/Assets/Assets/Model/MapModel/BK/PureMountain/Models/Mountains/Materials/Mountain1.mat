@@ -51,6 +51,14 @@ Material:
         m_Texture: {fileID: 2800000, guid: bb2f14f5b65070c4881fa68e3bc8771d, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _DetailNormalMap1:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailNormalMap2:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _EmissionMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -83,6 +91,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _SecondAlbedo:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _texcoord:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -90,6 +102,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _2ndNormalPower: 1
+    - _AlphaCutoff: 0.5
     - _BlendNormals: 1
     - _BlendPower: 0.2
     - _BumpScale: 1
@@ -101,7 +114,7 @@ Material:
     - _GlossyReflections: 1
     - _LayerContrast: 0
     - _LayerPosition: 0
-    - _LayerPower: 0.022
+    - _LayerPower: 0
     - _LayerThreshold: 50
     - _Metallic: 0
     - _MetallicPower: 0
@@ -111,6 +124,7 @@ Material:
     - _OcclusionStrength: 0.5
     - _Parallax: 0.02
     - _SecondNormalPower: 1
+    - _SeeVertexColors: 0
     - _SmoothnessPower: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1

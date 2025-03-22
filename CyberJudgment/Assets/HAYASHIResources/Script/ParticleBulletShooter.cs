@@ -1,6 +1,7 @@
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using uPools;
+using AbubuResouse.Singleton;
 
 public class ParticleBulletShooter : MonoBehaviour
 {
@@ -13,6 +14,12 @@ public class ParticleBulletShooter : MonoBehaviour
     [Header("ターゲット設定")]
     // ターゲットのTransformをInspectorから設定してください
     public Transform target;
+
+    [Header("発射SE設定")]
+    public string[] fireSEs;
+
+    [SerializeField]
+    private float volume;
 
     [Header("発射設定")]
     // 初速の大きさ（forceの大きさ）
@@ -67,6 +74,16 @@ public class ParticleBulletShooter : MonoBehaviour
             return;
         }
 
+        // オブジェクト内のすべての TrailRenderer を取得して状態リセット
+        TrailRenderer[] trails = effectInstance.GetComponentsInChildren<TrailRenderer>();
+        foreach (TrailRenderer trail in trails)
+        {
+            trail.Clear();
+            // 一度無効化してから再有効化することで、内部状態をリセット
+            trail.enabled = false;
+            trail.enabled = true;
+        }
+
         // Rigidbodyコンポーネントを取得して、状態をリセット後にターゲット方向へ力を加える
         Rigidbody rb = effectInstance.GetComponent<Rigidbody>();
         if (rb != null)
@@ -74,12 +91,21 @@ public class ParticleBulletShooter : MonoBehaviour
             // 前回の発射時の速度や回転速度をリセット
             rb.velocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
-
             rb.AddForce(direction * bulletSpeed, ForceMode.Impulse);
         }
         else
         {
             Debug.LogWarning("生成されたエフェクトに Rigidbody コンポーネントがありません");
+        }
+
+        if (fireSEs == null || fireSEs.Length == 0)
+        {
+            Debug.LogError("fireSEs にSEが設定されていません");
+        }
+        else
+        {
+            string selectedSE = fireSEs[Random.Range(0, fireSEs.Length)];
+            SEManager.Instance.PlaySound(selectedSE, volume);
         }
 
         // 2秒後にエフェクトをプールに返却する

@@ -1,4 +1,5 @@
 using AbubuResouse.Singleton;
+using System.Collections;
 using UnityEngine;
 using VInspector;  // [Tab] 属性用
 
@@ -20,6 +21,10 @@ namespace AbubuResouse
 
         [Header("BGM音量 (0.0~1.0)")]
         [SerializeField] private float m_Volume = 1.0f;
+
+        [Header("フェード設定")]
+        [SerializeField] private float fadeInDuration = 1.0f;
+        [SerializeField] private float fadeOutDuration = 1.0f;
 
         //======================================================================
         // ランダムBGM 設定
@@ -135,7 +140,6 @@ namespace AbubuResouse
         [Header("共鳴Q値(1~10推奨)")]
         [SerializeField] private float highPassResonanceQ = 1.0f;
 
-
         //======================================================================
         // 実行時処理
         //======================================================================
@@ -160,24 +164,44 @@ namespace AbubuResouse
             SetupFilters();
         }
 
-        /// <summary>初期設定 (BGM再生開始など)</summary>
+        /// <summary>
+        /// 初期設定 (BGM再生開始など)
+        /// </summary>
         private void Initialization()
         {
             if (BGMManager.Instance != null)
             {
-                // いったん再生中クリップをクリア
+                // 既存のAudioSourceを取得
                 var audioSrc = BGMManager.Instance.GetComponent<AudioSource>();
-                if (audioSrc != null) audioSrc.clip = null;
+                if (audioSrc != null)
+                {
+                    // 既に再生中ならフェードアウトして停止
+                    if (audioSrc.isPlaying)
+                    {
+                        StartCoroutine(FadeOut(audioSrc, fadeOutDuration));
+                    }
+                    // クリップをクリア
+                    audioSrc.clip = null;
+                }
 
-                // 指定のBGM名があれば再生
+                // 指定のBGM名があればフェードインで再生
                 if (!string.IsNullOrEmpty(m_BGMName))
                 {
-                    BGMManager.Instance.PlaySound(m_BGMName, m_Volume);
+                    // まずは音量0で再生開始
+                    BGMManager.Instance.PlaySound(m_BGMName, 0);
+                    // 再度AudioSourceを取得（BGMManager 内で設定されている前提）
+                    audioSrc = BGMManager.Instance.GetComponent<AudioSource>();
+                    if (audioSrc != null)
+                    {
+                        StartCoroutine(FadeIn(audioSrc, fadeInDuration, m_Volume));
+                    }
                 }
             }
         }
 
-        /// <summary>ランダムBGMの再生処理</summary>
+        /// <summary>
+        /// ランダムBGMの再生処理（フェードイン付き）
+        /// </summary>
         private void RandomBGM()
         {
             if (BGMManager.Instance == null) return;
@@ -185,14 +209,60 @@ namespace AbubuResouse
             var audioSource = BGMManager.Instance.GetComponent<AudioSource>();
             if (audioSource == null) return;
 
-            audioSource.loop = false; // 曲切り替えのためループオフ
+            // 曲切り替えのためループオフ
+            audioSource.loop = false;
 
             // 再生が終わったタイミングでランダムなBGMを再生
             if (!audioSource.isPlaying && m_RandomBGMNames.Length > 0)
             {
+                // 再生前にフェードアウト（必要なら）
+                StartCoroutine(FadeOut(audioSource, fadeOutDuration));
+
                 var index = Random.Range(0, m_RandomBGMNames.Length);
-                BGMManager.Instance.PlaySound(m_RandomBGMNames[index], m_Volume);
+                // 一度フェードアウト後、フェードイン付きで再生
+                BGMManager.Instance.PlaySound(m_RandomBGMNames[index], 0);
+                // 再取得してフェードイン実行
+                audioSource = BGMManager.Instance.GetComponent<AudioSource>();
+                if (audioSource != null)
+                {
+                    StartCoroutine(FadeIn(audioSource, fadeInDuration, m_Volume));
+                }
             }
+        }
+
+        /// <summary>
+        /// フェードイン処理
+        /// 指定時間内に音量を 0 から targetVolume まで線形補間します
+        /// </summary>
+        private IEnumerator FadeIn(AudioSource audioSource, float duration, float targetVolume)
+        {
+            float timer = 0f;
+            audioSource.volume = 0f;
+            while (timer < duration)
+            {
+                timer += Time.deltaTime;
+                audioSource.volume = Mathf.Lerp(0, targetVolume, timer / duration);
+                yield return null;
+            }
+            audioSource.volume = targetVolume;
+        }
+
+        /// <summary>
+        /// フェードアウト処理
+        /// 指定時間内に音量を現在値から 0 まで線形補間し、再生停止します
+        /// </summary>
+        private IEnumerator FadeOut(AudioSource audioSource, float duration)
+        {
+            float startVolume = audioSource.volume;
+            float timer = 0f;
+            while (timer < duration)
+            {
+                timer += Time.deltaTime;
+                audioSource.volume = Mathf.Lerp(startVolume, 0, timer / duration);
+                yield return null;
+            }
+            audioSource.volume = 0;
+            audioSource.Stop();
         }
 
         /// <summary>
