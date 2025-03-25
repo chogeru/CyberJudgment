@@ -1,9 +1,10 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using BKPureNature;
 
 namespace BKPureNature
 {
-    [CustomEditor(typeof(BK_EnvironmentManager))]
+[CustomEditor(typeof(BK_EnvironmentManager))]
 public class BK_EnvironmentManagerEditor : Editor
 {
     private Editor materialEditor;

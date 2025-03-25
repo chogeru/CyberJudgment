@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace BKPureNature
 {
-    public class BK_FreeCamera : MonoBehaviour
+public class BK_FreeCamera : MonoBehaviour
 {
     public float movementSpeed = 10f;
     public float fastMovementSpeed = 100f;
