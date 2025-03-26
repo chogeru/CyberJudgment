@@ -18,7 +18,7 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2998
+  m_CustomRenderQueue: 3000
   stringTagMap: {}
   disabledShaderPasses: []
   m_LockedProperties: 
@@ -117,12 +117,25 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AlphaCutoff: 0.5
     - _BumpScale: 1
     - _CausticOffset: 100
     - _CausticsOffset: 1
-    - _CausticsScale: 0.71
+    - _CausticsScale: 2.87
     - _CausticsSpeed: 2
     - _ChromaticAberration: 0.1
     - _CousticOffset: 0
@@ -139,7 +152,8 @@ Material:
     - _EdgeDistance: 0.941
     - _EdgeLength: 50
     - _EdgePower: 1
-    - _EdgesFade: 0.1
+    - _EdgesFade: -0.27
+    - _EnvironmentReflections: 1
     - _Float2: 1000
     - _Float3: 0.744
     - _FoamContrast: 10
@@ -170,6 +184,9 @@ Material:
     - _NormalTiling: 0.05
     - _OcclusionStrength: 1
     - _Parallax: 0.02
+    - _QueueControl: 0
+    - _QueueOffset: 0
+    - _ReceiveShadows: 1
     - _RefractionPower: 5
     - _SmoothnessPower: 1
     - _SmoothnessTextureChannel: 0
@@ -198,11 +215,11 @@ Material:
     - _hhdjt: 500
     - _kykyk: 1000
     m_Colors:
-    - _CausticsColor: {r: 0.35570186, g: 0.5188679, b: 0.5176411, a: 1}
+    - _CausticsColor: {r: 1, g: 0.88359267, b: 0.32704395, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _Color0: {r: 0, g: 0.5987654, b: 1, a: 0}
     - _Color1: {r: 1, g: 0.76618373, b: 0, a: 1}
-    - _DepthColor: {r: 0.6509434, g: 0.4593366, b: 0.32956564, a: 1}
+    - _DepthColor: {r: 0.5377358, g: 0.3851546, b: 0.28239584, a: 1}
     - _DepthColor1: {r: 0, g: 0.60118407, b: 0.6132076, a: 1}
     - _Direction: {r: 1, g: 0, b: -1, a: 0.2}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
@@ -210,7 +227,7 @@ Material:
     - _MainColor: {r: 0, g: 0.6810271, b: 0.6886792, a: 1}
     - _NormalDirection: {r: -1, g: 2.3, b: 1.7, a: -0.2}
     - _SecondColor: {r: 0.5404058, g: 0.8679245, b: 0.8414827, a: 0}
-    - _ShallowColor: {r: 0, g: 0, b: 0, a: 1}
+    - _ShallowColor: {r: 1, g: 0.6000122, b: 0, a: 1}
     - _WaterDeepColor: {r: 1, g: 1, b: 1, a: 0}
     - _WaterShallowColor: {r: 0, g: 0, b: 0, a: 0}
     - _WavesColor: {r: 0.27874687, g: 0.646538, b: 0.8207547, a: 0}
