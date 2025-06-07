@@ -27,6 +27,20 @@ MonoBehaviour:
     cullingClusterSizeY: 9
     debugMode: 0
     debugOpacity: 0.04
+--- !u!114 &-8594806319206494097
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55e6184d2ea958044a6434dca151c688, type: 3}
+  m_Name: SSCC
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  shader: {fileID: 4800000, guid: 62449f654265cf94e81275e55a4b1823, type: 3}
 --- !u!114 &-6192282293391989391
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -192,7 +206,9 @@ MonoBehaviour:
   - {fileID: -8971507827900692024}
   - {fileID: 3158313040006646541}
   - {fileID: 8257153087285282849}
-  m_RendererFeatureMap: 31ae755ccda9684ddbe05c921541f32bb6bafd16c754e9ac64fa9558699e7dd905234a2e2dc7dc58fba5483ba6332bfb71e56df10f9810aa36b7b936c1c6bd14ce36b3195a80f0d1075743d5e041795fa0503b04e1a792c5c8c957e229cd7e830d8b14f7f994d42b21c8a80ffc4c9772
+  - {fileID: 1208959911615151275}
+  - {fileID: -8594806319206494097}
+  m_RendererFeatureMap: 31ae755ccda9684ddbe05c921541f32bb6bafd16c754e9ac64fa9558699e7dd905234a2e2dc7dc58fba5483ba6332bfb71e56df10f9810aa36b7b936c1c6bd14ce36b3195a80f0d1075743d5e041795fa0503b04e1a792c5c8c957e229cd7e830d8b14f7f994d42b21c8a80ffc4c9772ab3c825fa216c7106f106a9e301db988
   m_UseNativeRenderPass: 1
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
@@ -236,6 +252,24 @@ MonoBehaviour:
   m_CopyDepthMode: 0
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 0
+--- !u!114 &1208959911615151275
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0744ee02174b510448450de9adb449a9, type: 3}
+  m_Name: ScreenSpaceRainLITE_SM_URPFeature
+  m_EditorClassIdentifier: 
+  m_Active: 0
+  settings:
+    outlineMaterial: {fileID: 0}
+    outlineMaterialNEW: {fileID: 0}
+    blitMaterial: {fileID: 0}
+  renderPassEvent: 300
 --- !u!114 &1494569184506001206
 MonoBehaviour:
   m_ObjectHideFlags: 0
