@@ -11,20 +11,24 @@ public class ParticleBulletShooter : MonoBehaviour
     [Header("発射位置")]
     public Transform firePoint;
 
+    [Header("親オブジェクト設定")]
+    public Transform bulletParent; // 弾の親にするオブジェクト
+
     [Header("ターゲット設定")]
-    // ターゲットのTransformをInspectorから設定してください
     public Transform target;
 
     [Header("発射SE設定")]
     public string[] fireSEs;
-
     [SerializeField]
     private float volume;
 
     [Header("発射設定")]
-    // 初速の大きさ（forceの大きさ）
     public float bulletSpeed = 5f;
     public float cooldownTime = 0.2f;
+
+    [Header("位置調整")]
+    public Vector3 firePointOffset = Vector3.zero; // 発射位置の微調整用
+
     private float nextFireTime = 0f;
 
     void Update()
@@ -61,17 +65,27 @@ public class ParticleBulletShooter : MonoBehaviour
             return;
         }
 
-        // firePointからtargetへの方向ベクトルを計算（単位ベクトル）
-        Vector3 direction = (target.position - firePoint.position).normalized;
+        // 発射位置にオフセットを適用
+        Vector3 actualFirePosition = firePoint.position + firePoint.TransformDirection(firePointOffset);
+
+        // actualFirePositionからtargetへの方向ベクトルを計算（単位ベクトル）
+        Vector3 direction = (target.position - actualFirePosition).normalized;
+
         // エフェクトの向きをターゲット方向に合わせる
         Quaternion rotation = Quaternion.LookRotation(direction);
 
-        // SharedGameObjectPoolからエフェクトインスタンスを借りる（位置はfirePoint、回転はターゲット方向）
-        GameObject effectInstance = SharedGameObjectPool.Rent(effectPrefab, firePoint.position, rotation);
+        // SharedGameObjectPoolからエフェクトインスタンスを借りる（位置は調整後のfirePoint、回転はターゲット方向）
+        GameObject effectInstance = SharedGameObjectPool.Rent(effectPrefab, actualFirePosition, rotation);
         if (effectInstance == null)
         {
             Debug.LogError($"エフェクトの生成に失敗!:名前＝＞{effectPrefab.name}");
             return;
+        }
+
+        // 弾を指定の親オブジェクトの子にする
+        if (bulletParent != null)
+        {
+            effectInstance.transform.SetParent(bulletParent, true);
         }
 
         // オブジェクト内のすべての TrailRenderer を取得して状態リセット
@@ -98,6 +112,7 @@ public class ParticleBulletShooter : MonoBehaviour
             Debug.LogWarning("生成されたエフェクトに Rigidbody コンポーネントがありません");
         }
 
+        // SEを再生
         if (fireSEs == null || fireSEs.Length == 0)
         {
             Debug.LogError("fireSEs にSEが設定されていません");
@@ -120,6 +135,12 @@ public class ParticleBulletShooter : MonoBehaviour
     private async UniTaskVoid ReturnEffectAfterDelay(GameObject effect, float delay)
     {
         await UniTask.Delay((int)(delay * 1000));
-        SharedGameObjectPool.Return(effect);
+
+        // 返却時に親子関係を解除
+        if (effect != null)
+        {
+            effect.transform.SetParent(null);
+            SharedGameObjectPool.Return(effect);
+        }
     }
 }
