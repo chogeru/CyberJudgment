@@ -42,6 +42,11 @@ namespace FIMSpace.FProceduralAnimation
         [Tooltip("Set mass above zero, to generate fixed joint connection between attachable item and attachement bone, affecting weight putted on the bone.")]
         public float Mass = 0f;
 
+        // Useful when handling zero mass attachable
+        [Tooltip("Do not change inertiaTensor and inertiaTensorRotation for Rigidbody (only for mass 0, colliders will change them significantly).")]
+        public bool DoNotChangeInertiaTensor = false;
+        
+
         [HideInInspector]
         [Tooltip("Making connected mass multiplier lower, will produce lighter motion for the item.")]
         [Range(0f, 1f)] public float ConnectedMassMultiplier = 0.25f;

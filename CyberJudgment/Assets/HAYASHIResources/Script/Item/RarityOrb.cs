@@ -6,23 +6,19 @@ public class RarityOrb : MonoBehaviour
 {
     [Header("レアリティ玉のレアリティ")]
     public WeaponRarity rarity;
-
     [Header("ピックアップ時のパーティクルエフェクト")]
     public GameObject pickupEffect;
-
     [Header("レアリティごとのピックアップサウンド")]
     public List<RaritySound> raritySounds;
 
-    private void OnCollisionEnter(Collision collision)
+    private void OnTriggerEnter(Collider other)
     {
-        if (collision.gameObject.CompareTag("Player"))
+        if (other.CompareTag("Player"))
         {
             // レアリティに応じた音を再生
             PlayPickupSound();
-
             // ピックアップエフェクトを再生
             PlayPickupEffect();
-
             // 武器名を取得
             string weaponName = WeaponNameGenerator.Instance.GetRandomWeaponName(rarity);
             if (!string.IsNullOrEmpty(weaponName))
@@ -35,7 +31,6 @@ public class RarityOrb : MonoBehaviour
             {
                 Debug.LogWarning("武器名の取得に失敗しました。");
             }
-
             Destroy(this.gameObject);
         }
     }
@@ -63,7 +58,7 @@ public class RarityOrb : MonoBehaviour
     {
         if (pickupEffect != null)
         {
-            EffectManager.Instance.PlayEffect(pickupEffect,transform.position,Quaternion.identity,1f);
+            EffectManager.Instance.PlayEffect(pickupEffect, transform.position, Quaternion.identity, 1f);
         }
         else
         {

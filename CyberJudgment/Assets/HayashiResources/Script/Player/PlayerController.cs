@@ -3,156 +3,258 @@ using R3;
 using R3.Triggers;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using VInspector;
+using Sirenix.OdinInspector;
 using AbubuResouse.Singleton;
 using AbubuResouse.Log;
-#region
-/*
-.Subscribe
-Subscribeは、イベントが発生したときに何か特定のアクション（例えば、プレイヤーを動かす）を起こすために使う
-このメソッドを使って、イベントストリームを監視し、イベントが発生するたびにアクションが実行される
-
-.Where
-Whereは、特定の条件に基づいてイベントをフィルタリングするために使う
-ジャンプボタンが押されたときや,プレイヤーが地面に触れているときなど、
-条件に合う場合のみアクションを起こすために使用
-
-.Select
-Selectは、元のデータを新しい形に変換するために使う
-この処理だと、ユーザーの入力を新しいVector3オブジェクトに変換して、それを使用してプレイヤーを動かす
-
- .Share
-データの重複を防ぐためのもの
-観測可能なストリームを複数の場所で共有するときに、同じデータが何度も生成されるのを防ぐ
-
-観測可能なストリーム（Observable）
-時間の経過とともに値やイベントを生成するデータのストリームを表す
-具体的には、マウスの移動、ボタンのクリック、キーボードの入力、外部サーバーからのデータの取得など、
-
-*/
-#endregion
 
 public class PlayerController : MonoBehaviour
 {
     #region プレイヤー設定
-    [Tab("プレイヤー設定")]
-    [SerializeField, Header("歩き速度")]
+    [FoldoutGroup("プレイヤー設定")]
+    [SerializeField, LabelText("歩き速度")]
     private float m_WalkSpeed = 5.0f;
-    [SerializeField, Header("走りスピード")]
+
+    [FoldoutGroup("プレイヤー設定")]
+    [SerializeField, LabelText("走りスピード")]
     private float m_RunSpeed = 10.0f;
-    [SerializeField, Header("ジャンプ力")]
-    public float m_JumpForce = 300f;
-    [SerializeField, Header("重力係数")]
-    private float m_GravityMultiplier = 9.81f;
-    [SerializeField, Header("最大落下速度")]
-    private float m_MaxFallSpeed = 50.0f;
-    [SerializeField, Header("走行のしきい値")]
+
+    [FoldoutGroup("プレイヤー設定/ジャンプ設定")]
+    [SerializeField, LabelText("ジャンプ力"), Range(3f, 20f)]
+    public float m_JumpForce = 12f;
+
+    [FoldoutGroup("プレイヤー設定/ジャンプ設定")]
+    [SerializeField, LabelText("ジャンプクールダウン"), Range(0.1f, 0.5f)]
+    private float m_JumpCooldown = 0.1f;
+
+    [FoldoutGroup("プレイヤー設定/ジャンプ設定")]
+    [SerializeField, LabelText("コヨーテタイム"), Range(0.1f, 0.3f)]
+    private float m_CoyoteTime = 0.15f;
+
+    [FoldoutGroup("プレイヤー設定/ジャンプ設定")]
+    [SerializeField, LabelText("空中制御力"), Range(0.1f, 1f)]
+    private float m_AirControl = 0.7f;
+
+    [FoldoutGroup("プレイヤー設定/ジャンプ設定")]
+    [SerializeField, LabelText("ジャンプ時重力係数"), Range(0.5f, 2f)]
+    private float m_JumpGravityMultiplier = 0.8f;
+
+    [FoldoutGroup("プレイヤー設定/ジャンプ設定")]
+    [SerializeField, LabelText("落下時重力係数"), Range(1f, 3f)]
+    private float m_FallGravityMultiplier = 2.0f;
+
+    [FoldoutGroup("プレイヤー設定/ジャンプ設定")]
+    [SerializeField, LabelText("入力バッファー時間"), Range(0.1f, 0.5f)]
+    private float m_JumpBufferTime = 0.1f;
+
+    [FoldoutGroup("プレイヤー設定/ジャンプ設定")]
+    [SerializeField, LabelText("ジャンプ開始アニメーション時間"), Range(0.1f, 0.5f)]
+    private float m_JumpStartAnimationDuration = 0.25f; // 15フレーム (60FPSで0.25秒)
+
+    [FoldoutGroup("プレイヤー設定/ジャンプ設定")]
+    [SerializeField, LabelText("着地予測距離"), Range(0.1f, 1.0f)]
+    private float m_LandingPredictionDistance = 0.3f;
+
+    [FoldoutGroup("プレイヤー設定/ジャンプ設定")]
+    [SerializeField, LabelText("着地アニメーション開始距離"), Range(0.1f, 2.0f)]
+    private float m_LandingAnimationDistance = 0.5f;
+
+    [FoldoutGroup("プレイヤー設定")]
+    [SerializeField, LabelText("重力係数")]
+    private float m_GravityMultiplier = 15f;
+
+    [FoldoutGroup("プレイヤー設定")]
+    [SerializeField, LabelText("最大落下速度")]
+    private float m_MaxFallSpeed = 30.0f;
+
+    [FoldoutGroup("プレイヤー設定")]
+    [SerializeField, LabelText("走行のしきい値")]
     private float m_RunThreshold = 0.7f;
-    [SerializeField, Header("ゲームパッドデッドゾーン")]
+
+    [FoldoutGroup("プレイヤー設定")]
+    [SerializeField, LabelText("ゲームパッドデッドゾーン")]
     private float m_GamepadDeadZone = 0.2f;
 
-    [SerializeField, Header("スティック入力値 (ゲームパッド)")]
+    [FoldoutGroup("プレイヤー設定/デバッグ情報"), ReadOnly]
+    [SerializeField, LabelText("スティック入力値 (ゲームパッド)")]
     private Vector2 currentGamepadInput;
 
-    [SerializeField, Header("スティック入力値 (キーボード)")]
+    [FoldoutGroup("プレイヤー設定/デバッグ情報"), ReadOnly]
+    [SerializeField, LabelText("スティック入力値 (キーボード)")]
     private Vector3 currentKeyboardInput;
 
-    [SerializeField, Header("結合されたスティック入力値")]
+    [FoldoutGroup("プレイヤー設定/デバッグ情報"), ReadOnly]
+    [SerializeField, LabelText("結合されたスティック入力値")]
     private Vector3 currentCombinedInput;
 
-    [SerializeField, Header("スティック入力の大きさ")]
+    [FoldoutGroup("プレイヤー設定/デバッグ情報"), ReadOnly]
+    [SerializeField, LabelText("スティック入力の大きさ")]
     private float currentInputMagnitude;
-
-    [EndTab]
     #endregion
 
-    [Tab("シールド設定")]
-    [Header("シールド設定")]
-    [SerializeField, Header("シールドobject")]
+    #region シールド設定
+    [FoldoutGroup("シールド設定")]
+    [SerializeField, LabelText("シールドobject")]
     private GameObject shieldObject;
-    [SerializeField, Header("シールド展開エフェクトのプレハブ")]
+
+    [FoldoutGroup("シールド設定/エフェクト")]
+    [SerializeField, LabelText("シールド展開エフェクトのプレハブ")]
     private GameObject shieldActivateEffectPrefab;
-    [SerializeField, Header("シールド解除エフェクトのプレハブ")]
+
+    [FoldoutGroup("シールド設定/エフェクト")]
+    [SerializeField, LabelText("シールド解除エフェクトのプレハブ")]
     private GameObject shieldDeactivateEffectPrefab;
-    [SerializeField,Header("シールド時非アクティブオブジェクト")]
+
+    [FoldoutGroup("シールド設定")]
+    [SerializeField, LabelText("シールド時非アクティブオブジェクト")]
     private GameObject shieldDeactiveObject;
-    [SerializeField, Header("シールドアクティブ時に表示するオブジェクト")]
+
+    [FoldoutGroup("シールド設定")]
+    [SerializeField, LabelText("シールドアクティブ時に表示するオブジェクト")]
     private GameObject shieldActiveObject;
-    [SerializeField, Header("シールド展開時消費マナ")]
+
+    [FoldoutGroup("シールド設定/マナ設定")]
+    [SerializeField, LabelText("シールド展開時消費マナ")]
     private float guardInitialCost = 10f;
-    [SerializeField]
+
+    [FoldoutGroup("シールド設定/マナ設定")]
+    [SerializeField, LabelText("シールド維持マナ消費/秒")]
     private float guardSustainCostPerSecond = 3f;
-    [SerializeField]
+
+    [FoldoutGroup("シールド設定/マナ設定")]
+    [SerializeField, LabelText("マナ回復量/秒")]
     private float manaRecoveryPerSecond = 3f;
 
-    [Header("Guard Audio")]
-    [SerializeField]
+    [FoldoutGroup("シールド設定/音声")]
+    [SerializeField, LabelText("ガード開始音")]
     private string guardStartSound;
-    [SerializeField]
-    private string guardStopSound;
 
-    [EndTab]
+    [FoldoutGroup("シールド設定/音声")]
+    [SerializeField, LabelText("ガード停止音")]
+    private string guardStopSound;
+    #endregion
 
     #region 各コンポーネント
-    [Tab("各コンポーネント")]
-    [SerializeField, Header("プレイヤーのRigidbody")]
-    private Rigidbody m_Rigidbody;
-    [SerializeField, Header("プレイヤーのカプセルコライダ")]
-    private CapsuleCollider m_CapsuleCollider;
+    [BoxGroup("各コンポーネント")]
+    [SerializeField, LabelText("プレイヤーのCharacterController")]
+    private CharacterController m_CharacterController;
+
+    [BoxGroup("各コンポーネント")]
+    [SerializeField, LabelText("プレイヤーマネージャー"), ReadOnly]
     private PlayerManager playerManager;
-
-
-    [EndTab]
     #endregion
 
     #region 音声
-    [Tab("音声")]
-    [SerializeField, Header("歩き音クリップ")]
+    [FoldoutGroup("音声設定")]
+    [SerializeField, LabelText("歩き音クリップ")]
     private AudioClip walkClip;
-    [SerializeField, Header("走り音クリップ")]
+
+    [FoldoutGroup("音声設定")]
+    [SerializeField, LabelText("走り音クリップ")]
     private AudioClip runClip;
 
-    [SerializeField, Header("歩き時のAudio Pitch(速度)"), Range(0.5f, 3f)]
+    [FoldoutGroup("音声設定")]
+    [SerializeField, LabelText("歩き時のAudio Pitch(速度)"), Range(0.5f, 3f)]
     private float walkPitch = 1f;
-    [SerializeField, Header("走り時のAudio Pitch(速度)"), Range(0.5f, 3f)]
+
+    [FoldoutGroup("音声設定")]
+    [SerializeField, LabelText("走り時のAudio Pitch(速度)"), Range(0.5f, 3f)]
     private float runPitch = 1.2f;
 
-    [SerializeField, Header("フットステップ用AudioSource")]
+    [FoldoutGroup("音声設定")]
+    [SerializeField, LabelText("フットステップ用AudioSource")]
     private AudioSource footstepAudioSource;
-    [EndTab]
     #endregion
 
     #region カメラと衝突設定
-    [Tab("カメラと衝突設定")]
-    [SerializeField, Header("自身のカメラ")]
+    [FoldoutGroup("カメラと衝突設定")]
+    [SerializeField, LabelText("自身のカメラ")]
     private Transform m_CameraTransform;
 
-    [SerializeField, Header("衝突検出用レイヤーマスク")]
+    [FoldoutGroup("カメラと衝突設定")]
+    [SerializeField, LabelText("衝突検出用レイヤーマスク")]
     private LayerMask m_LayerMask;
-    [SerializeField, Header("乗り越えられる段差の高さ")]
+
+    [FoldoutGroup("カメラと衝突設定")]
+    [SerializeField, LabelText("乗り越えられる段差の高さ")]
     private float m_MaxStepHeight = 0.3f;
-    [EndTab]
     #endregion
 
+    #region 内部変数
+    [FoldoutGroup("デバッグ情報"), ReadOnly]
+    [SerializeField, LabelText("地面に接触中")]
     private bool isGrounded;
+
+    [FoldoutGroup("デバッグ情報"), ReadOnly]
+    [SerializeField, LabelText("移動可能")]
     private bool canMove = true;
+
+    [FoldoutGroup("デバッグ情報"), ReadOnly]
+    [SerializeField, LabelText("現在の垂直速度")]
+    private float verticalVelocity;
+
+    [FoldoutGroup("デバッグ情報"), ReadOnly]
+    [SerializeField, LabelText("ジャンプ中")]
+    private bool isJumping;
+
+    [FoldoutGroup("デバッグ情報"), ReadOnly]
+    [SerializeField, LabelText("最後にジャンプした時間")]
+    private float lastJumpTime;
+
+    [FoldoutGroup("デバッグ情報"), ReadOnly]
+    [SerializeField, LabelText("最後に地面から離れた時間")]
+    private float lastGroundedTime;
+
+    [FoldoutGroup("デバッグ情報"), ReadOnly]
+    [SerializeField, LabelText("コヨーテジャンプ可能")]
+    private bool canCoyoteJump;
+
+    [FoldoutGroup("デバッグ情報"), ReadOnly]
+    [SerializeField, LabelText("ジャンプ入力バッファー時間")]
+    private float jumpInputBuffer;
+
+    [FoldoutGroup("デバッグ情報"), ReadOnly]
+    [SerializeField, LabelText("ジャンプ開始時間")]
+    private float jumpStartTime;
+
+    [FoldoutGroup("デバッグ情報"), ReadOnly]
+    [SerializeField, LabelText("着地予測中")]
+    private bool isPreparingToLand;
+
+    [FoldoutGroup("デバッグ情報"), ReadOnly]
+    [SerializeField, LabelText("ジャンプ状態")]
+    private JumpPhase currentJumpPhase = JumpPhase.None;
+    #endregion
+
+    // ジャンプの段階を管理するenum
+    private enum JumpPhase
+    {
+        None,
+        Start,
+        Rising,
+        Falling,
+        Landing
+    }
 
     private void Start()
     {
         playerManager = GetComponent<PlayerManager>();
         playerManager.UpdatePlayerState(PlayerState.Idle);
-        m_Rigidbody = GetComponent<Rigidbody>();
-        m_CapsuleCollider = GetComponent<CapsuleCollider>();
-        m_Rigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        m_CharacterController = GetComponent<CharacterController>();
+
+        // 初期化
+        verticalVelocity = 0f;
+        lastJumpTime = -m_JumpCooldown;
+        lastGroundedTime = 0f;
+        canCoyoteJump = false;
+        jumpInputBuffer = 0f;
+        jumpStartTime = 0f;
+        isPreparingToLand = false;
+        currentJumpPhase = JumpPhase.None;
 
         InitializeMovement().Forget();
         InitializeGuarding().Forget();
     }
 
-    /// <summary>
-    /// プレイヤーの動きを非同期的に初期化
-    /// </summary>
-    /// <returns></returns>
     private async UniTaskVoid InitializeMovement()
     {
         var moveStream = this.UpdateAsObservable()
@@ -193,10 +295,10 @@ public class PlayerController : MonoBehaviour
             })
             .Share();
 
-        // RunCommandのサブスクリプションにガード中でないことを追加
+        // RunCommandのサブスクリプション（ジャンプ中は地上の移動状態に影響しない）
         moveStream
             .Where(input =>
-                !playerManager.IsGuarding && // 追加: ガード中でないこと
+                !playerManager.IsGuarding &&
                 (
                     (Gamepad.current != null && (input.Magnitude >= m_RunThreshold || Gamepad.current.leftTrigger.isPressed)) ||
                     (Gamepad.current == null && Input.GetKey(KeyCode.LeftShift))
@@ -213,10 +315,10 @@ public class PlayerController : MonoBehaviour
             })
             .AddTo(this);
 
-        // WalkCommandのサブスクリプションにガード中でないことを追加
+        // WalkCommandのサブスクリプション（ジャンプ中は地上の移動状態に影響しない）
         moveStream
             .Where(input =>
-                !playerManager.IsGuarding && // 追加: ガード中でないこと
+                !playerManager.IsGuarding &&
                 (
                     (Gamepad.current != null && input.Magnitude >= 0.2f && input.Magnitude < m_RunThreshold && !Gamepad.current.leftTrigger.isPressed) ||
                     (Gamepad.current == null && !Input.GetKey(KeyCode.LeftShift))
@@ -233,52 +335,55 @@ public class PlayerController : MonoBehaviour
             })
             .AddTo(this);
 
-        // Idleのサブスクリプションにガード中でないことを追加
+        // Idleのサブスクリプション（ジャンプ中は地上の移動状態に影響しない）
         moveStream
             .Where(input =>
-                !playerManager.IsGuarding && // 追加: ガード中でないこと
+                !playerManager.IsGuarding &&
                 (input.Movement == Vector3.zero || input.Magnitude < 0.01f)
             )
             .Subscribe(_ =>
             {
-                playerManager.UpdatePlayerState(PlayerState.Idle);
-                DebugUtility.Log("Player entered Idle state.");
+                // 地面にいてジャンプ中でない場合のみIdleに遷移
+                if (isGrounded && !isJumping)
+                {
+                    playerManager.UpdatePlayerState(PlayerState.Idle);
+                    DebugUtility.Log("Player entered Idle state.");
+                }
 
-                if (footstepAudioSource.isPlaying)
+                if (footstepAudioSource != null && footstepAudioSource.isPlaying)
                 {
                     footstepAudioSource.Stop();
                 }
             })
             .AddTo(this);
 
+        // ジャンプ入力の監視
         this.UpdateAsObservable()
-            .Where(_ => Input.GetButtonDown("Jump") || (Gamepad.current?.buttonSouth.isPressed ?? false))
-            .Where(_ => IsGrounded())
-            .Subscribe(_ => m_Rigidbody.AddForce(new Vector3(0.0f, m_JumpForce, 0.0f)))
+            .Where(_ => !StopManager.Instance.IsStopped)
+            .Where(_ =>
+                Input.GetKeyDown(KeyCode.Space) ||
+                Input.GetButtonDown("Jump") ||
+                (Gamepad.current?.buttonSouth.wasPressedThisFrame ?? false)
+            )
+            .Subscribe(_ => RegisterJumpInput())
             .AddTo(this);
 
         await UniTask.Yield();
     }
 
-    /// <summary>
-    /// ガード機能を非同期的に初期化します。
-    /// </summary>
     private async UniTaskVoid InitializeGuarding()
     {
-        // ガード開始の入力を監視（Cキー押下）
         this.UpdateAsObservable()
             .Where(_ => !StopManager.Instance.IsStopped)
             .Where(_ => Input.GetKeyDown(KeyCode.C))
             .Subscribe(_ => TryStartGuard())
             .AddTo(this);
 
-        // ガード終了の入力を監視（Cキーリリース）
         this.UpdateAsObservable()
             .Where(_ => Input.GetKeyUp(KeyCode.C))
             .Subscribe(_ => StopGuard())
             .AddTo(this);
 
-        // MPの消費と回復を管理
         while (true)
         {
             if (playerManager.IsGuarding)
@@ -289,13 +394,11 @@ public class PlayerController : MonoBehaviour
                 }
                 else
                 {
-                    // ガードを維持するのに十分なMPがないためガードを停止
                     StopGuard();
                 }
             }
             else
             {
-                // ガードしていない間はMPを回復
                 playerManager.playerMP.RecoverMP(manaRecoveryPerSecond * Time.deltaTime);
             }
 
@@ -303,13 +406,11 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-
-
-    /// <summary>
-    /// ガードを開始します。
-    /// </summary>
     private void TryStartGuard()
     {
+        // ジャンプ中はガードできない
+        if (isJumping) return;
+
         if (playerManager.playerMP.ConsumeMP(guardInitialCost))
         {
             playerManager.SetGuarding(true);
@@ -320,37 +421,38 @@ public class PlayerController : MonoBehaviour
             {
                 EffectManager.Instance.PlayEffect(shieldActivateEffectPrefab, shieldObject.transform.position, Quaternion.identity);
             }
-            shieldDeactiveObject.SetActive(false);
+            if (shieldDeactiveObject != null)
+                shieldDeactiveObject.SetActive(false);
         }
         else
         {
-            // MP不足時のフィードバック
             Debug.Log("MPが不足しているため、ガードできません。");
         }
     }
 
-    /// <summary>
-    /// ガードを停止します。
-    /// </summary>
     private void StopGuard()
     {
         if (playerManager.IsGuarding)
         {
             playerManager.SetGuarding(false);
             DeactivateShield();
-            playerManager.UpdatePlayerState(PlayerState.Idle);
+
+            // ジャンプ中でない場合のみIdleに遷移
+            if (isGrounded && !isJumping)
+            {
+                playerManager.UpdatePlayerState(PlayerState.Idle);
+            }
+
             PlayGuardSound(false);
             if (shieldDeactivateEffectPrefab != null && shieldObject != null)
             {
                 EffectManager.Instance.PlayEffect(shieldDeactivateEffectPrefab, shieldObject.transform.position, Quaternion.identity);
             }
-            shieldDeactiveObject.SetActive(true);
+            if (shieldDeactiveObject != null)
+                shieldDeactiveObject.SetActive(true);
         }
     }
 
-    /// <summary>
-    /// シールドエフェクトを有効化します。
-    /// </summary>
     private void ActivateShield()
     {
         if (shieldObject != null)
@@ -363,9 +465,6 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// シールドエフェクトを無効化します。
-    /// </summary>
     private void DeactivateShield()
     {
         if (shieldObject != null)
@@ -378,10 +477,6 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// ガード開始/停止時のサウンドを再生します。
-    /// </summary>
-    /// <param name="isGuarding">ガード中かどうか</param>
     private void PlayGuardSound(bool isGuarding)
     {
         if (SEManager.Instance != null)
@@ -390,61 +485,368 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void FixedUpdate()
+    void Update()
     {
-        UseGravity();
-        TryStepUp();
+        HandleGravityAndMovement();
+        HandleJumpBuffer();
+        HandleJumpStates();
     }
 
     /// <summary>
-    /// 重力の適応
+    /// ジャンプ入力を登録（バッファー機能付き）
     /// </summary>
-    private void UseGravity()
+    private void RegisterJumpInput()
     {
-        // 重力の追加
-        m_Rigidbody.AddForce(Physics.gravity * m_Rigidbody.mass * m_GravityMultiplier);
-
-        // 落下速度に最大値を設定
-        if (m_Rigidbody.velocity.y < -m_MaxFallSpeed)
-        {
-            m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, -m_MaxFallSpeed, m_Rigidbody.velocity.z);
-        }
-
-        // 地面に触れているかどうかを更新
-        isGrounded = IsGrounded();
+        jumpInputBuffer = Time.time + m_JumpBufferTime;
+        TryJump();
     }
 
     /// <summary>
-    /// プレイヤーの段差乗り越える処理
+    /// ジャンプ入力バッファーの処理
     /// </summary>
-    void TryStepUp()
+    private void HandleJumpBuffer()
     {
-        if (m_Rigidbody.velocity.magnitude < 0.1f)
-            return;
-
-        Vector3 forward = transform.forward * 0.35f;
-        Vector3 rayStart = transform.position + Vector3.up * 0.1f;
-        Vector3 rayEnd = rayStart + forward;
-
-        if (Physics.Raycast(rayStart, forward, out RaycastHit hit, 0.35f, m_LayerMask))
+        if (jumpInputBuffer > Time.time)
         {
-            float stepHeight = hit.point.y - transform.position.y;
-            if (stepHeight <= m_MaxStepHeight && stepHeight > 0)
+            if (CanJump())
             {
-                Vector3 targetPosition = new Vector3(transform.position.x, hit.point.y + m_CapsuleCollider.height * 0.5f, transform.position.z);
-                m_Rigidbody.position = Vector3.Lerp(m_Rigidbody.position, targetPosition, Time.fixedDeltaTime * 10);
+                ExecuteJump();
+                jumpInputBuffer = 0f; // バッファーを消費
             }
         }
-#if UNITY_EDITOR
-        Debug.DrawLine(rayStart, rayEnd, Color.blue);
-#endif
+    }
+
+    /// <summary>
+    /// ジャンプ状態の管理（着地検出改善版）
+    /// </summary>
+    private void HandleJumpStates()
+    {
+        if (!isJumping) return;
+
+        float timeSinceJumpStart = Time.time - jumpStartTime;
+        JumpPhase newPhase = currentJumpPhase;
+
+        // ジャンプ開始から15フレーム（0.25秒）後にLoopに移行
+        if (timeSinceJumpStart <= m_JumpStartAnimationDuration)
+        {
+            // ジャンプ開始段階
+            newPhase = JumpPhase.Start;
+        }
+        else if (verticalVelocity > 0.1f)
+        {
+            // 上昇段階（まだ上昇している間）
+            newPhase = JumpPhase.Rising;
+        }
+        else
+        {
+            // 落下段階または着地準備段階
+            // 実際に地面に接触した場合は即座に着地処理
+            if (isGrounded)
+            {
+                Debug.Log("Ground contact detected during jump state handling!");
+                OnLanded();
+                return; // 着地処理を実行したので、この関数を終了
+            }
+            // 地面に近づいたら着地アニメーションを開始
+            else if (PredictImmediateLanding() && verticalVelocity <= 0)
+            {
+                newPhase = JumpPhase.Landing;
+                isPreparingToLand = true;
+            }
+            else
+            {
+                newPhase = JumpPhase.Falling;
+            }
+        }
+
+        // フェーズが変わった時のみ状態更新
+        if (newPhase != currentJumpPhase)
+        {
+            currentJumpPhase = newPhase;
+            UpdateJumpAnimationState(newPhase);
+            Debug.Log($"Jump phase changed to: {newPhase}, VerticalVelocity: {verticalVelocity:F2}, IsGrounded: {isGrounded}");
+        }
+    }
+
+    /// <summary>
+    /// ジャンプフェーズに応じてアニメーション状態を更新
+    /// </summary>
+    private void UpdateJumpAnimationState(JumpPhase phase)
+    {
+        switch (phase)
+        {
+            case JumpPhase.Start:
+                playerManager.UpdatePlayerState(PlayerState.JumpStart);
+                break;
+            case JumpPhase.Rising:
+            case JumpPhase.Falling:
+                playerManager.UpdatePlayerState(PlayerState.JumpLoop);
+                break;
+            case JumpPhase.Landing:
+                playerManager.UpdatePlayerState(PlayerState.JumpEnd);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// 着地を予測する（即座の着地判定用）
+    /// </summary>
+    private bool PredictImmediateLanding()
+    {
+        float characterRadius = m_CharacterController.radius;
+        float characterHeight = m_CharacterController.height;
+        Vector3 bottomCenter = transform.position - Vector3.up * (characterHeight * 0.5f - characterRadius);
+
+        // 着地アニメーション用の近距離判定（より短い距離で確実に検出）
+        bool willLand = Physics.Raycast(bottomCenter, Vector3.down, m_LandingAnimationDistance, m_LayerMask);
+
+        // デバッグ用
+        Debug.DrawLine(bottomCenter, bottomCenter + Vector3.down * m_LandingAnimationDistance,
+                      willLand ? Color.yellow : Color.blue, 0.1f);
+
+        return willLand;
+    }
+
+    /// <summary>
+    /// 通常の着地予測（着地処理用）
+    /// </summary>
+    private bool PredictLanding()
+    {
+        float characterRadius = m_CharacterController.radius;
+        float characterHeight = m_CharacterController.height;
+        Vector3 bottomCenter = transform.position - Vector3.up * (characterHeight * 0.5f - characterRadius);
+
+        return Physics.Raycast(bottomCenter, Vector3.down, m_LandingPredictionDistance, m_LayerMask);
+    }
+
+    private void HandleGravityAndMovement()
+    {
+        bool wasGrounded = isGrounded;
+        isGrounded = IsGrounded();
+
+        // 地面から離れた時間を記録（コヨーテタイム用）
+        if (wasGrounded && !isGrounded)
+        {
+            lastGroundedTime = Time.time;
+        }
+
+        // コヨーテジャンプの判定
+        canCoyoteJump = !isGrounded && (Time.time - lastGroundedTime) <= m_CoyoteTime && !isJumping;
+
+        // 重力の適用
+        ApplyGravity();
+
+        // 垂直移動を常に適用
+        Vector3 verticalMovement = Vector3.up * verticalVelocity * Time.deltaTime;
+        m_CharacterController.Move(verticalMovement);
+
+        // 着地検出はHandleJumpStatesで処理（重複を避ける）
+    }
+
+    /// <summary>
+    /// 着地時の処理（着地アニメーション経由版）
+    /// </summary>
+    private void OnLanded()
+    {
+        if (isJumping)
+        {
+            Debug.Log("OnLanded called - starting landing sequence");
+
+            // まずJumpEndアニメーションを再生
+            currentJumpPhase = JumpPhase.Landing;
+            playerManager.UpdatePlayerState(PlayerState.JumpEnd);
+
+            // 短時間後に適切な状態に遷移
+            StartCoroutine(TransitionAfterLandingAnimation());
+        }
+    }
+
+    /// <summary>
+    /// 着地アニメーション後の状態遷移
+    /// </summary>
+    private System.Collections.IEnumerator TransitionAfterLandingAnimation()
+    {
+        // 着地アニメーションを少し再生させる（約0.1-0.2秒）
+        yield return new WaitForSeconds(0.15f);
+
+        // ★修正：アニメーションコントローラーのジャンプシーケンスを明示的に終了
+        var animController = GetComponent<PlayerAnimationController>();
+        if (animController != null)
+        {
+            animController.EndJumpSequence();
+        }
+
+        // ジャンプ状態を完全に終了
+        isJumping = false;
+        isPreparingToLand = false;
+        currentJumpPhase = JumpPhase.None;
+
+        Debug.Log("Landing animation finished, transitioning to appropriate state");
+
+        // ★修正：1フレーム待ってから状態判定（入力値の更新を確実に反映させる）
+        yield return null;
+
+        // ★修正：現在の入力を再取得して確実に最新の状態を判定
+        Vector2 gamepadInput = Gamepad.current?.leftStick.ReadValue() ?? Vector2.zero;
+        if (gamepadInput.magnitude < m_GamepadDeadZone)
+        {
+            gamepadInput = Vector2.zero;
+        }
+        else
+        {
+            gamepadInput = gamepadInput.normalized * ((gamepadInput.magnitude - m_GamepadDeadZone) / (1 - m_GamepadDeadZone));
+        }
+
+        Vector3 keyboardInput = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+        if (keyboardInput.magnitude < 0.1f)
+        {
+            keyboardInput = Vector3.zero;
+        }
+
+        Vector3 combinedInput = (gamepadInput != Vector2.zero) ? new Vector3(gamepadInput.x, 0, gamepadInput.y) : keyboardInput;
+        if (combinedInput.magnitude < 0.01f)
+        {
+            combinedInput = Vector3.zero;
+        }
+
+        float inputMagnitude = combinedInput.magnitude;
+
+        Debug.Log($"Landing transition - Input: {combinedInput}, Magnitude: {inputMagnitude}");
+
+        // ★修正：ガード状態を最優先でチェック
+        if (playerManager.IsGuarding)
+        {
+            playerManager.UpdatePlayerState(PlayerState.Guard);
+            Debug.Log("Transitioned to Guard state after landing");
+        }
+        // 移動入力がある場合
+        else if (combinedInput != Vector3.zero && inputMagnitude > 0.01f)
+        {
+            // 走り判定
+            bool shouldRun = false;
+            if (Gamepad.current != null)
+            {
+                shouldRun = inputMagnitude >= m_RunThreshold || Gamepad.current.leftTrigger.isPressed;
+            }
+            else
+            {
+                shouldRun = Input.GetKey(KeyCode.LeftShift);
+            }
+
+            if (shouldRun)
+            {
+                playerManager.UpdatePlayerState(PlayerState.Run);
+                Debug.Log("Transitioned to Run state after landing");
+            }
+            else
+            {
+                playerManager.UpdatePlayerState(PlayerState.Walk);
+                Debug.Log("Transitioned to Walk state after landing");
+            }
+        }
+        else
+        {
+            // 静止状態
+            playerManager.UpdatePlayerState(PlayerState.Idle);
+            Debug.Log("Transitioned to Idle state after landing");
+        }
+    }
+
+    /// <summary>
+    /// 重力の適用（改善版）
+    /// </summary>
+    private void ApplyGravity()
+    {
+        if (isGrounded && verticalVelocity <= 0)
+        {
+            verticalVelocity = -2f; // 地面に軽く押し付ける
+        }
+        else
+        {
+            // ジャンプ中（上昇中）と落下中で重力を変える
+            float currentGravityMultiplier;
+            if (verticalVelocity > 0)
+            {
+                // 上昇中：軽い重力
+                currentGravityMultiplier = m_GravityMultiplier * m_JumpGravityMultiplier;
+            }
+            else
+            {
+                // 落下中：強い重力
+                currentGravityMultiplier = m_GravityMultiplier * m_FallGravityMultiplier;
+            }
+
+            verticalVelocity -= currentGravityMultiplier * Time.deltaTime;
+
+            // 最大落下速度を制限
+            if (verticalVelocity < -m_MaxFallSpeed)
+            {
+                verticalVelocity = -m_MaxFallSpeed;
+            }
+        }
+    }
+
+    /// <summary>
+    /// ジャンプが可能かどうかを判定
+    /// </summary>
+    private bool CanJump()
+    {
+        // クールダウン中は不可
+        if (Time.time - lastJumpTime < m_JumpCooldown)
+        {
+            return false;
+        }
+
+        // プレイヤーが動けない状態では不可
+        if (!canMove || playerManager.IsHit || playerManager.IsDead || playerManager.IsGuarding)
+        {
+            return false;
+        }
+
+        // 既にジャンプ中は不可
+        if (isJumping)
+        {
+            return false;
+        }
+
+        // 地面にいるか、コヨーテタイム内であればジャンプ可能
+        return isGrounded || canCoyoteJump;
+    }
+
+    /// <summary>
+    /// ジャンプを試行する処理
+    /// </summary>
+    private void TryJump()
+    {
+        if (CanJump())
+        {
+            ExecuteJump();
+        }
+    }
+
+    /// <summary>
+    /// ジャンプの実行（改善版）
+    /// </summary>
+    private void ExecuteJump()
+    {
+        // ジャンプの初速度を計算
+        verticalVelocity = Mathf.Sqrt(2.0f * m_JumpForce * m_GravityMultiplier);
+        isJumping = true;
+        jumpStartTime = Time.time;
+        lastJumpTime = Time.time;
+        canCoyoteJump = false; // コヨーテジャンプを使ったので無効化
+        isPreparingToLand = false;
+        currentJumpPhase = JumpPhase.Start;
+
+        // ジャンプ開始状態に遷移
+        playerManager.UpdatePlayerState(PlayerState.JumpStart);
+
+        DebugUtility.Log($"Jump executed! Velocity: {verticalVelocity}, Force: {m_JumpForce}");
     }
 
     /// <summary>
     /// プレイヤーの移動処理
     /// </summary>
-    /// <param name="movement">移動方向</param>
-    /// <param name="speed">移動速度</param>
     public void Move(Vector3 movement, float speed)
     {
         if (!canMove || playerManager.IsHit || playerManager.IsDead || playerManager.IsGuarding)
@@ -452,37 +854,46 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        if (StopManager.Instance.IsStopped)
+        // ★追加：着地アニメーション中は移動を制限
+        if (isJumping && currentJumpPhase == JumpPhase.Landing)
         {
-            playerManager.UpdatePlayerState(PlayerState.Idle);
             return;
         }
 
-        if (isGrounded)
+        if (StopManager.Instance.IsStopped)
         {
-            // 入力値がゼロなら確実にIdle状態に遷移
-            if (movement == Vector3.zero || movement.magnitude < 0.01f)
+            if (isGrounded && !isJumping) // ジャンプ中でない場合のみIdle状態に遷移
+            {
+                playerManager.UpdatePlayerState(PlayerState.Idle);
+            }
+            return;
+        }
+
+        // 入力値がゼロなら状態に応じて処理
+        if (movement == Vector3.zero || movement.magnitude < 0.01f)
+        {
+            if (isGrounded && !isJumping) // ジャンプ中でない場合のみIdle状態に遷移
             {
                 playerManager.UpdatePlayerState(PlayerState.Idle);
                 GetComponentInChildren<PlayerCameraController>().OnActionEnd();
-                return; // 移動処理をスキップ
             }
+            return; // 移動処理をスキップ
+        }
 
-            // 入力値がゼロではない場合、移動と回転を処理
-            HandleMovement(movement, speed);
-            HandleRotation(movement);
+        // 移動と回転を処理
+        HandleMovement(movement, speed);
+        HandleRotation(movement);
 
-            // アニメーションをWalkまたはRunに設定
+        // アニメーション状態の更新（地面にいてジャンプ中でない時のみ）
+        if (isGrounded && !isJumping)
+        {
             playerManager.UpdatePlayerState(speed == m_RunSpeed ? PlayerState.Run : PlayerState.Walk);
         }
     }
 
-
     /// <summary>
     /// 移動処理
     /// </summary>
-    /// <param name="movement">移動方向</param>
-    /// <param name="speed">移動速度</param>
     private void HandleMovement(Vector3 movement, float speed)
     {
         if (!canMove || playerManager.IsHit || playerManager.IsDead)
@@ -490,17 +901,31 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        if (StopManager.Instance.IsStopped)
+        // ★修正：着地アニメーション中は移動を制限
+        if (isJumping && currentJumpPhase == JumpPhase.Landing)
         {
-            playerManager.UpdatePlayerState(PlayerState.Idle);
             return;
         }
 
-        // 入力値がゼロまたは非常に小さい場合はIdle状態に遷移
+        if (StopManager.Instance.IsStopped)
+        {
+            if (isGrounded && !isJumping)
+            {
+                playerManager.UpdatePlayerState(PlayerState.Idle);
+            }
+            return;
+        }
+
+        // ★修正：入力値チェックを強化
         if (movement == Vector3.zero || movement.magnitude < 0.01f)
         {
-            playerManager.UpdatePlayerState(PlayerState.Idle);
-            GetComponentInChildren<PlayerCameraController>().OnActionEnd();
+            if (isGrounded && !isJumping) // ジャンプ中でない場合のみIdle状態に遷移
+            {
+                // ★追加：デバッグログで状態遷移を確認
+                Debug.Log("HandleMovement: Setting Idle state due to no input");
+                playerManager.UpdatePlayerState(PlayerState.Idle);
+                GetComponentInChildren<PlayerCameraController>().OnActionEnd();
+            }
             return; // 移動処理をスキップ
         }
 
@@ -512,18 +937,23 @@ public class PlayerController : MonoBehaviour
         Vector3 right = Vector3.Cross(Vector3.up, forward);
         Vector3 relativeMovement = movement.z * forward + movement.x * right;
 
-        Vector3 velocity = relativeMovement * speed;
-        ApplySlopeAdjustment(ref velocity, relativeMovement);
+        // 空中制御：ジャンプ中は移動速度を調整
+        float currentSpeed = speed;
+        if (!isGrounded)
+        {
+            currentSpeed = speed * m_AirControl;
+        }
 
-        m_Rigidbody.velocity = velocity;
+        // 水平移動ベクトルを作成
+        Vector3 horizontalMovement = relativeMovement * currentSpeed * Time.deltaTime;
 
+        // CharacterControllerで水平移動のみ適用（垂直移動は別で処理）
+        m_CharacterController.Move(horizontalMovement);
     }
-
 
     /// <summary>
     /// プレイヤーの回転処理
     /// </summary>
-    /// <param name="movement">回転方向</param>
     private void HandleRotation(Vector3 movement)
     {
         if (movement != Vector3.zero)
@@ -545,29 +975,24 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// 斜面移動の処理
-    /// </summary>
-    /// <param name="velocity"></param>
-    /// <param name="relativeMovement"></param>
-    private void ApplySlopeAdjustment(ref Vector3 velocity, Vector3 relativeMovement)
-    {
-        Vector3 start = transform.position + Vector3.up * 0.1f;
-        if (Physics.Raycast(start, relativeMovement, out RaycastHit hit, 0.5f, m_LayerMask))
-        {
-            float slopeAngle = Vector3.Angle(Vector3.up, hit.normal);
-            if (slopeAngle <= m_MaxStepHeight)
-            {
-                velocity.y = Mathf.Tan(slopeAngle * Mathf.Deg2Rad) * m_WalkSpeed;
-            }
-        }
-    }
-
-    /// <summary>
     /// プレイヤーの状態を更新するメソッド
     /// </summary>
-    /// <param name="state"></param>
     private void UpdateState(PlayerState state)
     {
+        // ジャンプ着地アニメーション中は他の状態遷移を完全にブロック
+        if (isJumping && currentJumpPhase == JumpPhase.Landing)
+        {
+            Debug.Log($"Blocking state transition to {state} - landing animation in progress");
+            return;
+        }
+
+        // 通常のジャンプ中は移動系の状態遷移を制限
+        if (isJumping && (state == PlayerState.Idle || state == PlayerState.Walk || state == PlayerState.Run))
+        {
+            Debug.Log($"Blocking ground state {state} during jump");
+            return;
+        }
+
         playerManager.UpdatePlayerState(state);
     }
 
@@ -575,32 +1000,61 @@ public class PlayerController : MonoBehaviour
     {
         canMove = enabled;
     }
+
     /// <summary>
-    /// 地面に触れているかどうかを確認するメソッド
+    /// 地面に触れているかどうかを確認するメソッド（改善版）
     /// </summary>
-    /// <returns></returns>
     bool IsGrounded()
     {
-        //レイキャストの開始地点をプレイヤーの少し上に設定
-        Vector3 start = transform.position + Vector3.up * 0.1f;
-        //終了地点を開始地点から下に0.5fの位置に
-        Vector3 end = start - Vector3.up * 0.2f;
-        //地面との衝突を確認
-        bool isGrounded = Physics.Raycast(start, -Vector3.up, out RaycastHit hit, 0.5f);
+        // CharacterControllerの組み込み判定を基本とする
+        bool controllerGrounded = m_CharacterController.isGrounded;
 
-        if (isGrounded)
+        // 追加の詳細判定
+        float characterRadius = m_CharacterController.radius;
+        float characterHeight = m_CharacterController.height;
+        Vector3 bottomCenter = transform.position - Vector3.up * (characterHeight * 0.5f - characterRadius + 0.05f);
+
+        float groundCheckDistance = 0.15f; // 距離を短く調整
+
+        // 中央のレイ
+        bool centerGrounded = Physics.Raycast(bottomCenter, Vector3.down, groundCheckDistance, m_LayerMask);
+
+        // 4点での判定（より確実）
+        Vector3[] offsets = {
+            transform.forward * characterRadius * 0.5f + transform.right * characterRadius * 0.5f,
+            transform.forward * characterRadius * 0.5f - transform.right * characterRadius * 0.5f,
+            -transform.forward * characterRadius * 0.5f + transform.right * characterRadius * 0.5f,
+            -transform.forward * characterRadius * 0.5f - transform.right * characterRadius * 0.5f
+        };
+
+        int groundedCount = 0;
+        foreach (Vector3 offset in offsets)
         {
-            DebugUtility.Log($"Grounded on: {hit.collider.gameObject.name}");
+            Vector3 rayStart = bottomCenter + offset;
+            if (Physics.Raycast(rayStart, Vector3.down, groundCheckDistance, m_LayerMask))
+            {
+                groundedCount++;
+            }
         }
-        else
-        {
-            DebugUtility.Log("Not grounded");
-        }
+
+        bool detailedGrounded = centerGrounded || groundedCount >= 2;
+
+        // 最終的な判定（CharacterControllerの判定を優先し、追加判定で補強）
+        bool finalGrounded = controllerGrounded || (detailedGrounded && verticalVelocity <= 1f);
 
 #if UNITY_EDITOR
-        Debug.DrawLine(start, end, isGrounded ? Color.green : Color.red);
+        // デバッグ用の線描画
+        Color rayColor = finalGrounded ? Color.green : Color.red;
+        Debug.DrawLine(bottomCenter, bottomCenter + Vector3.down * groundCheckDistance, rayColor);
+
+        foreach (Vector3 offset in offsets)
+        {
+            Vector3 rayStart = bottomCenter + offset;
+            Debug.DrawLine(rayStart, rayStart + Vector3.down * groundCheckDistance, rayColor * 0.7f);
+        }
 #endif
-        return isGrounded;
+
+        return finalGrounded;
     }
 
     // コマンドパターンを定義するインターフェース
@@ -608,13 +1062,11 @@ public class PlayerController : MonoBehaviour
     {
         // コマンドが実行可能かどうかを判定するメソッド
         bool CanExecute();
-        // コマンドが実行可能かどうかを判定するメソッド
+        // コマンドを実行するメソッド
         void Execute();
     }
-    // 歩行を管理するコマンドクラス
-    // このクラスはプレイヤーの歩行行動をカプセル化し、
-    // 呼び出された際にプレイヤーを指定された方向と速度で移動させる
 
+    // 歩行を管理するコマンドクラス
     private class WalkCommand : ICommand
     {
         private readonly PlayerController m_Player;
@@ -625,15 +1077,28 @@ public class PlayerController : MonoBehaviour
             this.m_Player = player;
             this.m_Direction = direction;
         }
+
         public bool CanExecute() => m_Direction != Vector3.zero;
+
         public void Execute()
         {
-            m_Player.UpdateState(PlayerState.Walk);
+            // ★修正：着地アニメーション中は移動コマンドを実行しない
+            if (m_Player.isJumping && m_Player.currentJumpPhase == JumpPhase.Landing)
+            {
+                return;
+            }
+
+            // ★修正：ジャンプ中は状態更新を完全にスキップ
+            if (!m_Player.isJumping && m_Player.isGrounded)
+            {
+                m_Player.UpdateState(PlayerState.Walk);
+            }
+
             m_Player.GetComponentInChildren<PlayerCameraController>().OnActionEnd();
             m_Player.Move(m_Direction, m_Player.m_WalkSpeed);
 
             AudioSource audioSource = m_Player.footstepAudioSource;
-            if (audioSource != null)
+            if (audioSource != null && m_Player.isGrounded)
             {
                 if (audioSource.clip != m_Player.walkClip || !audioSource.isPlaying)
                 {
@@ -647,8 +1112,6 @@ public class PlayerController : MonoBehaviour
         }
     }
     // 走行を管理するコマンドクラス
-    // このクラスはプレイヤーの走行行動をカプセル化し、
-    // 呼び出された際にプレイヤーを指定された方向に高速で移動させる
     private class RunCommand : ICommand
     {
         private readonly PlayerController m_Player;
@@ -664,11 +1127,23 @@ public class PlayerController : MonoBehaviour
 
         public void Execute()
         {
-            m_Player.UpdateState(PlayerState.Run);
+            // ★修正：着地アニメーション中は移動コマンドを実行しない
+            if (m_Player.isJumping && m_Player.currentJumpPhase == JumpPhase.Landing)
+            {
+                return;
+            }
+
+            // ★修正：ジャンプ中は状態更新を完全にスキップ
+            if (!m_Player.isJumping && m_Player.isGrounded)
+            {
+                m_Player.UpdateState(PlayerState.Run);
+            }
+
             m_Player.GetComponentInChildren<PlayerCameraController>().OnRunStart();
             m_Player.Move(m_Direction, m_Player.m_RunSpeed);
+
             AudioSource audioSource = m_Player.footstepAudioSource;
-            if (audioSource != null)
+            if (audioSource != null && m_Player.isGrounded)
             {
                 if (audioSource.clip != m_Player.runClip || !audioSource.isPlaying)
                 {
@@ -681,5 +1156,4 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
-
 }

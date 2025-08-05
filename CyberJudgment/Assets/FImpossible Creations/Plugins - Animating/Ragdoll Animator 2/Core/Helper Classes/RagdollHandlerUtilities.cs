@@ -22,7 +22,7 @@ namespace FIMSpace.FProceduralAnimation
             foreach( var chain in handler.Chains )
                 foreach( var bone in chain.BoneSetups )
                 {
-                    bone.RefreshJoint( chain, fall, true, false );
+                    bone.RefreshJoint( chain, fall, true, false, handler.InstantConnectedMassChange );
                     bone.RefreshRigidbody( handler, chain, true );
                 }
 

@@ -6,13 +6,11 @@ public class PlayerManager : MonoBehaviour
     public PlayerController PlayerController { get; private set; }
     public PlayerAnimationController PlayerAnimationController { get; private set; }
     public PlayerAttackController PlayerAttackController { get; private set; }
-
     public PlayerMP playerMP { get; private set; }
 
     private bool isAttacking;
     private bool isHit;
     private bool isDead;
-
     private readonly ReactiveProperty<bool> isGuarding = new ReactiveProperty<bool>(false);
 
     public bool IsHit => isHit;
@@ -27,8 +25,9 @@ public class PlayerManager : MonoBehaviour
         PlayerAnimationController = GetComponent<PlayerAnimationController>();
         PlayerAttackController = GetComponent<PlayerAttackController>();
         playerMP = GetComponent<PlayerMP>();
-    }
 
+        currentState = PlayerState.Idle;
+    }
 
     /// <summary>
     /// ガード状態を設定します。
@@ -46,13 +45,37 @@ public class PlayerManager : MonoBehaviour
     /// <param name="state"></param>
     public void UpdatePlayerState(PlayerState state)
     {
-        PlayerAnimationController.UpdateState(state);
+        if (currentState != state)
+        {
+            currentState = state;
+            PlayerAnimationController.UpdateState(state);
+        }
     }
 
     /// <summary>
     /// プレイヤーの現在の状態を取得
     /// </summary>
     public PlayerState CurrentState => currentState;
+
+    /// <summary>
+    /// ジャンプ中かどうかを判定
+    /// </summary>
+    /// <returns></returns>
+    public bool IsJumping()
+    {
+        return currentState == PlayerState.JumpStart ||
+               currentState == PlayerState.JumpLoop ||
+               currentState == PlayerState.JumpEnd;
+    }
+
+    /// <summary>
+    /// 空中にいるかどうかを判定
+    /// </summary>
+    /// <returns></returns>
+    public bool IsAirborne()
+    {
+        return IsJumping();
+    }
 
     /// <summary>
     /// 攻撃中フラグの設定
@@ -85,7 +108,6 @@ public class PlayerManager : MonoBehaviour
         isDead = dead;
         PlayerController.SetMovementEnabled(!dead);
         PlayerAttackController.SetAttackEnabled(!dead);
-
         if (dead)
         {
             UpdatePlayerState(PlayerState.Dead);
@@ -96,8 +118,9 @@ public class PlayerManager : MonoBehaviour
         }
     }
 }
+
 /// <summary>
-/// プレイヤーの状態定義
+/// プレイヤーの状態定義（ジャンプ状態を追加）
 /// </summary>
 public enum PlayerState
 {
@@ -105,6 +128,8 @@ public enum PlayerState
     Walk,
     Run,
     Guard,
-    Dead
+    Dead,
+    JumpStart,  // ジャンプ開始
+    JumpLoop,   // ジャンプ中（空中）
+    JumpEnd     // 着地準備
 }
-

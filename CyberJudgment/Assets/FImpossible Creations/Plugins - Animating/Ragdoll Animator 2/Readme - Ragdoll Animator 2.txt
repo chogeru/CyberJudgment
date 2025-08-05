@@ -1,7 +1,7 @@
 ﻿__________________________________________________________________________________________
 
 Package "Ragdoll Animator 2"
-Version 1.0.3.9
+Version 1.0.4.0
 
 Made by FImpossible Creations - Filip Moeglich
 http://www.fimpossiblecreations.pl
@@ -30,6 +30,10 @@ If you encounter something like spine jittery, try lowering muscles spring power
 
 __________________________________________________________________________________________
 Changelog:
+
+version 1.0.4.0
+- Added improvements for the Attachable objects, which will give better motion when attachable mass is set to zero
+- Added 'Smooth Change' option for the Connected Mass Scale parameter, to avoid unity physics glitch which was happening on get up when character was pushed far away from the sight
 
 version 1.0.3.9
 - Feet Middle repose mode for extra features

@@ -32,9 +32,15 @@ namespace FIMSpace.FProceduralAnimation
             }
 
             var dummyBone = DictionaryGetBoneSetupBySourceBone( targetAnimatorBone );
-            if( dummyBone == null ) return;
 
-            foreach( var coll in attachable.AttachableColliders ) IgnoreCollisionWith( coll ); // Skeleton collider should be ignored
+            if ( dummyBone == null ) return;
+
+            // Mass 0 support values
+            Vector3 intertiaTensor = dummyBone.GameRigidbody.inertiaTensor;
+            Quaternion inertiaTensorRotation = dummyBone.GameRigidbody.inertiaTensorRotation;
+            Vector3 com = dummyBone.GameRigidbody.centerOfMass;
+
+            foreach ( var coll in attachable.AttachableColliders ) IgnoreCollisionWith( coll ); // Skeleton collider should be ignored
 
             attachable.OnStartAttachingToRagdoll( this, dummyBone );
 
@@ -57,6 +63,14 @@ namespace FIMSpace.FProceduralAnimation
             }
 
             attachables.Add( attachable );
+
+            // Handling mass 0 suggested by Aliaksei
+            if (attachable.Mass == 0.0f && attachable.DoNotChangeInertiaTensor)
+            {
+                dummyBone.GameRigidbody.inertiaTensor = intertiaTensor;
+                dummyBone.GameRigidbody.inertiaTensorRotation = inertiaTensorRotation;
+                dummyBone.GameRigidbody.centerOfMass = com;
+            }
         }
 
 

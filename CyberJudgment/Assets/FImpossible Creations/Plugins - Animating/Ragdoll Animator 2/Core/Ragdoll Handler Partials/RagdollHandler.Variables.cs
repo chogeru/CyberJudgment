@@ -63,6 +63,10 @@ namespace FIMSpace.FProceduralAnimation
         [Range( 0f, 1.5f )]
         public float MassMultiplyOnFalling = 1f;
 
+        [Tooltip("Use to smooth change connected mass joints value instead of instant change.\n\nInstant change can produce issue on character get up action, when being pushed far away from initial position (unity physics glitch)")]
+        public float ConnectedMassTransition = 0f;
+        public bool InstantConnectedMassChange => ConnectedMassTransition <= 0f;
+
         [Tooltip( "Physical Material which will be applied to the generated colliders (not changing if set none)" )]
         public PhysicMaterial CollidersPhysicMaterial;
 

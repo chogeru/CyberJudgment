@@ -253,8 +253,8 @@ namespace FIMSpace.FProceduralAnimation
         {
             if (bone.WasDismembered) return;
             bone.HardMatchingMultiply = 0;
-            bone.RefreshJoint(bone.ParentChain, true, false, true);
-            bone.RefreshDynamicPhysicalParameters(bone.ParentChain, true);
+            bone.RefreshJoint(bone.ParentChain, true, false, true, ParentRagdollHandler.InstantConnectedMassChange);
+            //bone.RefreshDynamicPhysicalParameters(bone.ParentChain, true);
             bone.RefreshCollider(bone.ParentChain, true, false);
             bone.Joint_SetAngularMotionLock(ConfigurableJointMotion.Limited);
         }
@@ -362,7 +362,7 @@ namespace FIMSpace.FProceduralAnimation
 
             bone.HardMatchingMultiply = 1f;
 
-            bone.RefreshJoint(bone.ParentChain, bone.ParentChain.ParentHandler.IsFallingOrSleep, false, true);
+            bone.RefreshJoint(bone.ParentChain, bone.ParentChain.ParentHandler.IsFallingOrSleep, false, true, ParentRagdollHandler.InstantConnectedMassChange);
             bone.RefreshJointLimitSwitch(bone.ParentChain);
         }
     }

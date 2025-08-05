@@ -21,7 +21,7 @@ namespace FIMSpace.FProceduralAnimation
                 foreach( var bone in chain.BoneSetups )
                 {
                     bone.ForceKinematicOnStanding = false;
-                    chain.BoneSetups[chain.BoneSetups.Count - 1].RefreshDynamicPhysicalParameters( chain, ParentRagdollHandler.IsInFallingMode );
+                    chain.BoneSetups[chain.BoneSetups.Count - 1].RefreshDynamicPhysicalParameters( chain, ParentRagdollHandler.IsInFallingMode, ParentRagdollHandler.InstantConnectedMassChange );
                 }
             }
         }
@@ -40,7 +40,7 @@ namespace FIMSpace.FProceduralAnimation
                 foreach( var bone in chain.BoneSetups )
                 {
                     bone.ForceKinematicOnStanding = false;
-                    if ( ragdollHandler.WasInitialized) chain.BoneSetups[chain.BoneSetups.Count - 1].RefreshDynamicPhysicalParameters( chain, ragdollHandler.IsInFallingMode );
+                    if ( ragdollHandler.WasInitialized) chain.BoneSetups[chain.BoneSetups.Count - 1].RefreshDynamicPhysicalParameters( chain, ragdollHandler.IsInFallingMode, ParentRagdollHandler.InstantConnectedMassChange);
                 }
             }
         }

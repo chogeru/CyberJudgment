@@ -305,6 +305,19 @@ namespace FIMSpace.FProceduralAnimation
             UpdateMotionInfluence();
 
             FixedUpdateAttachables();
+
+            if ( InstantConnectedMassChange == false)
+            {
+                float cmDelta = Time.fixedDeltaTime * ConnectedMassTransition;
+                if (animatingMode == EAnimatingMode.Falling) cmDelta *= 4f;
+
+                foreach (var chain in chains)
+                    foreach (var bone in chain.BoneSetups)
+                    {
+                        if (bone.Joint == null) continue;
+                        bone.Joint.connectedMassScale = Mathf.MoveTowards(bone.Joint.connectedMassScale, bone.TargetConnectedMassScale, cmDelta);
+                    }
+            }
         }
 
         private void ApplyAnchorBonePositionAfterAnimationCapture()

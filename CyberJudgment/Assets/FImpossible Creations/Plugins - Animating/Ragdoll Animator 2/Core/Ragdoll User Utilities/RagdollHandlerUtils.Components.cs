@@ -80,13 +80,14 @@ namespace FIMSpace.FProceduralAnimation
             if( iHandler.GetRagdollHandler.DummyWasGenerated == false ) return;
 
             bool fall = iHandler.GetRagdollHandler.IsFallingOrSleep;
+            var handler = iHandler.GetRagdollHandler;
 
-            foreach( var chain in iHandler.GetRagdollHandler.Chains )
+            foreach( var chain in handler.Chains )
             {
                 foreach( var bone in chain.BoneSetups )
                 {
                     // In case of using rotation correction //if( bone.IsAnchor ) continue;
-                    bone.RefreshJoint( chain, fall, false, true );
+                    bone.RefreshJoint( chain, fall, false, true, handler.InstantConnectedMassChange );
                 }
             }
         }

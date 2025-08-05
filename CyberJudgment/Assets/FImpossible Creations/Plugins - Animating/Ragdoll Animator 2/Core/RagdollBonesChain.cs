@@ -435,7 +435,7 @@ namespace FIMSpace.FProceduralAnimation
                 var bone = BoneSetups[b];
                 bone.RefreshRigidbody( ParentHandler, this, addOnSource );
                 bone.RefreshCollider( this, fall, addOnSource );
-                bone.RefreshJoint( this, fall, addOnSource, false );
+                bone.RefreshJoint( this, fall, addOnSource, false, ParentHandler.InstantConnectedMassChange );
             }
         }
 

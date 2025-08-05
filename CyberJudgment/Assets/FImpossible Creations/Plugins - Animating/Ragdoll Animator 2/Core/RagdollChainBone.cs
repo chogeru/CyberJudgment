@@ -784,7 +784,7 @@ namespace FIMSpace.FProceduralAnimation
             return collider;
         }
 
-        public ConfigurableJoint RefreshJoint( RagdollBonesChain chain, bool fallMode, bool onSource, bool playmodeRefresh )
+        public ConfigurableJoint RefreshJoint( RagdollBonesChain chain, bool fallMode, bool onSource, bool playmodeRefresh, bool applyConnectedMassScale)
         {
             Transform targetT = onSource ? SourceBone : PhysicalDummyBone;
             ConfigurableJoint joint = Joint;
@@ -808,7 +808,7 @@ namespace FIMSpace.FProceduralAnimation
 
             Joint_UpdateAngleLimits( chain );
             Joint_UpdateAngularSpringLimits( chain );
-            RefreshDynamicPhysicalParameters( chain, fallMode );
+            RefreshDynamicPhysicalParameters( chain, fallMode, applyConnectedMassScale );
 
             joint.enableCollision = false;
             joint.enablePreprocessing = chain.ParentHandler.PreProcessing;
@@ -850,16 +850,20 @@ namespace FIMSpace.FProceduralAnimation
             }
         }
 
+        /// <summary> Used for smooth transitioning connected mass scale value </summary>
+        public float TargetConnectedMassScale { get; private set; } = 1f;
+
         /// <summary>
         /// (Runtime) Updating joint dynamic parameters like connected mass scale etc.
         /// </summary>
-        public void RefreshDynamicPhysicalParameters( RagdollBonesChain chain, bool fallMode )
+        public void RefreshDynamicPhysicalParameters( RagdollBonesChain chain, bool fallMode, bool applyConnectedMassScale )
         {
             float mul = chain.ParentHandler.FadeInBlend;
 
             if( ConnectionMassOverride > 0f )
             {
-                Joint.connectedMassScale = ConnectionMassOverride * mul;
+                TargetConnectedMassScale = ConnectionMassOverride * mul;
+                if (applyConnectedMassScale) Joint.connectedMassScale = TargetConnectedMassScale;
                 return;
             }
 
@@ -867,9 +871,16 @@ namespace FIMSpace.FProceduralAnimation
             {
                 if( Joint )
                 {
-                    if( chain.ConnectedMassOverride ) Joint.connectedMassScale = chain.ConnectedMassScale;
+                    if (chain.ConnectedMassOverride)
+                    {
+                        TargetConnectedMassScale = chain.ConnectedMassScale;
+                        if (applyConnectedMassScale) Joint.connectedMassScale = TargetConnectedMassScale;
+                    }
                     else
-                        Joint.connectedMassScale = chain.ConnectedMassScale * chain.ParentHandler.MassMultiplyOnFalling * mul;
+                    {
+                        TargetConnectedMassScale = chain.ConnectedMassScale * chain.ParentHandler.MassMultiplyOnFalling * mul;
+                        if (applyConnectedMassScale) Joint.connectedMassScale = TargetConnectedMassScale;
+                    }
                 }
 
                 if( chain.ParentHandler.NoGravityOnStanding ) GameRigidbody.useGravity = true;
@@ -878,9 +889,16 @@ namespace FIMSpace.FProceduralAnimation
             {
                 if( Joint )
                 {
-                    if( chain.ConnectedMassOverride ) Joint.connectedMassScale = chain.ConnectedMassScale;
+                    if (chain.ConnectedMassOverride)
+                    {
+                        TargetConnectedMassScale = chain.ConnectedMassScale;
+                        if (applyConnectedMassScale) Joint.connectedMassScale = TargetConnectedMassScale;
+                    }
                     else
-                        Joint.connectedMassScale = chain.ConnectedMassScale * chain.ParentHandler.ConnectedMassMultiply * mul;
+                    {
+                        TargetConnectedMassScale = chain.ConnectedMassScale * chain.ParentHandler.ConnectedMassMultiply * mul;
+                        if (applyConnectedMassScale) Joint.connectedMassScale = TargetConnectedMassScale;
+                    }
                 }
 
                 if( chain.ParentHandler.NoGravityOnStanding ) GameRigidbody.useGravity = false;

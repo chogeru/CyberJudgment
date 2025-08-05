@@ -50,7 +50,7 @@
             {
                 foreach( var bone in chain.BoneSetups )
                 {
-                    bone.RefreshDynamicPhysicalParameters( chain, fall );
+                    bone.RefreshDynamicPhysicalParameters( chain, fall, InstantConnectedMassChange );
                     bone.RefreshJointLimitSwitch( chain );
                 }
             }
