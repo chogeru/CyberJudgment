@@ -258,53 +258,16 @@ public class PlayerController : MonoBehaviour
     private async UniTaskVoid InitializeMovement()
     {
         var moveStream = this.UpdateAsObservable()
-            .Select(_ =>
-            {
-                Vector2 gamepadInput = Gamepad.current?.leftStick.ReadValue() ?? Vector2.zero;
-
-                if (gamepadInput.magnitude < m_GamepadDeadZone)
-                {
-                    gamepadInput = Vector2.zero;
-                }
-                else
-                {
-                    gamepadInput = gamepadInput.normalized * ((gamepadInput.magnitude - m_GamepadDeadZone) / (1 - m_GamepadDeadZone));
-                }
-
-                Vector3 keyboardInput = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
-
-                if (keyboardInput.magnitude < 0.1f)
-                {
-                    keyboardInput = Vector3.zero;
-                }
-
-                Vector3 combinedInput = (gamepadInput != Vector2.zero) ? new Vector3(gamepadInput.x, 0, gamepadInput.y) : keyboardInput;
-
-                if (combinedInput.magnitude < 0.01f)
-                {
-                    combinedInput = Vector3.zero;
-                }
-
-                float magnitude = combinedInput.magnitude;
-                currentGamepadInput = gamepadInput;
-                currentKeyboardInput = keyboardInput;
-                currentCombinedInput = combinedInput;
-                currentInputMagnitude = magnitude;
-
-                return new { Movement = combinedInput, Magnitude = magnitude };
-            })
+            .Select(_ => GetCurrentInput())
             .Share();
 
-        // RunCommandのサブスクリプション（ジャンプ中は地上の移動状態に影響しない）
+        // RunCommandのサブスクリプション
         moveStream
             .Where(input =>
                 !playerManager.IsGuarding &&
-                (
-                    (Gamepad.current != null && (input.Magnitude >= m_RunThreshold || Gamepad.current.leftTrigger.isPressed)) ||
-                    (Gamepad.current == null && Input.GetKey(KeyCode.LeftShift))
-                )
+                ShouldRun(input.Magnitude) &&
+                input.Movement != Vector3.zero
             )
-            .Where(input => input.Movement != Vector3.zero)
             .Subscribe(input =>
             {
                 var runCommand = new RunCommand(this, input.Movement);
@@ -315,16 +278,13 @@ public class PlayerController : MonoBehaviour
             })
             .AddTo(this);
 
-        // WalkCommandのサブスクリプション（ジャンプ中は地上の移動状態に影響しない）
+        // WalkCommandのサブスクリプション
         moveStream
             .Where(input =>
                 !playerManager.IsGuarding &&
-                (
-                    (Gamepad.current != null && input.Magnitude >= 0.2f && input.Magnitude < m_RunThreshold && !Gamepad.current.leftTrigger.isPressed) ||
-                    (Gamepad.current == null && !Input.GetKey(KeyCode.LeftShift))
-                )
+                ShouldWalk(input.Magnitude) &&
+                input.Movement != Vector3.zero
             )
-            .Where(input => input.Movement != Vector3.zero)
             .Subscribe(input =>
             {
                 var walkCommand = new WalkCommand(this, input.Movement);
@@ -335,7 +295,7 @@ public class PlayerController : MonoBehaviour
             })
             .AddTo(this);
 
-        // Idleのサブスクリプション（ジャンプ中は地上の移動状態に影響しない）
+        // Idleのサブスクリプション
         moveStream
             .Where(input =>
                 !playerManager.IsGuarding &&
@@ -369,6 +329,75 @@ public class PlayerController : MonoBehaviour
             .AddTo(this);
 
         await UniTask.Yield();
+    }
+
+    /// <summary>
+    /// 現在の入力を取得する統一メソッド
+    /// </summary>
+    private (Vector3 Movement, float Magnitude) GetCurrentInput()
+    {
+        Vector2 gamepadInput = Gamepad.current?.leftStick.ReadValue() ?? Vector2.zero;
+
+        if (gamepadInput.magnitude < m_GamepadDeadZone)
+        {
+            gamepadInput = Vector2.zero;
+        }
+        else
+        {
+            gamepadInput = gamepadInput.normalized * ((gamepadInput.magnitude - m_GamepadDeadZone) / (1 - m_GamepadDeadZone));
+        }
+
+        Vector3 keyboardInput = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+
+        if (keyboardInput.magnitude < 0.1f)
+        {
+            keyboardInput = Vector3.zero;
+        }
+
+        Vector3 combinedInput = (gamepadInput != Vector2.zero) ? new Vector3(gamepadInput.x, 0, gamepadInput.y) : keyboardInput;
+
+        if (combinedInput.magnitude < 0.01f)
+        {
+            combinedInput = Vector3.zero;
+        }
+
+        float magnitude = combinedInput.magnitude;
+        currentGamepadInput = gamepadInput;
+        currentKeyboardInput = keyboardInput;
+        currentCombinedInput = combinedInput;
+        currentInputMagnitude = magnitude;
+
+        return (combinedInput, magnitude);
+    }
+
+    /// <summary>
+    /// 走り状態かどうかを判定
+    /// </summary>
+    private bool ShouldRun(float magnitude)
+    {
+        if (Gamepad.current != null)
+        {
+            return magnitude >= m_RunThreshold || Gamepad.current.leftTrigger.isPressed;
+        }
+        else
+        {
+            return magnitude > 0.01f && Input.GetKey(KeyCode.LeftShift);
+        }
+    }
+
+    /// <summary>
+    /// 歩き状態かどうかを判定
+    /// </summary>
+    private bool ShouldWalk(float magnitude)
+    {
+        if (Gamepad.current != null)
+        {
+            return magnitude >= 0.2f && magnitude < m_RunThreshold && !Gamepad.current.leftTrigger.isPressed;
+        }
+        else
+        {
+            return magnitude > 0.01f && !Input.GetKey(KeyCode.LeftShift);
+        }
     }
 
     private async UniTaskVoid InitializeGuarding()
@@ -662,14 +691,14 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// 着地アニメーション後の状態遷移
+    /// 着地アニメーション後の状態遷移（改善版）
     /// </summary>
     private System.Collections.IEnumerator TransitionAfterLandingAnimation()
     {
-        // 着地アニメーションを少し再生させる（約0.1-0.2秒）
-        yield return new WaitForSeconds(0.15f);
+        // 着地アニメーションを少し再生させる（約0.1秒に短縮）
+        yield return new WaitForSeconds(0.1f);
 
-        // ★修正：アニメーションコントローラーのジャンプシーケンスを明示的に終了
+        // アニメーションコントローラーのジャンプシーケンスを明示的に終了
         var animController = GetComponent<PlayerAnimationController>();
         if (animController != null)
         {
@@ -683,72 +712,42 @@ public class PlayerController : MonoBehaviour
 
         Debug.Log("Landing animation finished, transitioning to appropriate state");
 
-        // ★修正：1フレーム待ってから状態判定（入力値の更新を確実に反映させる）
-        yield return null;
+        // 現在の入力を即座に取得
+        var currentInput = GetCurrentInput();
 
-        // ★修正：現在の入力を再取得して確実に最新の状態を判定
-        Vector2 gamepadInput = Gamepad.current?.leftStick.ReadValue() ?? Vector2.zero;
-        if (gamepadInput.magnitude < m_GamepadDeadZone)
-        {
-            gamepadInput = Vector2.zero;
-        }
-        else
-        {
-            gamepadInput = gamepadInput.normalized * ((gamepadInput.magnitude - m_GamepadDeadZone) / (1 - m_GamepadDeadZone));
-        }
+        Debug.Log($"Landing transition - Input: {currentInput.Movement}, Magnitude: {currentInput.Magnitude}");
 
-        Vector3 keyboardInput = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
-        if (keyboardInput.magnitude < 0.1f)
-        {
-            keyboardInput = Vector3.zero;
-        }
-
-        Vector3 combinedInput = (gamepadInput != Vector2.zero) ? new Vector3(gamepadInput.x, 0, gamepadInput.y) : keyboardInput;
-        if (combinedInput.magnitude < 0.01f)
-        {
-            combinedInput = Vector3.zero;
-        }
-
-        float inputMagnitude = combinedInput.magnitude;
-
-        Debug.Log($"Landing transition - Input: {combinedInput}, Magnitude: {inputMagnitude}");
-
-        // ★修正：ガード状態を最優先でチェック
+        // ガード状態を最優先でチェック
         if (playerManager.IsGuarding)
         {
             playerManager.UpdatePlayerState(PlayerState.Guard);
             Debug.Log("Transitioned to Guard state after landing");
         }
         // 移動入力がある場合
-        else if (combinedInput != Vector3.zero && inputMagnitude > 0.01f)
+        else if (currentInput.Movement != Vector3.zero && currentInput.Magnitude > 0.01f)
         {
             // 走り判定
-            bool shouldRun = false;
-            if (Gamepad.current != null)
-            {
-                shouldRun = inputMagnitude >= m_RunThreshold || Gamepad.current.leftTrigger.isPressed;
-            }
-            else
-            {
-                shouldRun = Input.GetKey(KeyCode.LeftShift);
-            }
-
-            if (shouldRun)
+            if (ShouldRun(currentInput.Magnitude))
             {
                 playerManager.UpdatePlayerState(PlayerState.Run);
                 Debug.Log("Transitioned to Run state after landing");
             }
-            else
+            else if (ShouldWalk(currentInput.Magnitude))
             {
                 playerManager.UpdatePlayerState(PlayerState.Walk);
                 Debug.Log("Transitioned to Walk state after landing");
+            }
+            else
+            {
+                playerManager.UpdatePlayerState(PlayerState.Idle);
+                Debug.Log("Transitioned to Idle state after landing (input too small)");
             }
         }
         else
         {
             // 静止状態
             playerManager.UpdatePlayerState(PlayerState.Idle);
-            Debug.Log("Transitioned to Idle state after landing");
+            Debug.Log("Transitioned to Idle state after landing (no input)");
         }
     }
 
@@ -854,7 +853,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        // ★追加：着地アニメーション中は移動を制限
+        // 着地アニメーション中は移動を制限
         if (isJumping && currentJumpPhase == JumpPhase.Landing)
         {
             return;
@@ -901,7 +900,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        // ★修正：着地アニメーション中は移動を制限
+        // 着地アニメーション中は移動を制限
         if (isJumping && currentJumpPhase == JumpPhase.Landing)
         {
             return;
@@ -916,12 +915,11 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        // ★修正：入力値チェックを強化
+        // 入力値チェックを強化
         if (movement == Vector3.zero || movement.magnitude < 0.01f)
         {
             if (isGrounded && !isJumping) // ジャンプ中でない場合のみIdle状態に遷移
             {
-                // ★追加：デバッグログで状態遷移を確認
                 Debug.Log("HandleMovement: Setting Idle state due to no input");
                 playerManager.UpdatePlayerState(PlayerState.Idle);
                 GetComponentInChildren<PlayerCameraController>().OnActionEnd();
@@ -1082,13 +1080,13 @@ public class PlayerController : MonoBehaviour
 
         public void Execute()
         {
-            // ★修正：着地アニメーション中は移動コマンドを実行しない
+            // 着地アニメーション中は移動コマンドを実行しない
             if (m_Player.isJumping && m_Player.currentJumpPhase == JumpPhase.Landing)
             {
                 return;
             }
 
-            // ★修正：ジャンプ中は状態更新を完全にスキップ
+            // ジャンプ中は状態更新を完全にスキップ
             if (!m_Player.isJumping && m_Player.isGrounded)
             {
                 m_Player.UpdateState(PlayerState.Walk);
@@ -1111,6 +1109,7 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
+
     // 走行を管理するコマンドクラス
     private class RunCommand : ICommand
     {
@@ -1127,13 +1126,13 @@ public class PlayerController : MonoBehaviour
 
         public void Execute()
         {
-            // ★修正：着地アニメーション中は移動コマンドを実行しない
+            // 着地アニメーション中は移動コマンドを実行しない
             if (m_Player.isJumping && m_Player.currentJumpPhase == JumpPhase.Landing)
             {
                 return;
             }
 
-            // ★修正：ジャンプ中は状態更新を完全にスキップ
+            // ジャンプ中は状態更新を完全にスキップ
             if (!m_Player.isJumping && m_Player.isGrounded)
             {
                 m_Player.UpdateState(PlayerState.Run);
