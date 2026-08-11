@@ -9,6 +9,8 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: Umbrella
   m_Shader: {fileID: 4800000, guid: 6459b2db96a08ca41b0f9b39dc7ad59e, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - N_F_EAL_ON
   - N_F_O_ON
@@ -24,6 +26,7 @@ Material:
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -146,7 +149,7 @@ Material:
     - _Cutout: 0
     - _DepthThreshold: 900
     - _DetailNormalMapScale: 1
-    - _DirectionalLightIntensity: 0
+    - _DirectionalLightIntensity: 10
     - _DoubleSidedOutline: 1
     - _DstBlend: 0
     - _DynamicNoisyOutline: 0

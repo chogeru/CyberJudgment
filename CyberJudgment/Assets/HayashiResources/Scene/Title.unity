@@ -4649,6 +4649,7 @@ Transform:
   - {fileID: 341428399}
   - {fileID: 273412032}
   - {fileID: 580268453}
+  - {fileID: 2138798253}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &273412031
@@ -73615,6 +73616,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_BGMName: "\u30BF\u30A4\u30C8\u30EBBGM"
   m_Volume: 0.6
+  fadeInDuration: 1
+  fadeOutDuration: 1
   isRandomBGM: 0
   m_RandomBGMNames: []
   useChorus: 0
@@ -87080,6 +87083,126 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86f07a9a11c313b48b82d2f4f8ead64a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1001 &2138798252
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 257815976}
+    m_Modifications:
+    - target: {fileID: 1823864281357539883, guid: 0c0ff01120e2e9d48a547735abd5b9b0,
+        type: 3}
+      propertyPath: m_WindMain
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1823864281357539883, guid: 0c0ff01120e2e9d48a547735abd5b9b0,
+        type: 3}
+      propertyPath: m_WindTurbulence
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1823864281357539883, guid: 0c0ff01120e2e9d48a547735abd5b9b0,
+        type: 3}
+      propertyPath: m_WindPulseMagnitude
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1823864282392299068, guid: 0c0ff01120e2e9d48a547735abd5b9b0,
+        type: 3}
+      propertyPath: Sun
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1823864282392299068, guid: 0c0ff01120e2e9d48a547735abd5b9b0,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1823864282392299068, guid: 0c0ff01120e2e9d48a547735abd5b9b0,
+        type: 3}
+      propertyPath: vortexSpeed
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1823864282392299068, guid: 0c0ff01120e2e9d48a547735abd5b9b0,
+        type: 3}
+      propertyPath: WindStrength
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 1823864282392299068, guid: 0c0ff01120e2e9d48a547735abd5b9b0,
+        type: 3}
+      propertyPath: vortexVorticity
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1823864282392299068, guid: 0c0ff01120e2e9d48a547735abd5b9b0,
+        type: 3}
+      propertyPath: WindParallaxFactor
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1823864282472140663, guid: 0c0ff01120e2e9d48a547735abd5b9b0,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1823864282472140663, guid: 0c0ff01120e2e9d48a547735abd5b9b0,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 474
+      objectReference: {fileID: 0}
+    - target: {fileID: 1823864282472140663, guid: 0c0ff01120e2e9d48a547735abd5b9b0,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1823864282472140663, guid: 0c0ff01120e2e9d48a547735abd5b9b0,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1823864282472140663, guid: 0c0ff01120e2e9d48a547735abd5b9b0,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1823864282472140663, guid: 0c0ff01120e2e9d48a547735abd5b9b0,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1823864282472140663, guid: 0c0ff01120e2e9d48a547735abd5b9b0,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1823864282472140663, guid: 0c0ff01120e2e9d48a547735abd5b9b0,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1823864282472140663, guid: 0c0ff01120e2e9d48a547735abd5b9b0,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1823864282472140663, guid: 0c0ff01120e2e9d48a547735abd5b9b0,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1823864282472140664, guid: 0c0ff01120e2e9d48a547735abd5b9b0,
+        type: 3}
+      propertyPath: m_Name
+      value: DAY CLOUDS v1.7
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects:
+    - {fileID: 1823864283063483684, guid: 0c0ff01120e2e9d48a547735abd5b9b0, type: 3}
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 0c0ff01120e2e9d48a547735abd5b9b0, type: 3}
+--- !u!4 &2138798253 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1823864282472140663, guid: 0c0ff01120e2e9d48a547735abd5b9b0,
+    type: 3}
+  m_PrefabInstance: {fileID: 2138798252}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2139331977
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -92825,7 +92948,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1000
+  far clip plane: 10000
   field of view: 60.000004
   orthographic: 0
   orthographic size: 5

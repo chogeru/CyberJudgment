@@ -1,6 +1,6 @@
 using System;
 using UnityEngine;
-using R3;
+using UniRx;
 using UnityEngine.UI;
 using AbubuResouse.Singleton;
 using UnityEngine.InputSystem;

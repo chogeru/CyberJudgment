@@ -19,7 +19,6 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField]
     private Slider healthSlider;
 
-
     [Tab("音声")]
     [Foldout("音声設定")]
     [SerializeField, Header("被弾ボイス")]
@@ -32,19 +31,34 @@ public class PlayerHealth : MonoBehaviour
     [EndFoldout]
     [EndTab]
 
+    [Tab("シールド被弾")]
+    [Foldout("シールド被弾設定")]
+    [SerializeField, Header("シールド被弾エフェクト")]
+    private GameObject shieldHitEffectPrefab;
+    [SerializeField, Header("シールド被弾音")]
+    private string[] shieldHitSounds;
+    [Range(0f, 1f)]
+    [SerializeField, Header("シールド被弾音量")]
+    private float shieldHitVolume = 0.8f;
+    [EndFoldout]
+    [EndTab]
+
     private int currentHealth;
     private bool isDead = false;
     private bool isHit = false;
 
     public Action<int> OnHealthChanged;
     public Action OnPlayerDeath; // プレイヤー死亡時のイベント
+    public Action OnShieldHit; // シールド被弾時のイベント
 
     private PlayerManager playerManager;
+    private PlayerController playerController;
 
     private void Awake()
     {
         currentHealth = maxHealth;
         playerManager = GetComponent<PlayerManager>();
+        playerController = GetComponent<PlayerController>();
     }
 
     private void Start()
@@ -77,9 +91,17 @@ public class PlayerHealth : MonoBehaviour
     /// ダメージを受ける
     /// </summary>
     /// <param name="damageAmount">ダメージ量</param>
-    public void TakeDamage(int damageAmount)
+    /// <param name="hitPosition">攻撃を受けた位置（シールドエフェクト用）</param>
+    public void TakeDamage(int damageAmount, Vector3 hitPosition = default)
     {
-        if (isDead||playerManager.IsGuarding) return;
+        if (isDead) return;
+
+        // シールド展開中の処理
+        if (playerManager.IsGuarding)
+        {
+            HandleShieldHit(hitPosition).Forget();
+            return;
+        }
 
         int newHealth = Mathf.Clamp(currentHealth - damageAmount, 0, maxHealth);
         currentHealth = newHealth;
@@ -92,6 +114,69 @@ public class PlayerHealth : MonoBehaviour
         else
         {
             HandleDeath();
+        }
+    }
+
+    /// <summary>
+    /// シールド被弾時の処理
+    /// </summary>
+    /// <param name="hitPosition">攻撃を受けた位置</param>
+    private async UniTaskVoid HandleShieldHit(Vector3 hitPosition)
+    {
+        Debug.Log("シールドで攻撃をブロック！");
+
+        // シールド被弾イベントを発火
+        OnShieldHit?.Invoke();
+
+        // PlayerControllerのシールド被弾処理を呼び出し
+        if (playerController != null)
+        {
+            playerController.TriggerShieldHit(hitPosition);
+        }
+
+        // シールド被弾音を再生
+        PlayShieldHitSound();
+
+        // シールド被弾エフェクトを再生
+        PlayShieldHitEffect(hitPosition);
+
+        await UniTask.Yield();
+    }
+
+    /// <summary>
+    /// シールド被弾音を再生
+    /// </summary>
+    private void PlayShieldHitSound()
+    {
+        if (shieldHitSounds == null || shieldHitSounds.Length == 0) return;
+
+        int randomIndex = UnityEngine.Random.Range(0, shieldHitSounds.Length);
+        string clip = shieldHitSounds[randomIndex];
+
+        if (SEManager.Instance != null)
+        {
+            SEManager.Instance.PlaySound(clip, shieldHitVolume);
+        }
+    }
+
+    /// <summary>
+    /// シールド被弾エフェクトを再生
+    /// </summary>
+    /// <param name="hitPosition">攻撃を受けた位置</param>
+    private void PlayShieldHitEffect(Vector3 hitPosition)
+    {
+        if (shieldHitEffectPrefab == null) return;
+
+        // 攻撃位置が指定されていない場合はプレイヤーの前方に設定
+        Vector3 effectPosition = hitPosition;
+        if (hitPosition == Vector3.zero)
+        {
+            effectPosition = transform.position + transform.forward * 1.5f;
+        }
+
+        if (EffectManager.Instance != null)
+        {
+            EffectManager.Instance.PlayEffect(shieldHitEffectPrefab, effectPosition, Quaternion.LookRotation(-transform.forward));
         }
     }
 
@@ -183,5 +268,19 @@ public class PlayerHealth : MonoBehaviour
         currentHealth += hpRecovery;
         currentHealth = Mathf.Min(currentHealth, maxHealth);
         UpdateHealthUI(currentHealth);
+    }
+
+    /// <summary>
+    /// 外部からダメージを与える際に使用（攻撃位置を指定可能）
+    /// </summary>
+    /// <param name="damageAmount">ダメージ量</param>
+    /// <param name="attackerPosition">攻撃者の位置</param>
+    public void TakeDamageFromPosition(int damageAmount, Vector3 attackerPosition)
+    {
+        // 攻撃者の位置からプレイヤーへの方向を計算
+        Vector3 directionToPlayer = (transform.position - attackerPosition).normalized;
+        Vector3 hitPosition = transform.position + directionToPlayer * 1.2f; // プレイヤーの少し前方
+
+        TakeDamage(damageAmount, hitPosition);
     }
 }

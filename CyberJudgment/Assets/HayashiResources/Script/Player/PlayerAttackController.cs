@@ -1,7 +1,7 @@
 using AbubuResouse.Singleton;
 using Cysharp.Threading.Tasks;
-using R3;
-using R3.Triggers;
+using UniRx;
+using UniRx.Triggers;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

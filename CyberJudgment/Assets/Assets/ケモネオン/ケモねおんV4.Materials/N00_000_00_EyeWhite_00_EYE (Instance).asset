@@ -9,6 +9,8 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: N00_000_00_EyeWhite_00_EYE (Instance)
   m_Shader: {fileID: 4800000, guid: 6459b2db96a08ca41b0f9b39dc7ad59e, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - N_F_CA_ON
   - N_F_CO_ON
@@ -30,6 +32,7 @@ Material:
   stringTagMap:
     RenderType: TransparentCutout
   disabledShaderPasses: []
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -449,7 +452,7 @@ Material:
     - _Cutout: 0.5
     - _DebugMode: 0
     - _DepthThreshold: 900
-    - _DirectionalLightIntensity: 0
+    - _DirectionalLightIntensity: 0.5
     - _DissolveNoiseStrength: 0.1
     - _DistanceFadeMode: 0
     - _DistanceFadeRimFresnelPower: 5
@@ -479,13 +482,13 @@ Material:
     - _EmissionParallaxDepth: 0
     - _EmissionUseGrad: 0
     - _EnableTextureTransparent: 0
-    - _EnvironmentalLightingIntensity: 1.5
+    - _EnvironmentalLightingIntensity: 5
     - _FReflectionIntensity: 0
     - _FReflectionRoughtness: 0
     - _FarDistanceMaxWidth: 10
     - _FlipNormal: 0
     - _GIFlatShade: 0
-    - _GIShadeThreshold: 0
+    - _GIShadeThreshold: 0.073
     - _GSAAStrength: 0
     - _GlitterAngleRandomize: 0
     - _GlitterApplyShape: 0
