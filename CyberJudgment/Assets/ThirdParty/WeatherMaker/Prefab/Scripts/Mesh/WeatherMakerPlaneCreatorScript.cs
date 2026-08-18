@@ -326,7 +326,7 @@ namespace DigitalRuby.WeatherMaker
 
             if (AutoCreateAsset)
             {
-                string path = "Assets/WeatherMaker/Prefab/Mesh/Plane_" + PlaneColumns.ToString() +
+                string path = "Assets/ThirdParty/WeatherMaker/Prefab/Mesh/Plane_" + PlaneColumns.ToString() +
                     "_" + PlaneRows.ToString() + "_" + PlaneScale + "_" + (PlaneForwardIsZAxis ? "ForwardZ" : "ForwardY") + "_" + CubeDepth + ".asset";
                 if (UnityEditor.AssetDatabase.LoadAssetAtPath(path, typeof(Mesh)) == null)
                 {

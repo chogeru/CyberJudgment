@@ -4,7 +4,7 @@
 //=========================
 
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
-#include "Assets/RealToon/RealToon Shaders/RealToon Core/URP/RT_URP_PROP.hlsl"
+#include "Assets/ThirdParty/RealToon/RealToon Shaders/RealToon Core/URP/RT_URP_PROP.hlsl"
 
 half RTD_LVLC_F(float3 Light_Color_f3)
 {

@@ -19,7 +19,7 @@ namespace MonobitEngine
         public static void Initialize()
         {
             // MonobitServerSetting.asset ならびに MonobitAuthenticationCode.asset のディレクトリパスの指定
-            MonobitNetworkSettings.SetServerSettingsDirectory("Assets/Monobit Unity Networking/Resources");
+            MonobitNetworkSettings.SetServerSettingsDirectory("Assets/ThirdParty/Monobit Unity Networking/Resources");
 
             if (MonobitNetworkSettings.MonobitServerSettings == null)
             {

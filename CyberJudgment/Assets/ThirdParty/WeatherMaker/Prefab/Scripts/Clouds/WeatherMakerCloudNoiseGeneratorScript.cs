@@ -84,7 +84,7 @@ namespace DigitalRuby.WeatherMaker
             string file = UnityEditor.EditorPrefs.GetString("WeatherMakerCloudNoiseGeneratorFileName", string.Empty);
             if (string.IsNullOrEmpty(file))
             {
-                fileTextBox.text = "Assets/WeatherMaker/Prefab/Textures/Clouds/CloudNoiseTexture.asset";
+                fileTextBox.text = "Assets/ThirdParty/WeatherMaker/Prefab/Textures/Clouds/CloudNoiseTexture.asset";
             }
             else
             {

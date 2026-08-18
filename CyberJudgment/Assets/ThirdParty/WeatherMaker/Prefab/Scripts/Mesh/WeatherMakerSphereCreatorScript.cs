@@ -116,7 +116,7 @@ namespace DigitalRuby.WeatherMaker
 
             if (AutoCreateAsset)
             {
-                string path = "Assets/WeatherMaker/Prefab/Mesh/Sphere_" + Resolution.ToString() + "_UV" + UVMode.ToString() + ".asset";
+                string path = "Assets/ThirdParty/WeatherMaker/Prefab/Mesh/Sphere_" + Resolution.ToString() + "_UV" + UVMode.ToString() + ".asset";
                 if (UnityEditor.AssetDatabase.LoadAssetAtPath(path, typeof(Mesh)) == null)
                 {
                     Mesh savedMesh = Object.Instantiate(MeshFilter.sharedMesh) as Mesh;

@@ -18,7 +18,7 @@ namespace CriWare.Assets
 {
     public abstract class CriAssetSettingsBase<T> : CriEditorSettingBase where T : CriAssetSettingsBase<T>
     {
-        readonly static string SettingsDirPath = "Assets/CriData/Settings";
+        readonly static string SettingsDirPath = "Assets/ThirdParty/CriData/Settings";
 
         static T _instance = null;
         public static T Instance
